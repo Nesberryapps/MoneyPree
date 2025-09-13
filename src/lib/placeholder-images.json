@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "quick-link",
+      "description": "An abstract representation of AI or technology.",
+      "imageUrl": "https://picsum.photos/seed/1/100/100",
+      "imageHint": "abstract technology"
+    },
+    {
+      "id": "user-avatar",
+      "description": "A placeholder for a user's avatar image.",
+      "imageUrl": "https://picsum.photos/seed/2/100/100",
+      "imageHint": "person portrait"
+    }
+  ]
 }

@@ -7,6 +7,7 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -18,6 +19,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  };
 
   return (
     <>
@@ -35,6 +41,7 @@ export function SidebarNav() {
                 asChild
                 isActive={pathname === item.href}
                 tooltip={{ children: item.label, side: 'right' }}
+                onClick={handleLinkClick}
               >
                 <Link href={item.href}>
                   <item.icon />
@@ -59,7 +66,7 @@ export function SidebarNav() {
       <SidebarFooter className="border-t">
         <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={{ children: 'Settings', side: 'right' }}>
+              <SidebarMenuButton asChild tooltip={{ children: 'Settings', side: 'right' }} onClick={handleLinkClick}>
                 <Link href="#">
                   <Settings />
                   <span>Settings</span>
@@ -67,7 +74,7 @@ export function SidebarNav() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={{ children: 'Help', side: 'right' }}>
+              <SidebarMenuButton asChild tooltip={{ children: 'Help', side: 'right' }} onClick={handleLinkClick}>
                 <Link href="#">
                   <LifeBuoy />
                   <span>Help</span>

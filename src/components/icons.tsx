@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-export function FinAceIcon(props: SVGProps<SVGSVGElement>) {
+export function FinwiseCompassIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

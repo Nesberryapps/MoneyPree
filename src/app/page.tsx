@@ -5,9 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowRight, BookOpen, Lightbulb, PiggyBank, Target } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { GoalsOverview } from '@/components/dashboard/goals-overview';
 import { BudgetSummaryChart } from '@/components/dashboard/budget-summary-chart';

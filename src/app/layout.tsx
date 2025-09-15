@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'FinAce',
+  title: 'Finwise Compass',
   description: 'Teach, manage, and suggest financial investments using AI.',
 };
 

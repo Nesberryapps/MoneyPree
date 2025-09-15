@@ -5,27 +5,30 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   PiggyBank,
   Target,
   BookOpen,
   Lightbulb,
+  ArrowRight,
 } from 'lucide-react';
 import type { Goal } from '@/lib/types';
-import { initialGoals } from '@/lib/initial-data';
+import { initialGoals, initialTransactions } from '@/lib/initial-data';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-// These would typically come from a data store or API
-const initialTransactions: any[] = [
-    { id: '1', date: new Date('2024-05-01'), description: 'Salary', amount: 5000, type: 'income', category: 'salary' },
-    { id: '2', date: new Date('2024-05-01'), description: 'Rent', amount: 1500, type: 'expense', category: 'housing' },
-    { id: '3', date: new Date('2024-05-05'), description: 'Groceries', amount: 300, type: 'expense', category: 'food' },
-    { id: '4', date: new Date('2024-05-10'), description: 'Gas', amount: 50, type: 'expense', category: 'transportation' },
-    { id: '5', date: new Date('2024-05-15'), description: 'Freelance Project', amount: 750, type: 'income', category: 'freelance' },
-  ];
 const lessonsCompleted = 12;
 const questionsAnswered = 5;
+
+const quickLinks = [
+    { title: 'Track a Transaction', description: 'Add a new income or expense.', href: '/budget', icon: PiggyBank},
+    { title: 'Set a Goal', description: 'Define a new financial target.', href: '/goals', icon: Target},
+    { title: 'Simulate an Investment', description: 'Explore potential returns.', href: '/invest', icon: BookOpen},
+    { title: 'Ask an Expert', description: 'Get answers from our AI.', href: '/qa', icon: Lightbulb}
+]
 
 export function DashboardClient() {
     const [netBalance, setNetBalance] = useState(0);
@@ -45,7 +48,26 @@ export function DashboardClient() {
   const nextGoalRemaining = nextGoal ? nextGoal.targetAmount - nextGoal.currentAmount : 0;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+    <>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {quickLinks.map((link) => (
+          <Card key={link.title} className="hover:bg-muted/50 transition-colors">
+            <Link href={link.href} className="block h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{link.title}</CardTitle>
+                <link.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">{link.description}</p>
+                <Button variant="link" size="sm" className="p-0 h-auto mt-2">
+                    Go <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </CardContent>
+            </Link>
+          </Card>
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
@@ -91,5 +113,6 @@ export function DashboardClient() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FinAceIcon } from '@/components/icons';
+import { FinwiseCompassIcon } from '@/components/icons';
 import { NAV_LINKS } from '@/lib/constants';
 import { Button } from '../ui/button';
 import { LifeBuoy } from 'lucide-react';
@@ -29,8 +29,8 @@ export function SidebarNav() {
     <>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <FinAceIcon className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold">FinAce</span>
+          <FinwiseCompassIcon className="h-8 w-8 text-primary" />
+          <span className="text-xl font-semibold">Finwise Compass</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">

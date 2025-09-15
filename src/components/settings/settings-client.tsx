@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Card,
   CardContent,
@@ -11,8 +13,27 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export function SettingsClient() {
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(false);
+
+  const handleSave = () => {
+    // Here you would typically save the settings to a backend or local storage
+    console.log('Settings saved:', {
+      theme,
+      emailNotifications,
+      pushNotifications,
+    });
+    toast({
+      title: 'Preferences Saved',
+      description: 'Your settings have been updated successfully.',
+    });
+  };
+
   return (
     <div className="grid gap-8">
       <Card>
@@ -23,18 +44,13 @@ export function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="dark-mode" className="flex flex-col space-y-1">
-              <span>Dark Mode</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Enjoy a darker color scheme.
-              </span>
-            </Label>
-            <Switch id="dark-mode" defaultChecked />
-          </div>
           <div className="space-y-2">
             <Label>Theme</Label>
-            <RadioGroup defaultValue="system" className="grid grid-cols-3 gap-4">
+            <RadioGroup
+              value={theme}
+              onValueChange={setTheme}
+              className="grid grid-cols-3 gap-4"
+            >
               <div>
                 <RadioGroupItem value="light" id="light" className="peer sr-only" />
                 <Label
@@ -81,7 +97,11 @@ export function SettingsClient() {
                 Receive updates and alerts in your inbox.
               </span>
             </Label>
-            <Switch id="email-notifications" defaultChecked />
+            <Switch
+              id="email-notifications"
+              checked={emailNotifications}
+              onCheckedChange={setEmailNotifications}
+            />
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="push-notifications" className="flex flex-col space-y-1">
@@ -90,12 +110,16 @@ export function SettingsClient() {
                 Get notified on your devices.
               </span>
             </Label>
-            <Switch id="push-notifications" />
+            <Switch
+              id="push-notifications"
+              checked={pushNotifications}
+              onCheckedChange={setPushNotifications}
+            />
           </div>
         </CardContent>
       </Card>
        <div className="flex justify-end">
-          <Button>Save Preferences</Button>
+          <Button onClick={handleSave}>Save Preferences</Button>
         </div>
     </div>
   );

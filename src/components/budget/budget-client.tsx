@@ -57,14 +57,8 @@ import {
   ArrowDownCircle,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
+import { initialTransactions } from '@/lib/initial-data';
 
-const initialTransactions: Transaction[] = [
-  { id: '1', date: new Date('2024-05-01'), description: 'Salary', amount: 5000, type: 'income', category: 'salary' },
-  { id: '2', date: new Date('2024-05-01'), description: 'Rent', amount: 1500, type: 'expense', category: 'housing' },
-  { id: '3', date: new Date('2024-05-05'), description: 'Groceries', amount: 300, type: 'expense', category: 'food' },
-  { id: '4', date: new Date('2024-05-10'), description: 'Gas', amount: 50, type: 'expense', category: 'transportation' },
-  { id: '5', date: new Date('2024-05-15'), description: 'Freelance Project', amount: 750, type: 'income', category: 'freelance' },
-];
 
 const CategoryIcon = ({ category }: { category: string }) => {
     const icons: { [key: string]: React.ElementType } = {

@@ -25,12 +25,8 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { initialGoals } from '@/lib/initial-data';
 
-const initialGoals: Goal[] = [
-  { id: '1', name: 'Emergency Fund', targetAmount: 10000, currentAmount: 5000, deadline: new Date('2025-12-31') },
-  { id: '2', name: 'New Car Down Payment', targetAmount: 5000, currentAmount: 1200, deadline: new Date('2025-06-30') },
-  { id: '3', name: 'Vacation to Japan', targetAmount: 8000, currentAmount: 6000, deadline: new Date('2024-11-01') },
-];
 
 export function GoalsClient() {
   const [goals, setGoals] = useState<Goal[]>(initialGoals);

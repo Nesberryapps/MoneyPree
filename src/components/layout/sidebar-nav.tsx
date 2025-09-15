@@ -67,7 +67,7 @@ export function SidebarNav() {
         <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={{ children: 'Help', side: 'right' }} onClick={handleLinkClick}>
-                <Link href="#">
+                <Link href="/help">
                   <LifeBuoy />
                   <span>Help</span>
                 </Link>

@@ -10,13 +10,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,22 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { initialGoals } from '@/lib/initial-data';
 import { formatDate } from '@/lib/utils';
 
@@ -34,10 +50,13 @@ export function GoalsClient() {
   const [prompt, setPrompt] = useState('');
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [isClient, setIsClient] = useState(false);
-  
-  // Form state for new goal
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
+
+  // Form state for new/editing goal
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [currentAmount, setCurrentAmount] = useState('');
@@ -60,29 +79,66 @@ export function GoalsClient() {
     }
   };
 
-  const resetAddGoalForm = () => {
+  const resetForm = () => {
     setName('');
     setTargetAmount('');
     setCurrentAmount('');
     setDeadline('');
+    setEditingGoal(null);
+  };
+  
+  const handleOpenDialog = (goal?: Goal) => {
+    if (goal) {
+      setEditingGoal(goal);
+      setName(goal.name);
+      setTargetAmount(String(goal.targetAmount));
+      setCurrentAmount(String(goal.currentAmount));
+      setDeadline(goal.deadline.toISOString().split('T')[0]); // Format for date input
+    } else {
+      resetForm();
+    }
+    setIsDialogOpen(true);
   }
 
-  const handleAddGoal = () => {
+  const handleSaveGoal = () => {
     if (!name || !targetAmount || !currentAmount || !deadline) {
       // Basic validation
       return;
     }
-    const newGoal: Goal = {
-      id: `goal-${Date.now()}`,
-      name,
-      targetAmount: parseFloat(targetAmount),
-      currentAmount: parseFloat(currentAmount),
-      deadline: new Date(deadline),
-    };
-    setGoals([newGoal, ...goals]);
-    setIsAddGoalDialogOpen(false);
-    resetAddGoalForm();
+    
+    if (editingGoal) {
+      // Edit existing goal
+      const updatedGoals = goals.map(g =>
+        g.id === editingGoal.id ? { ...g, name, targetAmount: parseFloat(targetAmount), currentAmount: parseFloat(currentAmount), deadline: new Date(deadline) } : g
+      );
+      setGoals(updatedGoals);
+
+    } else {
+      // Add new goal
+       const newGoal: Goal = {
+        id: `goal-${Date.now()}`,
+        name,
+        targetAmount: parseFloat(targetAmount),
+        currentAmount: parseFloat(currentAmount),
+        deadline: new Date(deadline),
+      };
+      setGoals([newGoal, ...goals]);
+    }
+    setIsDialogOpen(false);
+    resetForm();
   };
+  
+  const handleDeleteGoal = (id: string) => {
+    setGoals(goals.filter(g => g.id !== id));
+    setGoalToDelete(null);
+    setIsDeleteAlertOpen(false);
+  }
+
+  const openDeleteDialog = (id: string) => {
+    setGoalToDelete(id);
+    setIsDeleteAlertOpen(true);
+  }
+
 
   return (
     <div className="grid gap-8">
@@ -103,9 +159,23 @@ export function GoalsClient() {
                       Deadline: {isClient ? formatDate(goal.deadline) : ''}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-lg">${goal.currentAmount.toLocaleString()} / <span className="text-muted-foreground">${goal.targetAmount.toLocaleString()}</span></p>
-                  </div>
+                   <div className="flex items-center gap-2">
+                     <div className="text-right">
+                        <p className="font-semibold text-lg">${goal.currentAmount.toLocaleString()} / <span className="text-muted-foreground">${goal.targetAmount.toLocaleString()}</span></p>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenDialog(goal)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openDeleteDialog(goal.id)}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                   </div>
                 </div>
                 <Progress value={progress} className="w-full" />
               </div>
@@ -113,9 +183,9 @@ export function GoalsClient() {
           })}
         </CardContent>
         <CardFooter>
-           <Dialog open={isAddGoalDialogOpen} onOpenChange={(isOpen) => { setIsAddGoalDialogOpen(isOpen); if (!isOpen) resetAddGoalForm(); }}>
+           <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="h-8 gap-1" onClick={() => setIsAddGoalDialogOpen(true)}>
+                <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Add New Goal
@@ -124,7 +194,7 @@ export function GoalsClient() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add New Goal</DialogTitle>
+                  <DialogTitle>{editingGoal ? 'Edit' : 'Add'} Goal</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
@@ -145,7 +215,7 @@ export function GoalsClient() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleAddGoal}>Save Goal</Button>
+                  <Button onClick={handleSaveGoal}>Save Goal</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -185,6 +255,27 @@ export function GoalsClient() {
           )}
         </CardContent>
       </Card>
+      
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this financial goal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setGoalToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+                if (goalToDelete) {
+                    handleDeleteGoal(goalToDelete);
+                }
+            }}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -100,7 +100,7 @@ export function FinancialLessons() {
             <CardTitle>Your Personalized Lesson</CardTitle>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible defaultValue="item-1">
+            <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
               <AccordionItem value="item-1">
                 <AccordionTrigger className="text-xl font-semibold">{lesson.lessonTitle}</AccordionTrigger>
                 <AccordionContent className="prose dark:prose-invert max-w-none pt-4">

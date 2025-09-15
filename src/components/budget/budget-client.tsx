@@ -53,8 +53,6 @@ import {
   HeartPulse,
   ShoppingBag,
   HelpCircle,
-  ArrowUpCircle,
-  ArrowDownCircle,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { initialTransactions } from '@/lib/initial-data';
@@ -81,30 +79,61 @@ const CategoryIcon = ({ category }: { category: string }) => {
 export function BudgetClient() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState('');
 
-  const handleAddTransaction = () => {
-    const newTransaction: Transaction = {
-      id: (transactions.length + 1).toString(),
-      date: new Date(),
-      description,
-      amount: parseFloat(amount),
-      type,
-      category,
-    };
-    setTransactions([newTransaction, ...transactions]);
-    setIsDialogOpen(false);
-    // Reset form
+  const resetForm = () => {
     setDescription('');
     setAmount('');
     setType('expense');
     setCategory('');
+    setEditingTransaction(null);
+  };
+
+  const handleOpenDialog = (transaction?: Transaction) => {
+    if (transaction) {
+      setEditingTransaction(transaction);
+      setDescription(transaction.description);
+      setAmount(String(transaction.amount));
+      setType(transaction.type);
+      setCategory(transaction.category);
+    } else {
+      resetForm();
+    }
+    setIsDialogOpen(true);
+  }
+
+  const handleSaveTransaction = () => {
+    if (editingTransaction) {
+      // Edit existing transaction
+      const updatedTransactions = transactions.map(t => 
+        t.id === editingTransaction.id ? { ...t, description, amount: parseFloat(amount), type, category } : t
+      );
+      setTransactions(updatedTransactions);
+    } else {
+      // Add new transaction
+      const newTransaction: Transaction = {
+        id: (transactions.length + 1).toString(),
+        date: new Date(),
+        description,
+        amount: parseFloat(amount),
+        type,
+        category,
+      };
+      setTransactions([newTransaction, ...transactions]);
+    }
+    setIsDialogOpen(false);
+    resetForm();
   };
   
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(transactions.filter(t => t.id !== id));
+  }
+
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const netBalance = totalIncome - totalExpenses;
@@ -142,9 +171,9 @@ export function BudgetClient() {
           <CardTitle>Transactions</CardTitle>
           <CardDescription>A list of your recent income and expenses.</CardDescription>
           <div className="ml-auto flex items-center gap-2 pt-2">
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Add Transaction
@@ -153,7 +182,7 @@ export function BudgetClient() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Transaction</DialogTitle>
+                  <DialogTitle>{editingTransaction ? 'Edit' : 'Add'} Transaction</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
@@ -191,7 +220,7 @@ export function BudgetClient() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleAddTransaction}>Save Transaction</Button>
+                  <Button onClick={handleSaveTransaction}>Save Transaction</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -241,8 +270,8 @@ export function BudgetClient() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenDialog(transaction)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

@@ -5,7 +5,7 @@ import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Finwise Compass',
+  title: 'FinAce',
   description: 'Teach, manage, and suggest financial investments using AI.',
 };
 

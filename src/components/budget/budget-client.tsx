@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -81,6 +81,11 @@ export function BudgetClient() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -257,7 +262,7 @@ export function BudgetClient() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {formatDate(transaction.date)}
+                    {isClient ? formatDate(transaction.date) : ''}
                   </TableCell>
                   <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
                     {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}

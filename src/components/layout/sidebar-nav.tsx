@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { FinAceIcon } from '@/components/icons';
 import { NAV_LINKS } from '@/lib/constants';
 import { Button } from '../ui/button';
-import { Settings, LifeBuoy } from 'lucide-react';
+import { LifeBuoy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 export function SidebarNav() {
@@ -65,14 +65,6 @@ export function SidebarNav() {
       </SidebarContent>
       <SidebarFooter className="border-t">
         <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={{ children: 'Settings', side: 'right' }} onClick={handleLinkClick}>
-                <Link href="#">
-                  <Settings />
-                  <span>Settings</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={{ children: 'Help', side: 'right' }} onClick={handleLinkClick}>
                 <Link href="#">

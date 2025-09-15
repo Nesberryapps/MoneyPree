@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateFinancialGoals } from '@/ai/flows/generate-financial-goals';
 import type { Goal } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { initialGoals } from '@/lib/initial-data';
+import { formatDate } from '@/lib/utils';
 
 
 export function GoalsClient() {
@@ -34,12 +35,17 @@ export function GoalsClient() {
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   // Form state for new goal
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [currentAmount, setCurrentAmount] = useState('');
   const [deadline, setDeadline] = useState('');
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleGenerateGoals = async () => {
     setIsLoading(true);
@@ -94,7 +100,7 @@ export function GoalsClient() {
                   <div>
                     <h3 className="font-semibold">{goal.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Deadline: {goal.deadline.toLocaleDateString()}
+                      Deadline: {isClient ? formatDate(goal.deadline) : ''}
                     </p>
                   </div>
                   <div className="text-right">

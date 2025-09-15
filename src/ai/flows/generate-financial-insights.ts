@@ -42,12 +42,12 @@ export async function generateFinancialInsights(
 
 const prompt = ai.definePrompt({
   name: 'generateFinancialInsightsPrompt',
-  input: { schema: GenerateFinancialInsightsInputSchema },
+  input: { schema: z.object({ transactionsJson: z.string() }) },
   output: { schema: FinancialInsightSchema },
   prompt: `You are a friendly and insightful AI financial analyst. Your goal is to help users understand their finances better by analyzing their transaction history. The user will provide a list of their recent transactions.
 
 Analyze the following transactions:
-{{{jsonStringify transactions}}}
+{{{transactionsJson}}}
 
 Based on your analysis, provide the following in a friendly, encouraging, and easy-to-understand tone:
 
@@ -66,14 +66,14 @@ const generateFinancialInsightsFlow = ai.defineFlow(
   },
   async (input) => {
     // Convert transactions to a simpler format for the prompt if needed, or just stringify
-    const transactionsForPrompt = {
-        transactions: input.transactions.map(t => ({
-            ...t,
-            date: t.date.toISOString().split('T')[0] // Format date for better readability in the prompt
-        }))
-    };
+    const transactionsForPrompt = input.transactions.map(t => ({
+        ...t,
+        date: t.date.toISOString().split('T')[0] // Format date for better readability in the prompt
+    }));
 
-    const { output } = await prompt(transactionsForPrompt);
+    const { output } = await prompt({
+        transactionsJson: JSON.stringify(transactionsForPrompt)
+    });
     return output!;
   }
 );

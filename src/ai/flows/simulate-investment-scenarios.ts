@@ -60,7 +60,7 @@ const prompt = ai.definePrompt({
   name: 'simulateInvestmentScenariosPrompt',
   input: {schema: SimulateInvestmentScenariosInputSchema},
   output: {schema: SimulateInvestmentScenariosOutputSchema},
-  prompt: `You are an AI financial advisor specializing in portfolio diversification.
+  prompt: `You are an AI financial advisor specializing in portfolio diversification and investment strategy.
 
 Given the user's current investment holdings, investment goals, and optional current market data, suggest a portfolio diversification strategy.
 
@@ -68,7 +68,7 @@ Current Investment Holdings: {{{currentHoldings}}}
 Investment Goals: {{{investmentGoals}}}
 Market Data: {{{marketData}}}
 
-Consider various asset classes, including stocks, bonds, and ETFs. Provide specific asset recommendations and allocation percentages.
+Consider a wide range of asset classes, including traditional stocks, bonds, and ETFs, as well as alternative investments like real estate, starting a business, or buying a franchise, if relevant to the user's goals. Provide specific, actionable recommendations and allocation percentages where applicable.
 Also include a risk assessment of the current and suggested portfolios, and estimate potential returns for the suggested diversification. Be brief and to the point.
 Include the following disclaimer in your response: "The results provided are for educational purposes only and do not constitute financial advice."
 

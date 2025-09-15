@@ -33,7 +33,7 @@ export function GoalsClient() {
   const [prompt, setPrompt] = useState('');
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
   
   // Form state for new goal
   const [name, setName] = useState('');
@@ -54,21 +54,28 @@ export function GoalsClient() {
     }
   };
 
+  const resetAddGoalForm = () => {
+    setName('');
+    setTargetAmount('');
+    setCurrentAmount('');
+    setDeadline('');
+  }
+
   const handleAddGoal = () => {
+    if (!name || !targetAmount || !currentAmount || !deadline) {
+      // Basic validation
+      return;
+    }
     const newGoal: Goal = {
-      id: (goals.length + 1).toString(),
+      id: `goal-${Date.now()}`,
       name,
       targetAmount: parseFloat(targetAmount),
       currentAmount: parseFloat(currentAmount),
       deadline: new Date(deadline),
     };
     setGoals([newGoal, ...goals]);
-    setIsDialogOpen(false);
-    // Reset form
-    setName('');
-    setTargetAmount('');
-    setCurrentAmount('');
-    setDeadline('');
+    setIsAddGoalDialogOpen(false);
+    resetAddGoalForm();
   };
 
   return (
@@ -100,9 +107,9 @@ export function GoalsClient() {
           })}
         </CardContent>
         <CardFooter>
-           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+           <Dialog open={isAddGoalDialogOpen} onOpenChange={(isOpen) => { setIsAddGoalDialogOpen(isOpen); if (!isOpen) resetAddGoalForm(); }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" onClick={() => setIsAddGoalDialogOpen(true)}>
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Add New Goal
@@ -116,15 +123,15 @@ export function GoalsClient() {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Goal Name</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vacation Fund" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="targetAmount">Target Amount</Label>
-                    <Input id="targetAmount" type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} />
+                    <Input id="targetAmount" type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} placeholder="e.g. 5000" />
                   </div>
                    <div className="grid gap-2">
                     <Label htmlFor="currentAmount">Current Amount</Label>
-                    <Input id="currentAmount" type="number" value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} />
+                    <Input id="currentAmount" type="number" value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} placeholder="e.g. 1200" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="deadline">Deadline</Label>
@@ -155,7 +162,7 @@ export function GoalsClient() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
-            <Button onClick={handleGenerateGoals} disabled={isLoading}>
+            <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Generate Goals
             </Button>

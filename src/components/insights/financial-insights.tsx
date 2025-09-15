@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Loader2, Lightbulb, TrendingUp, Sparkles, Trophy } from 'lucide-react';
+import { Loader2, Lightbulb, TrendingUp, Sparkles, Trophy, Download } from 'lucide-react';
 import type { FinancialInsight } from '@/ai/flows/generate-financial-insights';
 
 export function FinancialInsights() {
@@ -36,6 +36,37 @@ export function FinancialInsights() {
       setIsLoading(false);
     }
   };
+
+  const handleDownload = () => {
+    if (!insights) return;
+
+    const reportContent = `
+# Your Financial Insights Report
+
+## Surprising Insight
+${insights.surprisingInsight}
+
+## Spending Analysis
+${insights.spendingAnalysis}
+
+## Actionable Suggestions
+${insights.suggestions.map(s => `- ${s}`).join('\n')}
+
+## Your Next Monthly Challenge
+${insights.monthlyChallenge}
+    `;
+
+    const blob = new Blob([reportContent.trim()], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Financial-Insights-Report.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <div className="grid gap-8">
@@ -67,8 +98,14 @@ export function FinancialInsights() {
 
       {insights && (
         <Card>
-          <CardHeader>
-            <CardTitle>Your Financial Insights Report</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Your Financial Insights Report</CardTitle>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Download className="mr-2 h-4 w-4" />
+              Download Report
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">

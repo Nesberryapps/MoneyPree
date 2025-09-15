@@ -56,6 +56,7 @@ import {
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { initialTransactions } from '@/lib/initial-data';
+import { formatDate } from '@/lib/utils';
 
 
 const CategoryIcon = ({ category }: { category: string }) => {
@@ -256,7 +257,7 @@ export function BudgetClient() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {transaction.date.toLocaleDateString()}
+                    {formatDate(transaction.date)}
                   </TableCell>
                   <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
                     {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}

@@ -46,26 +46,26 @@ export function InvestmentSimulation() {
     <div className="grid gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Investment Scenario Simulator</CardTitle>
+          <CardTitle>Comprehensive Investment Analysis</CardTitle>
           <CardDescription>
-            Enter your current portfolio and goals to get AI-powered diversification suggestions.
+            From stocks and real estate to starting a business, get AI-powered suggestions for your unique investment goals.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="holdings">Current Holdings</Label>
+            <Label htmlFor="holdings">Your Current Assets & Investments</Label>
             <Textarea
               id="holdings"
-              placeholder="e.g., 10 Apple (AAPL), 50 Vanguard S&P 500 ETF (VOO)"
+              placeholder="e.g., 10 Apple (AAPL), Rental property in downtown, $20k in savings."
               value={currentHoldings}
               onChange={(e) => setCurrentHoldings(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="goals">Investment Goals</Label>
+            <Label htmlFor="goals">Your Investment Goals</Label>
             <Textarea
               id="goals"
-              placeholder="e.g., Long-term growth, moderate risk tolerance, 10-year horizon"
+              placeholder="e.g., Retire in 10 years, buy a franchise, generate passive income from real estate."
               value={investmentGoals}
               onChange={(e) => setInvestmentGoals(e.target.value)}
             />

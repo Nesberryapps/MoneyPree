@@ -1,5 +1,5 @@
 import type { NavItem } from '@/lib/types';
-import { LayoutDashboard, Wallet, Target, LineChart, BookOpen, Lightbulb, Settings, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Wallet, Target, LineChart, BookOpen, Lightbulb } from 'lucide-react';
 
 export const NAV_LINKS: NavItem[] = [
   {
@@ -23,11 +23,6 @@ export const NAV_LINKS: NavItem[] = [
     icon: LineChart,
   },
   {
-    href: '/insights',
-    label: 'Insights',
-    icon: Sparkles,
-  },
-  {
     href: '/learn',
     label: 'Learn',
     icon: BookOpen,
@@ -36,11 +31,6 @@ export const NAV_LINKS: NavItem[] = [
     href: '/qa',
     label: 'Expert Q&A',
     icon: Lightbulb,
-  },
-  {
-    href: '/settings',
-    label: 'Settings',
-    icon: Settings,
   },
 ];
 

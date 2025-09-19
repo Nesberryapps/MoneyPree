@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
-import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
@@ -32,12 +30,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <SidebarProvider>
-            <Sidebar>
-              <SidebarNav />
-            </Sidebar>
-            <SidebarInset>{children}</SidebarInset>
-          </SidebarProvider>
+            {children}
           <Toaster />
         </ThemeProvider>
       </body>

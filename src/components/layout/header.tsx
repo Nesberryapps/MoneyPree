@@ -8,21 +8,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
+import { FinwiseCompassIcon } from '../icons';
 
-type HeaderProps = {
-  title: string;
-};
-
-export function Header({ title }: HeaderProps) {
+export function Header() {
     const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      <SidebarTrigger className="md:hidden" />
+    <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
+       <div className="flex items-center gap-2">
+          <FinwiseCompassIcon className="h-8 w-8 text-primary" />
+          <span className="text-xl font-semibold">Finwise Compass</span>
+        </div>
       <div className="w-full flex-1">
-        <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

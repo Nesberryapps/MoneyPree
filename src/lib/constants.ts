@@ -1,34 +1,35 @@
+
 import type { NavItem } from '@/lib/types';
 import { LayoutDashboard, Wallet, Target, LineChart, BookOpen, Lightbulb, Sparkles } from 'lucide-react';
 
 export const NAV_LINKS: NavItem[] = [
   {
-    href: '/',
+    href: '/dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
   },
   {
-    href: '/budget',
+    href: '/dashboard/budget',
     label: 'Budget',
     icon: Wallet,
   },
   {
-    href: '/goals',
+    href: '/dashboard/goals',
     label: 'Goals',
     icon: Target,
   },
   {
-    href: '/invest',
+    href: '/dashboard/invest',
     label: 'Invest',
     icon: LineChart,
   },
   {
-    href: '/learn',
+    href: '/dashboard/learn',
     label: 'Learn',
     icon: BookOpen,
   },
   {
-    href: '/qa',
+    href: '/dashboard/qa',
     label: 'Expert Q&A',
     icon: Lightbulb,
   },

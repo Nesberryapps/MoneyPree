@@ -1,0 +1,167 @@
+/**
+ * @file Firestore Security Rules for Finwise Compass
+ * @description This ruleset enforces a strict user-ownership model, where each user can only access their own data.
+ *
+ * Data Structure:
+ * All data is nested under /users/{userId}, with subcollections for financialGoals, budgets, investments and chatMessages.
+ *
+ * Key Security Decisions:
+ * - No public listing of any collections.
+ * - All write operations require a verified user identity (request.auth != null).
+ * - Data consistency between the path and the document's internal fields is enforced on create and update.
+ *
+ * Denormalization for Authorization:
+ * The userId is implicitly denormalized by being part of the path for all user-owned data. This enables simpler, more performant security rules by avoiding the need for additional `get()` calls to check ownership.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is made by an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user's ID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of an existing document.
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /******************** USERS ********************/
+
+    /**
+     * @description Manages user profiles. Only the authenticated user can read/write their own profile.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' creates their profile.
+     * @allow (get) User with ID 'user123' reads their own profile.
+     * @allow (update) User with ID 'user123' updates their own profile.
+     * @allow (delete) User with ID 'user123' deletes their own profile.
+     * @deny (create) User with ID 'user123' tries to create a profile for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the profile of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /******************** FINANCIAL GOALS ********************/
+
+    /**
+     * @description Manages financial goals for each user. Only the authenticated user can read/write their own goals.
+     * @path /users/{userId}/financialGoals/{financialGoalId}
+     * @allow (create) User with ID 'user123' creates a financial goal.
+     * @allow (get) User with ID 'user123' reads their own financial goal.
+     * @allow (update) User with ID 'user123' updates their own financial goal.
+     * @allow (delete) User with ID 'user123' deletes their own financial goal.
+     * @deny (create) User with ID 'user123' tries to create a financial goal for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the financial goal of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/financialGoals/{financialGoalId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /******************** BUDGETS ********************/
+
+    /**
+     * @description Manages budgets for each user. Only the authenticated user can read/write their own budgets.
+     * @path /users/{userId}/budgets/{budgetId}
+     * @allow (create) User with ID 'user123' creates a budget.
+     * @allow (get) User with ID 'user123' reads their own budget.
+     * @allow (update) User with ID 'user123' updates their own budget.
+     * @allow (delete) User with ID 'user123' deletes their own budget.
+     * @deny (create) User with ID 'user123' tries to create a budget for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the budget of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/budgets/{budgetId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /******************** EXPENSES ********************/
+
+    /**
+     * @description Manages expenses for each budget. Only the authenticated user can read/write their own expenses.
+     * @path /users/{userId}/budgets/{budgetId}/expenses/{expenseId}
+     * @allow (create) User with ID 'user123' creates an expense within their budget.
+     * @allow (get) User with ID 'user123' reads their own expense.
+     * @allow (update) User with ID 'user123' updates their own expense.
+     * @allow (delete) User with ID 'user123' deletes their own expense.
+     * @deny (create) User with ID 'user123' tries to create an expense for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the expense of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/budgets/{budgetId}/expenses/{expenseId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.budgetId == budgetId;
+      allow update: if isExistingOwner(userId) && request.resource.data.budgetId == budgetId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /******************** INVESTMENTS ********************/
+
+    /**
+     * @description Manages investments for each user. Only the authenticated user can read/write their own investments.
+     * @path /users/{userId}/investments/{investmentId}
+     * @allow (create) User with ID 'user123' creates an investment.
+     * @allow (get) User with ID 'user123' reads their own investment.
+     * @allow (update) User with ID 'user123' updates their own investment.
+     * @allow (delete) User with ID 'user123' deletes their own investment.
+     * @deny (create) User with ID 'user123' tries to create an investment for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the investment of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/investments/{investmentId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /******************** CHAT MESSAGES ********************/
+
+    /**
+     * @description Manages chat messages for each user. Only the authenticated user can read/write their own chat messages.
+     * @path /users/{userId}/chatMessages/{chatMessageId}
+     * @allow (create) User with ID 'user123' creates a chat message.
+     * @allow (get) User with ID 'user123' reads their own chat message.
+     * @allow (update) User with ID 'user123' updates their own chat message.
+     * @allow (delete) User with ID 'user123' deletes their own chat message.
+     * @deny (create) User with ID 'user123' tries to create a chat message for 'user456'.
+     * @deny (get) User with ID 'user123' tries to read the chat message of 'user456'.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/chatMessages/{chatMessageId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

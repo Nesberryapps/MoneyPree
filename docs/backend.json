@@ -1,0 +1,375 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Finwise Compass application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date and time when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "createdAt"
+      ]
+    },
+    "FinancialGoal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FinancialGoal",
+      "type": "object",
+      "description": "Represents a financial goal set by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the financial goal."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who set this goal. (Relationship: User 1:N FinancialGoal)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the financial goal (e.g., 'Retirement', 'Down Payment')."
+        },
+        "targetAmount": {
+          "type": "number",
+          "description": "Target amount for the goal."
+        },
+        "currentAmount": {
+          "type": "number",
+          "description": "Current amount saved towards the goal."
+        },
+        "targetDate": {
+          "type": "string",
+          "description": "Target date for achieving the goal.",
+          "format": "date-time"
+        },
+        "strategy": {
+          "type": "string",
+          "description": "The strategy the user is using to achieve the goal."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "targetAmount",
+        "currentAmount",
+        "targetDate"
+      ]
+    },
+    "Budget": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Budget",
+      "type": "object",
+      "description": "Represents a user's budget.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the budget."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who owns this budget. (Relationship: User 1:N Budget)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the budget (e.g., 'Monthly Budget', 'Vacation Budget')."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date of the budget.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date of the budget.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "Expense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Expense",
+      "type": "object",
+      "description": "Represents an expense within a budget.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the expense."
+        },
+        "budgetId": {
+          "type": "string",
+          "description": "Reference to the Budget this expense belongs to. (Relationship: Budget 1:N Expense)"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the expense (e.g., 'Rent', 'Food', 'Entertainment')."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the expense."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the expense.",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the expense."
+        }
+      },
+      "required": [
+        "id",
+        "budgetId",
+        "category",
+        "amount",
+        "date"
+      ]
+    },
+    "Investment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Investment",
+      "type": "object",
+      "description": "Represents an investment made by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the investment."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who made this investment. (Relationship: User 1:N Investment)"
+        },
+        "assetType": {
+          "type": "string",
+          "description": "The assets being invested in"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the investment (e.g., 'Apple Stock', 'Vanguard S&P 500 ETF')."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the investment."
+        },
+        "purchasePrice": {
+          "type": "number",
+          "description": "Purchase price of the investment."
+        },
+        "purchaseDate": {
+          "type": "string",
+          "description": "Date of the investment purchase.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "quantity",
+        "purchasePrice",
+        "purchaseDate"
+      ]
+    },
+    "ChatMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a chat message within the Expert Q&A feature.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the chat message."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who sent this message. (Relationship: User 1:N ChatMessage)"
+        },
+        "message": {
+          "type": "string",
+          "description": "Content of the chat message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the message was sent.",
+          "format": "date-time"
+        },
+        "isUserGenerated": {
+          "type": "boolean",
+          "description": "Indicates whether the message was generated by the user or the AI."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "message",
+        "timestamp",
+        "isUserGenerated"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles.  Path-based ownership simplifies security rules. The `userId` is implicitly denormalized because it's part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/financialGoals/{financialGoalId}",
+        "definition": {
+          "entityName": "FinancialGoal",
+          "schema": {
+            "$ref": "#/backend/entities/FinancialGoal"
+          },
+          "description": "Stores financial goals for each user. Path-based ownership simplifies security rules. The `userId` is implicitly denormalized because it's part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "financialGoalId",
+              "description": "The unique identifier of the financial goal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/budgets/{budgetId}",
+        "definition": {
+          "entityName": "Budget",
+          "schema": {
+            "$ref": "#/backend/entities/Budget"
+          },
+          "description": "Stores budgets for each user. Path-based ownership simplifies security rules. The `userId` is implicitly denormalized because it's part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "budgetId",
+              "description": "The unique identifier of the budget."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/budgets/{budgetId}/expenses/{expenseId}",
+        "definition": {
+          "entityName": "Expense",
+          "schema": {
+            "$ref": "#/backend/entities/Expense"
+          },
+          "description": "Stores expenses for each budget. Path-based ownership simplifies security rules. The `userId` and `budgetId` are implicitly denormalized because they are part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "budgetId",
+              "description": "The unique identifier of the budget."
+            },
+            {
+              "name": "expenseId",
+              "description": "The unique identifier of the expense."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/investments/{investmentId}",
+        "definition": {
+          "entityName": "Investment",
+          "schema": {
+            "$ref": "#/backend/entities/Investment"
+          },
+          "description": "Stores investments for each user. Path-based ownership simplifies security rules. The `userId` is implicitly denormalized because it's part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "investmentId",
+              "description": "The unique identifier of the investment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/chatMessages/{chatMessageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ChatMessage"
+          },
+          "description": "Stores chat messages for each user. Path-based ownership simplifies security rules. The `userId` is implicitly denormalized because it's part of the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "chatMessageId",
+              "description": "The unique identifier of the chat message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs (Queries are not Filters), and maintain data clarity.  User-owned data is organized under `/users/{userId}`, ensuring clear ownership and simplifies security rules.  The Membership Map pattern is not applicable here as there are no collaborative entities described.\n\n*   **Users:** User profiles are stored under `/users/{userId}`. This allows for easy management of user data and simplifies security rules based on user ID.\n*   **FinancialGoals, Budgets, Investments, ChatMessages:** These are all subcollections under `/users/{userId}`. This reflects the 1:N relationship between users and their goals, budgets, investments, and chat messages. This design ensures that only the user has access to their own data. The `userId` is implicitly denormalized because it's part of the path.\n*   **Authorization Independence:** Achieved by using path-based ownership for user data. Security rules can directly check `request.auth.uid` against the `userId` path parameter, avoiding the need for `get()` calls.\n*   **QAPs Support:**  Segregation of data by user ID allows for efficient and secure list operations. Security rules can allow listing only when `request.auth.uid == userId`, ensuring that users can only access their own data."
+  }
+}

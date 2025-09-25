@@ -16,10 +16,10 @@ export function Header() {
     const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
-       <div className="flex items-center gap-2">
+       <Link href="/" className="flex items-center gap-2">
           <FinwiseCompassIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">Finwise Compass</span>
-        </div>
+        </Link>
       <div className="w-full flex-1">
       </div>
       <DropdownMenu>

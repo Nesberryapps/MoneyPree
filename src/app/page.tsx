@@ -6,14 +6,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FinwiseCompassIcon } from '@/components/icons';
 import { AuthProvider } from '@/components/auth/auth-provider';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
   const router = useRouter();
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
 
   const handleGuestSignIn = async () => {
+    if (!auth) return;
     try {
       await signInAnonymously(auth);
       router.push('/dashboard');
@@ -22,6 +32,10 @@ export default function LandingPage() {
     }
   };
 
+  if (isUserLoading || user) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <header className="absolute top-0 left-0 w-full p-4 flex justify-between items-center">
@@ -29,9 +43,6 @@ export default function LandingPage() {
           <FinwiseCompassIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">Finwise Compass</span>
         </div>
-        <Button variant="ghost" onClick={() => router.push('/dashboard')}>
-            Sign In
-        </Button>
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center text-center space-y-8">

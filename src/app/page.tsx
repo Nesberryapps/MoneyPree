@@ -37,15 +37,15 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <header className="absolute top-0 left-0 w-full p-4 flex justify-between items-center">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="w-full p-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <FinwiseCompassIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">Finwise Compass</span>
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center text-center space-y-8">
+      <main className="flex flex-1 flex-col items-center justify-center text-center space-y-8 p-4">
         <div className="space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
             Your Personal AI Financial Guide
@@ -63,7 +63,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-       <footer className="w-full py-8">
+       <footer className="w-full py-8 px-4">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <Card className="bg-card">
             <CardHeader>

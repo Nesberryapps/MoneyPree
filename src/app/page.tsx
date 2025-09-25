@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 import type { Transaction, Goal } from '@/lib/types';
 import { initialTransactions, initialGoals } from '@/lib/initial-data';
 import {
@@ -20,10 +22,23 @@ import { InvestmentSimulation } from '@/components/invest/investment-simulation'
 import { FinancialLessons } from '@/components/learn/financial-lessons';
 import { ExpertQA } from '@/components/qa/expert-qa';
 import { NAV_LINKS } from '@/lib/constants';
+import Loading from '@/components/layout/loading';
 
 export default function DashboardPage() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -73,3 +88,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

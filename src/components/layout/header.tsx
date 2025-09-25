@@ -1,3 +1,5 @@
+'use client';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +13,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { FinwiseCompassIcon } from '../icons';
+import { useAuth } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
-    const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
+  const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
+
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
        <Link href="/" className="flex items-center gap-2">
@@ -26,8 +38,8 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <Avatar>
-              <AvatarImage src={userAvatarImage?.imageUrl} data-ai-hint={userAvatarImage?.imageHint} />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarImage src={auth.currentUser?.photoURL || userAvatarImage?.imageUrl} data-ai-hint={userAvatarImage?.imageHint} />
+              <AvatarFallback>{auth.currentUser?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <span className="sr-only">Toggle user menu</span>
           </Button>
@@ -42,9 +54,11 @@ export function Header() {
             <Link href="/help">Support</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
   );
 }
+
+    

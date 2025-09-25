@@ -243,8 +243,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {
@@ -373,3 +372,4 @@
     "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs (Queries are not Filters), and maintain data clarity.  User-owned data is organized under `/users/{userId}`, ensuring clear ownership and simplifies security rules.  The Membership Map pattern is not applicable here as there are no collaborative entities described.\n\n*   **Users:** User profiles are stored under `/users/{userId}`. This allows for easy management of user data and simplifies security rules based on user ID.\n*   **FinancialGoals, Budgets, Investments, ChatMessages:** These are all subcollections under `/users/{userId}`. This reflects the 1:N relationship between users and their goals, budgets, investments, and chat messages. This design ensures that only the user has access to their own data. The `userId` is implicitly denormalized because it's part of the path.\n*   **Authorization Independence:** Achieved by using path-based ownership for user data. Security rules can directly check `request.auth.uid` against the `userId` path parameter, avoiding the need for `get()` calls.\n*   **QAPs Support:**  Segregation of data by user ID allows for efficient and secure list operations. Security rules can allow listing only when `request.auth.uid == userId`, ensuring that users can only access their own data."
   }
 }
+    

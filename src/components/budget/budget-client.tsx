@@ -69,10 +69,16 @@ import {
   Sparkles,
   Trophy,
   Download,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import { generateFinancialInsights, type FinancialInsight } from '@/ai/flows/generate-financial-insights';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+
 
 type BudgetClientProps = {
     transactions: Transaction[];
@@ -117,12 +123,15 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState('');
+  const [date, setDate] = useState<Date | undefined>(new Date());
+
 
   const resetForm = () => {
     setDescription('');
     setAmount('');
     setType('expense');
     setCategory('');
+    setDate(new Date());
     setEditingTransaction(null);
   };
 
@@ -133,6 +142,7 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
       setAmount(String(transaction.amount));
       setType(transaction.type);
       setCategory(transaction.category);
+      setDate(new Date(transaction.date));
     } else {
       resetForm();
     }
@@ -140,17 +150,18 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
   }
 
   const handleSaveTransaction = () => {
+    const transactionDate = date || new Date();
     if (editingTransaction) {
       // Edit existing transaction
       const updatedTransactions = transactions.map(t => 
-        t.id === editingTransaction.id ? { ...t, description, amount: parseFloat(amount), type, category } : t
+        t.id === editingTransaction.id ? { ...t, description, amount: parseFloat(amount), type, category, date: transactionDate } : t
       );
       setTransactions(updatedTransactions);
     } else {
       // Add new transaction
       const newTransaction: Transaction = {
         id: `trans-${Date.now()}`,
-        date: new Date(),
+        date: transactionDate,
         description,
         amount: parseFloat(amount),
         type,
@@ -276,34 +287,63 @@ ${insights.monthlyChallenge}
                         <Label htmlFor="description">Description</Label>
                         <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="amount">Amount</Label>
-                        <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="amount">Amount</Label>
+                            <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="date">Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "justify-start text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="type">Type</Label>
-                        <Select onValueChange={(v: any) => setType(v)} defaultValue={type}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="income">Income</SelectItem>
-                            <SelectItem value="expense">Expense</SelectItem>
-                        </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Category</Label>
-                        <Select onValueChange={(v: any) => setCategory(v)} value={category}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {(type === 'income' ? BUDGET_CATEGORIES.income : BUDGET_CATEGORIES.expense).map(cat => (
-                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="type">Type</Label>
+                            <Select onValueChange={(v: any) => setType(v)} defaultValue={type}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="income">Income</SelectItem>
+                                <SelectItem value="expense">Expense</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Category</Label>
+                            <Select onValueChange={(v: any) => setCategory(v)} value={category}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {(type === 'income' ? BUDGET_CATEGORIES.income : BUDGET_CATEGORIES.expense).map(cat => (
+                                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     </div>
                     <DialogFooter>
@@ -458,3 +498,5 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
+
+    

@@ -41,12 +41,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { initialGoals } from '@/lib/initial-data';
 import { formatDate } from '@/lib/utils';
 
+type GoalsClientProps = {
+    goals: Goal[];
+    setGoals: React.Dispatch<React.SetStateAction<Goal[]>>;
+};
 
-export function GoalsClient() {
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+export function GoalsClient({ goals, setGoals }: GoalsClientProps) {
   const [prompt, setPrompt] = useState('');
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);

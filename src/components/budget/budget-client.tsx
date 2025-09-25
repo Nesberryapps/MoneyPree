@@ -71,10 +71,13 @@ import {
   Download,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
-import { initialTransactions } from '@/lib/initial-data';
 import { formatDate } from '@/lib/utils';
 import { generateFinancialInsights, type FinancialInsight } from '@/ai/flows/generate-financial-insights';
 
+type BudgetClientProps = {
+    transactions: Transaction[];
+    setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+};
 
 const CategoryIcon = ({ category }: { category: string }) => {
     const icons: { [key: string]: React.ElementType } = {
@@ -94,8 +97,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 };
 
 
-export function BudgetClient() {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+export function BudgetClient({ transactions, setTransactions }: BudgetClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -147,7 +149,7 @@ export function BudgetClient() {
     } else {
       // Add new transaction
       const newTransaction: Transaction = {
-        id: (transactions.length + 1).toString(),
+        id: `trans-${Date.now()}`,
         date: new Date(),
         description,
         amount: parseFloat(amount),

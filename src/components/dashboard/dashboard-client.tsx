@@ -12,26 +12,34 @@ import {
   BookOpen,
   Lightbulb,
 } from 'lucide-react';
-import type { Goal } from '@/lib/types';
-import { initialGoals, initialTransactions } from '@/lib/initial-data';
+import type { Goal, Transaction } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 const lessonsCompleted = 12;
 const questionsAnswered = 5;
 
-export function DashboardClient() {
+type DashboardClientProps = {
+  transactions: Transaction[];
+  goals: Goal[];
+};
+
+export function DashboardClient({ transactions, goals }: DashboardClientProps) {
     const [netBalance, setNetBalance] = useState(0);
     const [nextGoal, setNextGoal] = useState<Goal | null>(null);
 
     useEffect(() => {
-        const totalIncome = initialTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-        const totalExpenses = initialTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+        const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+        const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
         setNetBalance(totalIncome - totalExpenses);
 
-        const sortedGoals = [...initialGoals].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
-        setNextGoal(sortedGoals[0] || null);
+        if (goals.length > 0) {
+            const sortedGoals = [...goals].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+            setNextGoal(sortedGoals[0] || null);
+        } else {
+            setNextGoal(null);
+        }
 
-    }, [])
+    }, [transactions, goals]);
 
 
   const nextGoalRemaining = nextGoal ? nextGoal.targetAmount - nextGoal.currentAmount : 0;

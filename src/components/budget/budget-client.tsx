@@ -63,10 +63,17 @@ import {
   HeartPulse,
   ShoppingBag,
   HelpCircle,
+  Loader2,
+  Lightbulb,
+  TrendingUp,
+  Sparkles,
+  Trophy,
+  Download,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { initialTransactions } from '@/lib/initial-data';
 import { formatDate } from '@/lib/utils';
+import { generateFinancialInsights, type FinancialInsight } from '@/ai/flows/generate-financial-insights';
 
 
 const CategoryIcon = ({ category }: { category: string }) => {
@@ -94,6 +101,10 @@ export function BudgetClient() {
   const [isClient, setIsClient] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+
+  const [insights, setInsights] = useState<FinancialInsight | null>(null);
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -160,13 +171,59 @@ export function BudgetClient() {
     setIsDeleteAlertOpen(true);
   }
 
+  const handleGenerateInsights = async () => {
+    setIsInsightsLoading(true);
+    setInsightsError(null);
+    setInsights(null);
+    try {
+      const result = await generateFinancialInsights({ transactions });
+      setInsights(result);
+    } catch (e) {
+      setInsightsError('Failed to generate insights. Please try again.');
+      console.error(e);
+    } finally {
+      setIsInsightsLoading(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!insights) return;
+
+    const reportContent = `
+# Your Financial Insights Report
+
+## Surprising Insight
+${insights.surprisingInsight}
+
+## Spending Analysis
+${insights.spendingAnalysis}
+
+## Actionable Suggestions
+${insights.suggestions.map(s => `- ${s}`).join('\n')}
+
+## Your Next Monthly Challenge
+${insights.monthlyChallenge}
+    `;
+
+    const blob = new Blob([reportContent.trim()], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Financial-Insights-Report.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const netBalance = totalIncome - totalExpenses;
 
   return (
-    <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+    <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-3">
+       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:col-span-3 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Total Income</CardTitle>
@@ -192,121 +249,190 @@ export function BudgetClient() {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader className="px-7">
-          <CardTitle>Transactions</CardTitle>
-          <CardDescription>A list of your recent income and expenses.</CardDescription>
-          <div className="ml-auto flex items-center gap-2 pt-2">
-            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) resetForm(); }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Transaction
-                  </span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editingTransaction ? 'Edit' : 'Add'} Transaction</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="amount">Amount</Label>
-                    <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="type">Type</Label>
-                    <Select onValueChange={(v: any) => setType(v)} defaultValue={type}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="income">Income</SelectItem>
-                        <SelectItem value="expense">Expense</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select onValueChange={(v: any) => setCategory(v)} value={category}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(type === 'income' ? BUDGET_CATEGORIES.income : BUDGET_CATEGORIES.expense).map(cat => (
-                           <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleSaveTransaction}>Save Transaction</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead className="hidden sm:table-cell">Type</TableHead>
-                <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>
-                    <div className="font-medium">{transaction.description}</div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                     <Badge className="text-xs" variant={transaction.type === 'income' ? 'default' : 'destructive'}>
-                        {transaction.type}
-                     </Badge>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon category={transaction.category} />
-                      {transaction.category}
+
+      <div className="grid gap-4 lg:col-span-2">
+        <Card>
+            <CardHeader className="px-7">
+            <CardTitle>Transactions</CardTitle>
+            <CardDescription>A list of your recent income and expenses.</CardDescription>
+            <div className="ml-auto flex items-center gap-2 pt-2">
+                <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) resetForm(); }}>
+                <DialogTrigger asChild>
+                    <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Transaction
+                    </span>
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                    <DialogTitle>{editingTransaction ? 'Edit' : 'Add'} Transaction</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {isClient ? formatDate(transaction.date) : ''}
-                  </TableCell>
-                  <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                  </TableCell>
-                  <TableCell>
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenDialog(transaction)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openDeleteDialog(transaction.id)}>Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                    <div className="grid gap-2">
+                        <Label htmlFor="amount">Amount</Label>
+                        <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="type">Type</Label>
+                        <Select onValueChange={(v: any) => setType(v)} defaultValue={type}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="income">Income</SelectItem>
+                            <SelectItem value="expense">Expense</SelectItem>
+                        </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="category">Category</Label>
+                        <Select onValueChange={(v: any) => setCategory(v)} value={category}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {(type === 'income' ? BUDGET_CATEGORIES.income : BUDGET_CATEGORIES.expense).map(cat => (
+                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                    </div>
+                    <DialogFooter>
+                    <Button onClick={handleSaveTransaction}>Save Transaction</Button>
+                    </DialogFooter>
+                </DialogContent>
+                </Dialog>
+            </div>
+            </CardHeader>
+            <CardContent>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="hidden sm:table-cell">Type</TableHead>
+                    <TableHead className="hidden sm:table-cell">Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                {transactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                    <TableCell>
+                        <div className="font-medium">{transaction.description}</div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                        <Badge className="text-xs" variant={transaction.type === 'income' ? 'default' : 'destructive'}>
+                            {transaction.type}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                        <div className="flex items-center gap-2">
+                        <CategoryIcon category={transaction.category} />
+                        {transaction.category}
+                        </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        {isClient ? formatDate(transaction.date) : ''}
+                    </TableCell>
+                    <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
+                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOpenDialog(transaction)}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDeleteDialog(transaction.id)}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+            </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:col-span-1">
+        <Card>
+            <CardHeader>
+            <CardTitle>AI Financial Analyst</CardTitle>
+            <CardDescription>
+                Get a deep analysis of your spending, saving, and income habits.
+            </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <Button onClick={handleGenerateInsights} disabled={isInsightsLoading}>
+                {isInsightsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Analyze My Finances
+            </Button>
+            </CardContent>
+        </Card>
+
+        {insightsError && (
+            <Card className="border-destructive">
+            <CardHeader>
+                <CardTitle className="text-destructive">Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>{insightsError}</p>
+            </CardContent>
+            </Card>
+        )}
+
+        {insights && (
+            <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Your Insights Report</CardTitle>
+                </div>
+                <Button variant="outline" size="icon" onClick={handleDownload}>
+                  <Download className="h-4 w-4" />
+                  <span className="sr-only">Download Report</span>
+                </Button>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2"><Sparkles className="text-primary"/> Surprising Insight</h3>
+                <p className="text-muted-foreground">{insights.surprisingInsight}</p>
+                </div>
+                <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2"><TrendingUp className="text-primary"/> Spending Analysis</h3>
+                <p className="text-muted-foreground">{insights.spendingAnalysis}</p>
+                </div>
+                <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2"><Lightbulb className="text-primary"/> Actionable Suggestions</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    {insights.suggestions.map((suggestion, index) => (
+                        <li key={index}>{suggestion}</li>
+                    ))}
+                </ul>
+                </div>
+                <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2"><Trophy className="text-primary"/> Your Next Monthly Challenge</h3>
+                <p className="text-muted-foreground">{insights.monthlyChallenge}</p>
+                </div>
+            </CardContent>
+            </Card>
+        )}
+      </div>
+
+      
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

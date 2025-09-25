@@ -15,7 +15,6 @@ import { InvestmentSimulation } from '@/components/invest/investment-simulation'
 import { FinancialLessons } from '@/components/learn/financial-lessons';
 import { ExpertQA } from '@/components/qa/expert-qa';
 import { NAV_LINKS } from '@/lib/constants';
-import { FinancialInsights } from '@/components/insights/financial-insights';
 
 export default function DashboardPage() {
   return (
@@ -24,7 +23,7 @@ export default function DashboardPage() {
       <main className="flex flex-1 flex-col p-4 md:p-8">
         <Tabs defaultValue="dashboard" className="w-full">
           <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-[repeat(7,minmax(max-content,1fr))] justify-start sm:w-full sm:grid-cols-7 mb-4">
+            <TabsList className="grid w-full grid-cols-[repeat(6,minmax(max-content,1fr))] justify-start sm:w-full sm:grid-cols-6 mb-4">
                 {NAV_LINKS.map((link) => (
                     <TabsTrigger key={link.href} value={link.href.replace('/', '') || 'dashboard'}>
                         {link.label}
@@ -54,7 +53,6 @@ export default function DashboardPage() {
           <TabsContent value="budget"><BudgetClient /></TabsContent>
           <TabsContent value="goals"><GoalsClient /></TabsContent>
           <TabsContent value="invest"><InvestmentSimulation /></TabsContent>
-          <TabsContent value="insights"><FinancialInsights /></TabsContent>
           <TabsContent value="learn"><FinancialLessons /></TabsContent>
           <TabsContent value="qa"><ExpertQA /></TabsContent>
 

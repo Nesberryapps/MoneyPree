@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@/firebase';
 import type { Transaction, Goal } from '@/lib/types';
 import { initialTransactions, initialGoals } from '@/lib/initial-data';
@@ -28,8 +28,19 @@ import Loading from '@/components/layout/loading';
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
+
+  const activeTab = pathname.split('/dashboard/')[1] || 'dashboard';
+
+  const handleTabChange = (value: string) => {
+    if (value === 'dashboard') {
+      router.push('/dashboard');
+    } else {
+      router.push(`/dashboard/${value}`);
+    }
+  };
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -45,7 +56,7 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex flex-1 flex-col p-4 md:p-8">
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="overflow-x-auto">
             <TabsList className="w-full justify-start sm:w-full mb-4">
                 {NAV_LINKS.map((link) => (

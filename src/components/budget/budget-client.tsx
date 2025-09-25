@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Transaction } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -70,14 +71,19 @@ import {
   Trophy,
   Download,
   Calendar as CalendarIcon,
+  Camera,
+  ScanLine,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import { generateFinancialInsights, type FinancialInsight } from '@/ai/flows/generate-financial-insights';
+import { parseReceipt } from '@/ai/flows/parse-receipt';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 type BudgetClientProps = {
@@ -113,6 +119,14 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
   const [insights, setInsights] = useState<FinancialInsight | null>(null);
   const [isInsightsLoading, setIsInsightsLoading] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
+  
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
+  const [isScanning, setIsScanning] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const { toast } = useToast();
 
 
   useEffect(() => {
@@ -131,7 +145,7 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
     setAmount('');
     setType('expense');
     setCategory('');
-    setDate(new Date());
+setDate(new Date());
     setEditingTransaction(null);
   };
 
@@ -228,6 +242,103 @@ ${insights.monthlyChallenge}
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+  
+  useEffect(() => {
+    async function setupCamera() {
+      if (!isScannerOpen || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setHasCameraPermission(false);
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasCameraPermission(true);
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings.',
+        });
+      }
+    }
+    setupCamera();
+
+    return () => {
+      // Cleanup: stop video stream when component unmounts or scanner closes
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    }
+  }, [isScannerOpen, toast]);
+
+  const handleCaptureAndScan = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    setIsScanning(true);
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    const imageDataUri = canvas.toDataURL('image/jpeg');
+
+    try {
+      const result = await parseReceipt({ receiptImage: imageDataUri });
+      
+      // Pre-fill the form with the scanned data
+      setDescription(result.description || '');
+      setAmount(String(result.amount || ''));
+      setType('expense'); // Receipts are always expenses
+      if (result.date) {
+        // Attempt to parse various date formats
+        const parsedDate = new Date(result.date);
+        if (!isNaN(parsedDate.getTime())) {
+          setDate(parsedDate);
+        } else {
+            // Fallback for dates that are not standard
+            setDate(new Date()); 
+            console.warn("Could not parse date:", result.date);
+        }
+      } else {
+        setDate(new Date());
+      }
+      
+      // Try to match the category
+      const expenseCategories = BUDGET_CATEGORIES.expense.map(c => c.value);
+      if (result.category && expenseCategories.includes(result.category)) {
+        setCategory(result.category);
+      } else {
+        setCategory('other'); // Default category
+      }
+
+      setIsScannerOpen(false);
+      setIsDialogOpen(true); // Open the transaction dialog for verification
+      
+      toast({
+        title: 'Receipt Scanned!',
+        description: 'Please verify the details and save the transaction.',
+      });
+
+    } catch (e) {
+      console.error("Failed to scan receipt:", e);
+      toast({
+        variant: 'destructive',
+        title: 'Scan Failed',
+        description: 'Could not extract details from the receipt. Please try again or enter manually.',
+      });
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
@@ -269,6 +380,48 @@ ${insights.monthlyChallenge}
             <CardTitle>Transactions</CardTitle>
             <CardDescription>A list of your recent income and expenses.</CardDescription>
             <div className="ml-auto flex items-center gap-2 pt-2">
+                <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-8 gap-1">
+                            <Camera className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Scan Receipt
+                            </span>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Scan Receipt</DialogTitle>
+                        </DialogHeader>
+                        {hasCameraPermission === false ? (
+                           <Alert variant="destructive">
+                              <AlertTitle>Camera Access Required</AlertTitle>
+                              <AlertDescription>
+                                To scan a receipt, please allow camera access in your browser settings and refresh the page.
+                              </AlertDescription>
+                           </Alert>
+                        ) : (
+                          <>
+                            <div className="relative">
+                              <video ref={videoRef} className="w-full h-auto rounded-md" autoPlay muted playsInline />
+                              {isScanning && (
+                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
+                                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                  <p className="text-white mt-2">Scanning...</p>
+                                </div>
+                              )}
+                              <ScanLine className="absolute inset-0 m-auto h-full w-full text-white/20" />
+                            </div>
+                            <DialogFooter>
+                              <Button onClick={handleCaptureAndScan} disabled={isScanning}>
+                                {isScanning ? 'Processing...' : 'Capture & Scan'}
+                              </Button>
+                            </DialogFooter>
+                          </>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
                 <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { setIsDialogOpen(isOpen); if (!isOpen) resetForm(); }}>
                 <DialogTrigger asChild>
                     <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
@@ -409,6 +562,8 @@ ${insights.monthlyChallenge}
             </CardContent>
         </Card>
       </div>
+      
+      <canvas ref={canvasRef} className="hidden"></canvas>
 
       <div className="grid gap-4 lg:col-span-1">
         <Card>
@@ -498,5 +653,3 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
-
-    

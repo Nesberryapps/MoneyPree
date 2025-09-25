@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -145,7 +144,7 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
     setAmount('');
     setType('expense');
     setCategory('');
-setDate(new Date());
+    setDate(new Date());
     setEditingTransaction(null);
   };
 
@@ -244,32 +243,27 @@ ${insights.monthlyChallenge}
   };
   
   useEffect(() => {
-    async function setupCamera() {
-      if (!isScannerOpen || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setHasCameraPermission(false);
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+    if (isScannerOpen) {
+      const getCameraPermission = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setHasCameraPermission(true);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          toast({
+            variant: 'destructive',
+            title: 'Camera Access Denied',
+            description: 'Please enable camera permissions in your browser settings to use this app.',
+          });
         }
-        setHasCameraPermission(true);
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings.',
-        });
-      }
-    }
-    setupCamera();
-
-    return () => {
-      // Cleanup: stop video stream when component unmounts or scanner closes
+      };
+      getCameraPermission();
+    } else {
+      // Cleanup: stop video stream when scanner closes
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -393,32 +387,31 @@ ${insights.monthlyChallenge}
                         <DialogHeader>
                             <DialogTitle>Scan Receipt</DialogTitle>
                         </DialogHeader>
-                        {hasCameraPermission === false ? (
+                        <div className="relative">
+                            <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
+                            {isScanning && (
+                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
+                                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                <p className="text-white mt-2">Scanning...</p>
+                            </div>
+                            )}
+                            <ScanLine className="absolute inset-0 m-auto h-full w-full text-white/20" />
+                        </div>
+                        
+                        {hasCameraPermission === false && (
                            <Alert variant="destructive">
                               <AlertTitle>Camera Access Required</AlertTitle>
                               <AlertDescription>
                                 To scan a receipt, please allow camera access in your browser settings and refresh the page.
                               </AlertDescription>
                            </Alert>
-                        ) : (
-                          <>
-                            <div className="relative">
-                              <video ref={videoRef} className="w-full h-auto rounded-md" autoPlay muted playsInline />
-                              {isScanning && (
-                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
-                                  <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                  <p className="text-white mt-2">Scanning...</p>
-                                </div>
-                              )}
-                              <ScanLine className="absolute inset-0 m-auto h-full w-full text-white/20" />
-                            </div>
-                            <DialogFooter>
-                              <Button onClick={handleCaptureAndScan} disabled={isScanning}>
-                                {isScanning ? 'Processing...' : 'Capture & Scan'}
-                              </Button>
-                            </DialogFooter>
-                          </>
                         )}
+
+                        <DialogFooter>
+                            <Button onClick={handleCaptureAndScan} disabled={isScanning || hasCameraPermission === false}>
+                            {isScanning ? 'Processing...' : 'Capture & Scan'}
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
 

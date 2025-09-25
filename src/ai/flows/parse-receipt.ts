@@ -57,7 +57,7 @@ const parseReceiptFlow = ai.defineFlow(
     outputSchema: ParseReceiptOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output } = await prompt({ receiptImage: input.receiptImage });
     return output!;
   }
 );

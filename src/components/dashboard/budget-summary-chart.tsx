@@ -9,15 +9,9 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-
-const chartData = [
-  { month: 'January', income: 186, expenses: 80 },
-  { month: 'February', income: 305, expenses: 200 },
-  { month: 'March', income: 237, expenses: 120 },
-  { month: 'April', income: 273, expenses: 190 },
-  { month: 'May', income: 209, expenses: 130 },
-  { month: 'June', income: 214, expenses: 140 },
-];
+import type { Transaction } from '@/lib/types';
+import { useMemo } from 'react';
+import { subMonths, format, startOfMonth } from 'date-fns';
 
 const chartConfig = {
   income: {
@@ -30,7 +24,43 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BudgetSummaryChart() {
+type BudgetSummaryChartProps = {
+  transactions: Transaction[];
+};
+
+export function BudgetSummaryChart({ transactions }: BudgetSummaryChartProps) {
+  const chartData = useMemo(() => {
+    const data: { [key: string]: { month: string; income: number; expenses: number } } = {};
+    const today = new Date();
+
+    // Initialize data for the last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = subMonths(today, i);
+      const monthKey = format(date, 'yyyy-MM');
+      data[monthKey] = {
+        month: format(date, 'MMMM'),
+        income: 0,
+        expenses: 0,
+      };
+    }
+
+    // Process transactions
+    transactions.forEach(transaction => {
+      const transactionDate = new Date(transaction.date);
+      const monthKey = format(transactionDate, 'yyyy-MM');
+      
+      if (data[monthKey]) {
+        if (transaction.type === 'income') {
+          data[monthKey].income += transaction.amount;
+        } else {
+          data[monthKey].expenses += transaction.amount;
+        }
+      }
+    });
+
+    return Object.values(data);
+  }, [transactions]);
+
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart

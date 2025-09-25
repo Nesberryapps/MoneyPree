@@ -52,7 +52,7 @@ export default function DashboardPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <BudgetSummaryChart />
+                        <BudgetSummaryChart transactions={transactions} />
                     </CardContent>
                     </Card>
                 </div>

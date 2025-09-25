@@ -53,15 +53,13 @@ export default function DashboardTabPage() {
       <Header />
       <main className="flex flex-1 flex-col p-4 md:p-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="overflow-x-auto">
-            <TabsList className="w-full justify-start sm:w-full mb-4">
-                {NAV_LINKS.map((link) => (
-                    <TabsTrigger key={link.href} value={link.href.replace('/dashboard/', '') || 'dashboard'}>
-                        {link.label}
-                    </TabsTrigger>
-                ))}
-            </TabsList>
-          </div>
+          <TabsList className="flex flex-wrap h-auto justify-start mb-4">
+              {NAV_LINKS.map((link) => (
+                  <TabsTrigger key={link.href} value={link.href.replace('/dashboard/', '') || 'dashboard'}>
+                      {link.label}
+                  </TabsTrigger>
+              ))}
+          </TabsList>
 
           <TabsContent value="dashboard">
             <div className="flex flex-1 flex-col gap-4 md:gap-8">

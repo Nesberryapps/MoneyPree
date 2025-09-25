@@ -5,6 +5,11 @@ import {
   generateFinancialLessons,
   type GenerateFinancialLessonsOutput,
 } from '@/ai/flows/generate-financial-lessons';
+import {
+  generateQuiz,
+  type Quiz,
+  type QuizQuestion,
+} from '@/ai/flows/generate-quiz';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,6 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,31 +28,80 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 
 export function FinancialLessons() {
   const [currentFinancialKnowledge, setCurrentFinancialKnowledge] = useState('');
   const [specificTopicsOfInterest, setSpecificTopicsOfInterest] = useState('');
   const [lesson, setLesson] = useState<GenerateFinancialLessonsOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [isLessonLoading, setIsLessonLoading] = useState(false);
+  const [isQuizLoading, setIsQuizLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
+
   const handleGenerateLesson = async () => {
-    setIsLoading(true);
+    setIsLessonLoading(true);
+    setIsQuizLoading(true); // Start loading quiz at the same time
     setError(null);
     setLesson(null);
+    setQuiz(null);
+    setUserAnswers({});
+    setSubmitted(false);
+    setScore(0);
+
     try {
-      const result = await generateFinancialLessons({
+      const lessonResult = await generateFinancialLessons({
         currentFinancialKnowledge,
         specificTopicsOfInterest,
       });
-      setLesson(result);
+      setLesson(lessonResult);
+      
+      // Now generate the quiz
+      try {
+        const quizResult = await generateQuiz({ lessonContent: lessonResult.lessonContent });
+        setQuiz(quizResult);
+      } catch (e) {
+        setError('Failed to generate quiz. Please try generating the lesson again.');
+        console.error(e);
+      } finally {
+        setIsQuizLoading(false);
+      }
+
     } catch (e) {
       setError('Failed to generate lesson. Please try again.');
       console.error(e);
+      setIsQuizLoading(false); // Stop quiz loading if lesson fails
     } finally {
-      setIsLoading(false);
+      setIsLessonLoading(false);
     }
   };
+
+  const handleAnswerChange = (questionText: string, value: string) => {
+    setUserAnswers(prev => ({ ...prev, [questionText]: value }));
+  };
+
+  const handleSubmitQuiz = () => {
+    let correctAnswers = 0;
+    quiz?.questions.forEach(q => {
+      if (userAnswers[q.questionText] === q.correctAnswer) {
+        correctAnswers++;
+      }
+    });
+    setScore(correctAnswers);
+    setSubmitted(true);
+  };
+
+  const getResultVariant = (question: QuizQuestion, choice: string) => {
+    if (!submitted) return 'secondary';
+    if (choice === question.correctAnswer) return 'default'; // Correct answer
+    if (choice === userAnswers[question.questionText]) return 'destructive'; // Incorrectly selected by user
+    return 'secondary'; // Not selected
+  }
 
   return (
     <div className="grid gap-8">
@@ -76,8 +131,8 @@ export function FinancialLessons() {
               onChange={(e) => setSpecificTopicsOfInterest(e.target.value)}
             />
           </div>
-          <Button onClick={handleGenerateLesson} disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={handleGenerateLesson} disabled={isLessonLoading}>
+            {isLessonLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Generate My Lesson
           </Button>
         </CardContent>
@@ -115,6 +170,58 @@ export function FinancialLessons() {
               </AccordionItem>
             </Accordion>
           </CardContent>
+        </Card>
+      )}
+
+      {isQuizLoading && (
+         <Card>
+            <CardHeader>
+                <CardTitle>Generating Quiz...</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center p-8">
+                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+            </CardContent>
+        </Card>
+      )}
+
+      {quiz && !isQuizLoading && (
+        <Card>
+            <CardHeader>
+                <CardTitle>Test Your Knowledge</CardTitle>
+                <CardDescription>Answer the questions below to see what you've learned.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {quiz.questions.map((q, index) => (
+                    <div key={index} className="space-y-3">
+                        <Label className="font-semibold text-base">{index + 1}. {q.questionText}</Label>
+                        <RadioGroup 
+                            value={userAnswers[q.questionText]}
+                            onValueChange={(value) => handleAnswerChange(q.questionText, value)}
+                            disabled={submitted}
+                        >
+                            {q.choices.map((choice, i) => (
+                                <div key={i} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={choice} id={`q${index}-choice${i}`} />
+                                    <Label htmlFor={`q${index}-choice${i}`} className="w-full">
+                                        <Badge variant={getResultVariant(q, choice)} className="p-2 w-full text-left justify-start">
+                                            {choice}
+                                        </Badge>
+                                    </Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </div>
+                ))}
+            </CardContent>
+            <CardFooter className="flex flex-col items-start gap-4">
+                {!submitted ? (
+                    <Button onClick={handleSubmitQuiz}>Submit Quiz</Button>
+                ) : (
+                    <div className="text-xl font-bold">
+                        Your Score: {score} out of {quiz.questions.length} ({((score / quiz.questions.length) * 100).toFixed(0)}%)
+                    </div>
+                )}
+            </CardFooter>
         </Card>
       )}
     </div>

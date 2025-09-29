@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FinwiseCompassIcon } from '@/components/icons';
+import { MoneyWizeIcon } from '@/components/icons';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
@@ -40,18 +40,18 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="w-full p-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <FinwiseCompassIcon className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold">Finwise Compass</span>
+          <MoneyWizeIcon className="h-8 w-8 text-primary" />
+          <span className="text-xl font-semibold">MoneyWize</span>
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center text-center space-y-8 p-4">
+      <main className="flex flex-1 flex-col items-center justify-center text-center space-y-8 p-4 pt-20 sm:pt-4">
         <div className="space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
             Your Personal AI Financial Guide
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Navigate your finances with confidence. Finwise Compass uses AI to provide personalized insights, help you set goals, and teach you about investing.
+            Navigate your finances with confidence. MoneyWize uses AI to provide personalized insights, help you set goals, and teach you about investing.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function LandingPage() {
             </CardContent>
           </Card>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-8">© {new Date().getFullYear()} Finwise Compass. All rights reserved.</p>
+        <p className="text-center text-sm text-muted-foreground mt-8">© {new Date().getFullYear()} MoneyWize. All rights reserved.</p>
       </footer>
     </div>
   );

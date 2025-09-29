@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'Finwise Compass',
+  title: 'MoneyWize',
   description: 'Teach, manage, and suggest financial investments using AI.',
 };
 
@@ -40,5 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

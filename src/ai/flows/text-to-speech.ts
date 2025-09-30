@@ -77,6 +77,11 @@ const textToSpeechFlow = ai.defineFlow(
         model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
             responseModalities: ['AUDIO'],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: 'Algenib' },
+              },
+            },
         },
         prompt: text,
     });

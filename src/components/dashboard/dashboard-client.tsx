@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -11,12 +12,31 @@ import {
   Target,
   BookOpen,
   Lightbulb,
+  ShieldCheck,
 } from 'lucide-react';
 import type { Goal, Transaction } from '@/lib/types';
 import { useEffect, useState } from 'react';
+import { Progress } from '@/components/ui/progress';
 
+// Mock data for gamification - in a real app, this would come from a user profile
 const lessonsCompleted = 12;
 const questionsAnswered = 5;
+
+// Gamification levels
+const literacyLevels = [
+    { name: 'Novice', minPoints: 0 },
+    { name: 'Apprentice', minPoints: 5 },
+    { name: 'Adept', minPoints: 15 },
+    { name: 'Expert', minPoints: 30 },
+    { name: 'Master', minPoints: 50 },
+];
+
+const calculateLevel = (points: number) => {
+    return (
+        literacyLevels.slice().reverse().find(l => points >= l.minPoints) ||
+        literacyLevels[0]
+    );
+};
 
 type DashboardClientProps = {
   transactions: Transaction[];
@@ -26,6 +46,12 @@ type DashboardClientProps = {
 export function DashboardClient({ transactions, goals }: DashboardClientProps) {
     const [netBalance, setNetBalance] = useState(0);
     const [nextGoal, setNextGoal] = useState<Goal | null>(null);
+
+    // Gamification state
+    const [points, setPoints] = useState(0);
+    const [level, setLevel] = useState(literacyLevels[0]);
+    const [nextLevel, setNextLevel] = useState(literacyLevels[1]);
+    const [progressToNextLevel, setProgressToNextLevel] = useState(0);
 
     useEffect(() => {
         const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
@@ -38,6 +64,27 @@ export function DashboardClient({ transactions, goals }: DashboardClientProps) {
         } else {
             setNextGoal(null);
         }
+
+        // Calculate gamification stats
+        const totalPoints = lessonsCompleted + questionsAnswered;
+        setPoints(totalPoints);
+
+        const currentLevel = calculateLevel(totalPoints);
+        setLevel(currentLevel);
+
+        const currentLevelIndex = literacyLevels.findIndex(l => l.name === currentLevel.name);
+        const next = literacyLevels[currentLevelIndex + 1];
+        
+        if (next) {
+            setNextLevel(next);
+            const pointsInCurrentLevel = totalPoints - currentLevel.minPoints;
+            const pointsForNextLevel = next.minPoints - currentLevel.minPoints;
+            setProgressToNextLevel((pointsInCurrentLevel / pointsForNextLevel) * 100);
+        } else {
+            // User is at max level
+            setProgressToNextLevel(100);
+        }
+
 
     }, [transactions, goals]);
 
@@ -71,24 +118,20 @@ export function DashboardClient({ transactions, goals }: DashboardClientProps) {
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Lessons Completed</CardTitle>
-          <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Financial Literacy Level</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">+{lessonsCompleted}</div>
-          <p className="text-xs text-muted-foreground">+1 since last week</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Questions Answered</CardTitle>
-          <Lightbulb className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">+{questionsAnswered}</div>
-          <p className="text-xs text-muted-foreground">AI wisdom unlocked!</p>
+            <div className="flex items-center justify-between mb-1">
+                <div className="text-2xl font-bold">{level.name}</div>
+                <div className="text-sm text-muted-foreground">{points} pts</div>
+            </div>
+            <Progress value={progressToNextLevel} className="w-full h-2 mb-1" />
+            <p className="text-xs text-muted-foreground">
+                {nextLevel ? `${nextLevel.minPoints - points} points to ${nextLevel.name}` : 'Max level achieved!'}
+            </p>
         </CardContent>
       </Card>
     </div>

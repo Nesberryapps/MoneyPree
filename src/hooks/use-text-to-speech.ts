@@ -6,46 +6,43 @@ import { textToSpeech } from '@/ai/flows/text-to-speech';
 export function useTextToSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const audioQueueRef = useRef<HTMLAudioElement[]>([]);
-  const isPlayingRef = useRef(false);
   const currentAudioIndexRef = useRef(0);
   const stopPlaybackRef = useRef(false);
 
   const playNextInQueue = useCallback(() => {
     if (stopPlaybackRef.current) {
-        audioQueueRef.current = [];
-        isPlayingRef.current = false;
-        setIsSpeaking(false);
-        stopPlaybackRef.current = false;
-        return;
+      stopPlaybackRef.current = false;
+      return;
     }
 
     if (currentAudioIndexRef.current < audioQueueRef.current.length) {
-      isPlayingRef.current = true;
       const audio = audioQueueRef.current[currentAudioIndexRef.current];
-      // The audio source should already be loaded, so we just play.
       audio.play().catch((e) => {
-        // Ignore interruption errors as we handle the queue logic.
-        if (e.name === 'AbortError') return;
-        console.error("Error playing audio:", e);
-        setError("Error playing audio.");
-        // Attempt to skip to the next clip
+        if (e.name !== 'AbortError') {
+          console.error("Error playing audio:", e);
+          setError("Error playing audio.");
+        }
+        // Whether it's an error or not, try to continue the queue
         currentAudioIndexRef.current++;
         playNextInQueue();
       });
     } else {
-      isPlayingRef.current = false;
       setIsSpeaking(false);
+      audioQueueRef.current = [];
+      currentAudioIndexRef.current = 0;
     }
   }, []);
 
-  const speak = useCallback(async (text: string | string[]) => {
-    const textSegments = Array.isArray(text) ? text.filter(s => s.trim().length > 0) : [text];
-    if (textSegments.length === 0) return;
 
-    if (isPlayingRef.current) {
-        stopSpeaking();
+  const speak = useCallback(async (textSegments: string[]) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    }
+    
+    if (!textSegments || textSegments.length === 0) {
+      return;
     }
 
     setIsSpeaking(true);
@@ -53,65 +50,63 @@ export function useTextToSpeech() {
     stopPlaybackRef.current = false;
     currentAudioIndexRef.current = 0;
     audioQueueRef.current = [];
-
+    
     try {
-      const audioPromises = textSegments.map(segment => textToSpeech({ text: segment }));
-      
-      const audioResults = await Promise.all(audioPromises);
-      
-      if (stopPlaybackRef.current) return;
+      const audioElements: HTMLAudioElement[] = [];
 
-      audioQueueRef.current = audioResults.map(({ audio: audioSrc }) => {
-        const audio = new Audio(audioSrc);
-        audio.onended = () => {
-          currentAudioIndexRef.current++;
-          playNextInQueue();
-        };
-         audio.onerror = (e) => {
-          console.error("Error playing audio segment.", e);
-          setError("Error playing audio.");
-          currentAudioIndexRef.current++;
-          playNextInQueue();
-        };
-        return audio;
-      });
+      for (const segment of textSegments) {
+        if (stopPlaybackRef.current) break;
+        if (!segment.trim()) continue;
 
+        const result = await textToSpeech({ text: segment });
+        if (result.audio) {
+          const audio = new Audio(result.audio);
+          audio.onended = () => {
+            currentAudioIndexRef.current++;
+            playNextInQueue();
+          };
+          audioElements.push(audio);
+        }
+      }
+      
+      if (stopPlaybackRef.current) {
+        setIsSpeaking(false);
+        return;
+      };
+
+      audioQueueRef.current = audioElements;
+      
       if (audioQueueRef.current.length > 0) {
         playNextInQueue();
       } else {
         setIsSpeaking(false);
       }
+
     } catch (e) {
       console.error("Text-to-speech failed:", e);
       setError('Failed to generate audio. Please try again.');
       setIsSpeaking(false);
     }
-  }, [playNextInQueue]);
+  }, [isSpeaking, playNextInQueue]);
 
   const stopSpeaking = () => {
     stopPlaybackRef.current = true;
-    if (audioQueueRef.current.length > 0 && currentAudioIndexRef.current < audioQueueRef.current.length) {
+    if (audioQueueRef.current.length > currentAudioIndexRef.current) {
       const currentAudio = audioQueueRef.current[currentAudioIndexRef.current];
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
     }
-    audioQueueRef.current = [];
-    isPlayingRef.current = false;
     setIsSpeaking(false);
+    audioQueueRef.current = [];
+    currentAudioIndexRef.current = 0;
   };
   
   useEffect(() => {
+    // Cleanup function to stop any playback when the component unmounts
     return () => {
-      stopPlaybackRef.current = true;
-      audioQueueRef.current.forEach(audio => {
-        if (audio) {
-            audio.pause();
-            audio.src = '';
-        }
-      });
-      audioQueueRef.current = [];
+      stopSpeaking();
     };
   }, []);
 

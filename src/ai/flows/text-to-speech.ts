@@ -84,7 +84,7 @@ const textToSpeechFlow = ai.defineFlow(
 
     for (const sentence of sentences) {
         // Add a small delay between requests to avoid hitting rate limits.
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+        await new Promise(resolve => setTimeout(resolve, 250)); // Reduced delay
 
         try {
             const { media } = await ai.generate({

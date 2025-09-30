@@ -244,10 +244,11 @@ ${insights.monthlyChallenge}
   };
   
   useEffect(() => {
-    if (isScannerOpen) {
-      const getCameraPermission = async () => {
+    let stream: MediaStream;
+    const startCamera = async () => {
+      if (isScannerOpen) {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
           setHasCameraPermission(true);
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -258,18 +259,19 @@ ${insights.monthlyChallenge}
           toast({
             variant: 'destructive',
             title: 'Camera Access Denied',
-            description: 'Please enable camera permissions in your browser settings to use this app.',
+            description: 'Please enable camera permissions in your browser settings to use this feature.',
           });
         }
-      };
-      getCameraPermission();
-    } else {
-      // Cleanup: stop video stream when scanner closes
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
+      }
+    };
+    startCamera();
+
+    return () => {
+      // Cleanup: stop video stream when component unmounts or scanner closes
+      if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
-    }
+    };
   }, [isScannerOpen, toast]);
 
   const handleCaptureAndScan = async () => {
@@ -348,7 +350,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Total Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-500">${totalIncome.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-green-500">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
         <Card>
@@ -356,7 +358,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Total Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-500">${totalExpenses.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-red-500">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
         <Card>
@@ -364,7 +366,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Net Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>${netBalance.toFixed(2)}</div>
+            <div className={`text-3xl font-bold ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
       </div>
@@ -389,7 +391,7 @@ ${insights.monthlyChallenge}
                             <DialogTitle>Scan Receipt</DialogTitle>
                         </DialogHeader>
                         <div className="relative">
-                            <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
+                            <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
                             {isScanning && (
                             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
                                 <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -533,7 +535,7 @@ ${insights.monthlyChallenge}
                         {isClient ? formatDate(transaction.date) : ''}
                     </TableCell>
                     <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell>
                         <DropdownMenu>

@@ -100,7 +100,7 @@ export function DashboardClient({ transactions, goals, lessonsCompleted, questio
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${netBalance.toFixed(2)}</div>
+          <div className="text-2xl font-bold">${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <p className="text-xs text-muted-foreground">
             Your current net balance
           </p>

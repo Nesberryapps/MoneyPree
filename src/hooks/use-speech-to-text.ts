@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -42,6 +43,11 @@ export function useSpeechToText({ onTranscript }: UseSpeechToTextOptions) {
     };
     
     recognition.onerror = (event) => {
+        // The 'no-speech' error is thrown when the user doesn't say anything.
+        // It's a normal part of the flow, so we don't need to log it as an error.
+        if (event.error === 'no-speech') {
+          return;
+        }
         console.error('Speech recognition error', event.error);
         if (event.error === 'not-allowed') {
             alert('Microphone access was denied. Please allow microphone access in your browser settings to use this feature.');

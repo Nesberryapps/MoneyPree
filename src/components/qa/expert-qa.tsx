@@ -15,9 +15,13 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mic, Volume2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useTextToSpeech } from '@/hooks/use-text-to-speech';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -25,6 +29,11 @@ export function ExpertQA() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const quickLinkImage = PlaceHolderImages.find(img => img.id === 'quick-link');
+
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ onTranscript: (text) => setQuestion(prev => prev + text) });
+  const { isSpeaking, speak, stopSpeaking } = useTextToSpeech();
+
 
   const handleAskQuestion = async () => {
     setIsLoading(true);
@@ -43,6 +52,14 @@ export function ExpertQA() {
     }
   };
 
+  const handleSpeak = (text: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  };
+
   return (
     <div className="grid gap-8">
       <Card>
@@ -55,12 +72,24 @@ export function ExpertQA() {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="question">Your Question</Label>
-            <Textarea
-              id="question"
-              placeholder="e.g., What are the tax implications of selling stocks?"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                id="question"
+                placeholder="e.g., What are the tax implications of selling stocks?"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+              />
+               {isVoiceInteractionEnabled && (
+                  <Button
+                      size="icon"
+                      variant={isListening ? 'destructive' : 'ghost'}
+                      className="absolute bottom-2 right-2"
+                      onClick={isListening ? stopListening : startListening}
+                  >
+                      <Mic className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
           </div>
           <Button onClick={handleAskQuestion} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -88,9 +117,20 @@ export function ExpertQA() {
                 <AvatarImage src={quickLinkImage?.imageUrl} data-ai-hint={quickLinkImage?.imageHint} />
                 <AvatarFallback>AI</AvatarFallback>
               </Avatar>
-              <div>
-                <CardTitle>AI Expert's Answer</CardTitle>
-                <CardDescription>Here is the response to your question.</CardDescription>
+              <div className="flex-1 flex justify-between items-center">
+                <div>
+                  <CardTitle>AI Expert's Answer</CardTitle>
+                  <CardDescription>Here is the response to your question.</CardDescription>
+                </div>
+                 {isVoiceInteractionEnabled && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleSpeak(answer.answer)}
+                    >
+                      <Volume2 className={`h-5 w-5 ${isSpeaking ? 'text-primary' : ''}`} />
+                    </Button>
+                  )}
               </div>
             </div>
           </CardHeader>

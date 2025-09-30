@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mic, Volume2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +31,9 @@ import {
 } from '@/components/ui/accordion';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
+import { useTextToSpeech } from '@/hooks/use-text-to-speech';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
 type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
@@ -49,6 +52,12 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
+  const { transcript: knowledgeTranscript, isListening: isListeningKnowledge, startListening: startListeningKnowledge, stopListening: stopListeningKnowledge } = useSpeechToText({ onTranscript: (text) => setCurrentFinancialKnowledge(prev => prev + text) });
+  const { transcript: topicsTranscript, isListening: isListeningTopics, startListening: startListeningTopics, stopListening: stopListeningTopics } = useSpeechToText({ onTranscript: (text) => setSpecificTopicsOfInterest(prev => prev + text) });
+
 
   const handleGenerateLesson = async () => {
     setIsLessonLoading(true);
@@ -110,6 +119,14 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     return 'secondary'; // Not selected
   }
 
+  const handleSpeak = (text: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  };
+
   return (
     <div className="grid gap-8">
       <Card>
@@ -122,21 +139,45 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="knowledge">Your Current Financial Knowledge</Label>
-            <Textarea
-              id="knowledge"
-              placeholder="e.g., I'm new to investing, but I'm good at budgeting."
-              value={currentFinancialKnowledge}
-              onChange={(e) => setCurrentFinancialKnowledge(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                id="knowledge"
+                placeholder="e.g., I'm new to investing, but I'm good at budgeting."
+                value={currentFinancialKnowledge}
+                onChange={(e) => setCurrentFinancialKnowledge(e.target.value)}
+              />
+               {isVoiceInteractionEnabled && (
+                  <Button
+                      size="icon"
+                      variant={isListeningKnowledge ? 'destructive' : 'ghost'}
+                      className="absolute bottom-2 right-2"
+                      onClick={isListeningKnowledge ? stopListeningKnowledge : startListeningKnowledge}
+                  >
+                      <Mic className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="topics">Specific Topics of Interest</Label>
-            <Textarea
-              id="topics"
-              placeholder="e.g., Stock market basics, retirement planning, real estate."
-              value={specificTopicsOfInterest}
-              onChange={(e) => setSpecificTopicsOfInterest(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                id="topics"
+                placeholder="e.g., Stock market basics, retirement planning, real estate."
+                value={specificTopicsOfInterest}
+                onChange={(e) => setSpecificTopicsOfInterest(e.target.value)}
+              />
+              {isVoiceInteractionEnabled && (
+                  <Button
+                      size="icon"
+                      variant={isListeningTopics ? 'destructive' : 'ghost'}
+                      className="absolute bottom-2 right-2"
+                      onClick={isListeningTopics ? stopListeningTopics : startListeningTopics}
+                  >
+                      <Mic className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
           </div>
           <Button onClick={handleGenerateLesson} disabled={isLessonLoading}>
             {isLessonLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -158,8 +199,17 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
 
       {lesson && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex items-center justify-between">
             <CardTitle>Your Personalized Lesson</CardTitle>
+             {isVoiceInteractionEnabled && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleSpeak(`${lesson.lessonTitle}\n\n${lesson.lessonContent}`)}
+                >
+                  <Volume2 className={`h-5 w-5 ${isSpeaking ? 'text-primary' : ''}`} />
+                </Button>
+              )}
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible defaultValue="item-1" className="w-full">

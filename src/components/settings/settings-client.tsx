@@ -16,12 +16,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
+  const { isVoiceInteractionEnabled, setIsVoiceInteractionEnabled } = useVoiceInteraction();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -29,16 +31,69 @@ export function SettingsClient() {
   }, []);
 
   const handleSave = () => {
+    // In a real app, these settings would be saved to a user profile in Firestore
     console.log('Settings saved:', {
       theme,
       emailNotifications,
       pushNotifications,
+      isVoiceInteractionEnabled,
     });
     toast({
       title: 'Preferences Saved',
       description: 'Your settings have been updated successfully.',
     });
   };
+
+  if (!mounted) {
+      return (
+        <div className="grid gap-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Appearance</CardTitle>
+                    <CardDescription>
+                        Customize the look and feel of your application.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label>Theme</Label>
+                        <div className="grid grid-cols-3 gap-4">
+                            <Skeleton className="h-[74px]" />
+                            <Skeleton className="h-[74px]" />
+                            <Skeleton className="h-[74px]" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Notifications</CardTitle>
+                    <CardDescription>
+                        Manage how you receive notifications.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                     <Skeleton className="h-10" />
+                     <Skeleton className="h-10" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Accessibility</CardTitle>
+                    <CardDescription>
+                        Manage accessibility features.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <Skeleton className="h-10" />
+                </CardContent>
+            </Card>
+             <div className="flex justify-end">
+                <Button disabled>Save Preferences</Button>
+            </div>
+        </div>
+      )
+  }
 
   return (
     <div className="grid gap-8">
@@ -52,7 +107,6 @@ export function SettingsClient() {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label>Theme</Label>
-            {mounted ? (
                 <RadioGroup
                 value={theme}
                 onValueChange={setTheme}
@@ -86,13 +140,6 @@ export function SettingsClient() {
                   </Label>
                 </div>
               </RadioGroup>
-            ) : (
-                <div className="grid grid-cols-3 gap-4">
-                    <Skeleton className="h-[74px]" />
-                    <Skeleton className="h-[74px]" />
-                    <Skeleton className="h-[74px]" />
-                </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -130,6 +177,29 @@ export function SettingsClient() {
               onCheckedChange={setPushNotifications}
             />
           </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Accessibility</CardTitle>
+          <CardDescription>
+            Manage accessibility features for a better experience.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+                <Label htmlFor="voice-interaction" className="flex flex-col space-y-1">
+                <span>Voice Interaction</span>
+                <span className="font-normal leading-snug text-muted-foreground">
+                    Enable voice commands and text-to-speech feedback.
+                </span>
+                </Label>
+                <Switch
+                id="voice-interaction"
+                checked={isVoiceInteractionEnabled}
+                onCheckedChange={setIsVoiceInteractionEnabled}
+                />
+            </div>
         </CardContent>
       </Card>
        <div className="flex justify-end">

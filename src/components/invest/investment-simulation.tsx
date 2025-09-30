@@ -15,7 +15,10 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, TrendingUp, Shield, BarChart } from 'lucide-react';
+import { Loader2, TrendingUp, Shield, BarChart, Mic, Volume2 } from 'lucide-react';
+import { useTextToSpeech } from '@/hooks/use-text-to-speech';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
 export function InvestmentSimulation() {
   const [currentHoldings, setCurrentHoldings] = useState('');
@@ -23,6 +26,13 @@ export function InvestmentSimulation() {
   const [simulationResult, setSimulationResult] = useState<SimulateInvestmentScenariosOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  
+  const { transcript: holdingsTranscript, isListening: isListeningHoldings, startListening: startListeningHoldings, stopListening: stopListeningHoldings } = useSpeechToText({ onTranscript: (text) => setCurrentHoldings(prev => prev + text) });
+  const { transcript: goalsTranscript, isListening: isListeningGoals, startListening: startListeningGoals, stopListening: stopListeningGoals } = useSpeechToText({ onTranscript: (text) => setInvestmentGoals(prev => prev + text) });
+
+  const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
 
   const handleSimulate = async () => {
     setIsLoading(true);
@@ -42,6 +52,14 @@ export function InvestmentSimulation() {
     }
   };
 
+  const handleSpeak = (text: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  };
+
   return (
     <div className="grid gap-8">
       <Card>
@@ -54,21 +72,45 @@ export function InvestmentSimulation() {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="holdings">Your Current Assets & Investments</Label>
-            <Textarea
-              id="holdings"
-              placeholder="e.g., 10 Apple (AAPL), Rental property in downtown, $20k in savings."
-              value={currentHoldings}
-              onChange={(e) => setCurrentHoldings(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                id="holdings"
+                placeholder="e.g., 10 Apple (AAPL), Rental property in downtown, $20k in savings."
+                value={currentHoldings}
+                onChange={(e) => setCurrentHoldings(e.target.value)}
+              />
+              {isVoiceInteractionEnabled && (
+                  <Button
+                      size="icon"
+                      variant={isListeningHoldings ? 'destructive' : 'ghost'}
+                      className="absolute bottom-2 right-2"
+                      onClick={isListeningHoldings ? stopListeningHoldings : startListeningHoldings}
+                  >
+                      <Mic className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="goals">Your Investment Goals</Label>
-            <Textarea
-              id="goals"
-              placeholder="e.g., Retire in 10 years, buy a franchise, generate passive income from real estate."
-              value={investmentGoals}
-              onChange={(e) => setInvestmentGoals(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                id="goals"
+                placeholder="e.g., Retire in 10 years, buy a franchise, generate passive income from real estate."
+                value={investmentGoals}
+                onChange={(e) => setInvestmentGoals(e.target.value)}
+              />
+               {isVoiceInteractionEnabled && (
+                  <Button
+                      size="icon"
+                      variant={isListeningGoals ? 'destructive' : 'ghost'}
+                      className="absolute bottom-2 right-2"
+                      onClick={isListeningGoals ? stopListeningGoals : startListeningGoals}
+                  >
+                      <Mic className="h-4 w-4" />
+                  </Button>
+              )}
+            </div>
           </div>
           <Button onClick={handleSimulate} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -91,7 +133,18 @@ export function InvestmentSimulation() {
       {simulationResult && (
         <Card>
           <CardHeader>
-            <CardTitle>Simulation Results</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Simulation Results</CardTitle>
+               {isVoiceInteractionEnabled && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleSpeak(Object.values(simulationResult).join('\n'))}
+                  >
+                    <Volume2 className={`h-5 w-5 ${isSpeaking ? 'text-primary' : ''}`} />
+                  </Button>
+                )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">

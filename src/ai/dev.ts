@@ -8,3 +8,4 @@ import '@/ai/flows/generate-financial-goals.ts';
 import '@/ai/flows/generate-financial-insights.ts';
 import '@/ai/flows/generate-quiz.ts';
 import '@/ai/flows/parse-receipt.ts';
+import '@/ai/flows/text-to-speech.ts';

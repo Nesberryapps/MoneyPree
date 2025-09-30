@@ -17,6 +17,7 @@ import {
 import type { Goal, Transaction } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { useRouter } from 'next/navigation';
 
 // Gamification levels
 const literacyLevels = [
@@ -42,6 +43,7 @@ type DashboardClientProps = {
 };
 
 export function DashboardClient({ transactions, goals, lessonsCompleted, questionsAnswered }: DashboardClientProps) {
+    const router = useRouter();
     const [netBalance, setNetBalance] = useState(0);
     const [nextGoal, setNextGoal] = useState<Goal | null>(null);
 
@@ -116,7 +118,10 @@ export function DashboardClient({ transactions, goals, lessonsCompleted, questio
           </p>
         </CardContent>
       </Card>
-      <Card className="lg:col-span-2">
+      <Card 
+        className="lg:col-span-2 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => router.push('/dashboard/learn')}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Financial Literacy Level</CardTitle>
             <ShieldCheck className="h-4 w-4 text-muted-foreground" />

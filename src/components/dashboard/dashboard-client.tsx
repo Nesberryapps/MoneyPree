@@ -94,44 +94,44 @@ export function DashboardClient({ transactions, goals, lessonsCompleted, questio
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-      <Card>
+      <Card className="bg-green-100/10 dark:bg-green-800/20 border-green-500/30">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
-          <PiggyBank className="h-4 w-4 text-muted-foreground" />
+          <PiggyBank className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold text-green-500">${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <p className="text-xs text-muted-foreground">
             Your current net balance
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="bg-blue-100/10 dark:bg-blue-800/20 border-blue-500/30">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Next Goal</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
+          <Target className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{nextGoal?.name || 'No Goal Set'}</div>
+          <div className="text-2xl font-bold text-blue-500">{nextGoal?.name || 'No Goal Set'}</div>
           <p className="text-xs text-muted-foreground">
             {nextGoal ? `$${nextGoalRemaining.toLocaleString()} remaining` : 'Add a goal to get started'}
           </p>
         </CardContent>
       </Card>
       <Card 
-        className="lg:col-span-2 cursor-pointer hover:bg-muted/50 transition-colors"
+        className="lg:col-span-2 cursor-pointer hover:bg-muted/50 transition-colors bg-purple-100/10 dark:bg-purple-800/20 border-purple-500/30"
         onClick={() => router.push('/dashboard/learn')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Financial Literacy Level</CardTitle>
-            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+            <ShieldCheck className="h-4 w-4 text-purple-500" />
         </CardHeader>
         <CardContent>
             <div className="flex items-center justify-between mb-1">
-                <div className="text-2xl font-bold">{level.name}</div>
+                <div className="text-2xl font-bold text-purple-500">{level.name}</div>
                 <div className="text-sm text-muted-foreground">{points} pts</div>
             </div>
-            <Progress value={progressToNextLevel} className="w-full h-2 mb-1" />
+            <Progress value={progressToNextLevel} className="w-full h-2 mb-1 [&>div]:bg-purple-500" />
             <p className="text-xs text-muted-foreground">
                 {nextLevel ? `${nextLevel.minPoints - points} points to ${nextLevel.name}` : 'Max level achieved!'}
             </p>

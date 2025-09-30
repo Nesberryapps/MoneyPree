@@ -94,7 +94,10 @@ export function DashboardClient({ transactions, goals, lessonsCompleted, questio
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-      <Card className="bg-green-100/10 dark:bg-green-800/20 border-green-500/30">
+      <Card 
+        className="bg-green-100/10 dark:bg-green-800/20 border-green-500/30 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => router.push('/dashboard/budget')}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
           <PiggyBank className="h-4 w-4 text-green-500" />
@@ -106,7 +109,10 @@ export function DashboardClient({ transactions, goals, lessonsCompleted, questio
           </p>
         </CardContent>
       </Card>
-      <Card className="bg-blue-100/10 dark:bg-blue-800/20 border-blue-500/30">
+      <Card 
+        className="bg-blue-100/10 dark:bg-blue-800/20 border-blue-500/30 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => router.push('/dashboard/goals')}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Next Goal</CardTitle>
           <Target className="h-4 w-4 text-blue-500" />

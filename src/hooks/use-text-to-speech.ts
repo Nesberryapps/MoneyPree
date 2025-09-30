@@ -68,42 +68,40 @@ export function useTextToSpeech() {
     stopPlaybackRef.current = false;
     audioQueueRef.current = [];
     
-    try {
-      // Sequentially fetch audio for each segment to avoid rate limiting
+    // This function will process the text segments one by one.
+    const processQueue = async () => {
       for (const segment of textSegments) {
         if (stopPlaybackRef.current) break; // If user stopped, exit the loop
         if (!segment.trim()) continue;
 
         try {
-            const result = await textToSpeech({ text: segment });
-            if (result.audio) {
-                audioQueueRef.current.push(result.audio);
+          const result = await textToSpeech({ text: segment });
+          if (result.audio) {
+            audioQueueRef.current.push(result.audio);
+            // If this is the first item and we're not already playing, start playback.
+            if (audioQueueRef.current.length === 1 && !audioRef.current?.src) {
+              playNextInQueue();
             }
-        } catch(e) {
-            // Log the error but continue trying to fetch other segments
-            console.error("Failed to fetch audio for segment:", segment, e);
+          }
+        } catch (e) {
+          console.error("Failed to fetch audio for segment:", segment, e);
+          setError('Audio generation failed. You may have hit a rate limit.');
+          // Stop processing the queue on failure
+          stopPlaybackRef.current = true;
+          setIsSpeaking(false);
+          break;
         }
       }
       
-      // If playback was stopped during fetching, don't start playing.
-      if (stopPlaybackRef.current) {
-        setIsSpeaking(false);
-        return;
-      };
-
-      // Start playing the first item in the now-populated queue.
-      if (audioQueueRef.current.length > 0) {
-        playNextInQueue();
-      } else {
-        setError("Could not generate any audio for the provided text.");
-        setIsSpeaking(false);
+      // If we finished processing and nothing is playing, make sure to set speaking to false.
+      if (!stopPlaybackRef.current && textSegments.indexOf(textSegments[textSegments.length - 1]) === textSegments.length -1) {
+         // This is a bit of a tricky state. The last item is processing.
+         // The onended event of the audio player will eventually set isSpeaking to false.
       }
+    };
+    
+    processQueue();
 
-    } catch (e) {
-      console.error("Text-to-speech generation failed:", e);
-      setError('Failed to generate audio. Please try again.');
-      setIsSpeaking(false);
-    }
   }, [isSpeaking, playNextInQueue]);
 
   const stopSpeaking = () => {
@@ -112,6 +110,7 @@ export function useTextToSpeech() {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.src = ""; // Detach the source
     }
     setIsSpeaking(false);
   };

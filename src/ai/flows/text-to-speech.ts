@@ -84,32 +84,27 @@ const textToSpeechFlow = ai.defineFlow(
 
     for (const sentence of sentences) {
         // Add a small delay between requests to avoid hitting rate limits.
-        await new Promise(resolve => setTimeout(resolve, 250)); // Reduced delay
+        await new Promise(resolve => setTimeout(resolve, 200));
 
-        try {
-            const { media } = await ai.generate({
-                model: googleAI.model('gemini-2.5-flash-preview-tts'),
-                config: {
-                    responseModalities: ['AUDIO'],
-                    speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Algenib' },
-                    },
-                    },
+        const { media } = await ai.generate({
+            model: googleAI.model('gemini-2.5-flash-preview-tts'),
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                voiceConfig: {
+                    prebuiltVoiceConfig: { voiceName: 'Algenib' },
                 },
-                prompt: sentence,
-            });
+                },
+            },
+            prompt: sentence,
+        });
 
-            if (media) {
-                const audioBuffer = Buffer.from(
-                    media.url.substring(media.url.indexOf(',') + 1),
-                    'base64'
-                );
-                audioBuffers.push(audioBuffer);
-            }
-        } catch (e) {
-            console.error(`Failed to generate audio for sentence: "${sentence}"`, e);
-            // We can choose to either stop or continue. For now, we'll continue.
+        if (media) {
+            const audioBuffer = Buffer.from(
+                media.url.substring(media.url.indexOf(',') + 1),
+                'base64'
+            );
+            audioBuffers.push(audioBuffer);
         }
     }
 

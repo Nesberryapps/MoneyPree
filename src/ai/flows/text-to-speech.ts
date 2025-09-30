@@ -70,20 +70,13 @@ const textToSpeechFlow = ai.defineFlow(
   async ({ text }) => {
     // If the input text is empty or just whitespace, do not call the API.
     if (!text || !text.trim()) {
-      // Return an empty audio data URI.
-      // The client-side hook should handle this gracefully and not attempt to play it.
       return { audio: 'data:audio/wav;base64,' };
     }
     
     const { media } = await ai.generate({
-        model: googleAI.model('gemini-2.5-flash-preview-tts'),
+        model: 'tts-1',
         config: {
             responseModalities: ['AUDIO'],
-            speechConfig: {
-            voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: 'Algenib' },
-            },
-            },
         },
         prompt: text,
     });

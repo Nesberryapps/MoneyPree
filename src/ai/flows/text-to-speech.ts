@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import wav from 'wav';
+import { googleAI } from '@genkit-ai/googleai';
 
 const TextToSpeechInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
@@ -73,7 +74,7 @@ const textToSpeechFlow = ai.defineFlow(
     }
     
     const { media } = await ai.generate({
-        model: 'gemini-pro',
+        model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
             responseModalities: ['AUDIO'],
             speechConfig: {

@@ -41,10 +41,9 @@ type FinancialLessonsProps = {
 const splitIntoSentences = (text: string): string[] => {
   if (!text) return [];
   // This regex splits by periods, question marks, and exclamation points
-  // that are followed by a space and an uppercase letter, or at the end of the string.
-  // It's not perfect but handles many common cases.
-  const sentences = text.match(/[^.!?]+[.!?]\s*|[^.!?]+$/g);
-  return sentences || [text]; // Return the original text if no sentences are found
+  // that are followed by a space or are at the end of the string.
+  const sentences = text.match(/[^.!?]+[.!?]*/g);
+  return sentences || [text];
 };
 
 export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {

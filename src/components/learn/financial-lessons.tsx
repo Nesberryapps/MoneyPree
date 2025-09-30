@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -31,7 +32,12 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 
-export function FinancialLessons() {
+type FinancialLessonsProps = {
+  onQuizComplete: (score: number) => void;
+};
+
+
+export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
   const [currentFinancialKnowledge, setCurrentFinancialKnowledge] = useState('');
   const [specificTopicsOfInterest, setSpecificTopicsOfInterest] = useState('');
   const [lesson, setLesson] = useState<GenerateFinancialLessonsOutput | null>(null);
@@ -94,6 +100,7 @@ export function FinancialLessons() {
     });
     setScore(correctAnswers);
     setSubmitted(true);
+    onQuizComplete(correctAnswers);
   };
 
   const getResultVariant = (question: QuizQuestion, choice: string) => {

@@ -32,10 +32,19 @@ export default function DashboardTabPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
 
+  // State for gamification
+  const [lessonsCompleted, setLessonsCompleted] = useState(0);
+  const [questionsAnswered, setQuestionsAnswered] = useState(0);
+
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
 
   const handleTabChange = (value: string) => {
     router.push(`/dashboard/${value}`);
+  };
+
+  const handleQuizCompletion = (score: number) => {
+    setLessonsCompleted(prev => prev + 1);
+    setQuestionsAnswered(prev => prev + score);
   };
 
   useEffect(() => {
@@ -63,7 +72,12 @@ export default function DashboardTabPage() {
 
           <TabsContent value="dashboard">
             <div className="flex flex-1 flex-col gap-4 md:gap-8">
-                <DashboardClient transactions={transactions} goals={goals} />
+                <DashboardClient
+                    transactions={transactions}
+                    goals={goals}
+                    lessonsCompleted={lessonsCompleted}
+                    questionsAnswered={questionsAnswered}
+                />
                 <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
                     <Card className="xl:col-span-3">
                     <CardHeader>
@@ -86,7 +100,9 @@ export default function DashboardTabPage() {
             <GoalsClient goals={goals} setGoals={setGoals} />
           </TabsContent>
           <TabsContent value="invest"><InvestmentSimulation /></TabsContent>
-          <TabsContent value="learn"><FinancialLessons /></TabsContent>
+          <TabsContent value="learn">
+            <FinancialLessons onQuizComplete={handleQuizCompletion} />
+          </TabsContent>
           <TabsContent value="qa"><ExpertQA /></TabsContent>
 
         </Tabs>

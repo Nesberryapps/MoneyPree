@@ -18,10 +18,6 @@ import type { Goal, Transaction } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 
-// Mock data for gamification - in a real app, this would come from a user profile
-const lessonsCompleted = 12;
-const questionsAnswered = 5;
-
 // Gamification levels
 const literacyLevels = [
     { name: 'Novice', minPoints: 0 },
@@ -41,9 +37,11 @@ const calculateLevel = (points: number) => {
 type DashboardClientProps = {
   transactions: Transaction[];
   goals: Goal[];
+  lessonsCompleted: number;
+  questionsAnswered: number;
 };
 
-export function DashboardClient({ transactions, goals }: DashboardClientProps) {
+export function DashboardClient({ transactions, goals, lessonsCompleted, questionsAnswered }: DashboardClientProps) {
     const [netBalance, setNetBalance] = useState(0);
     const [nextGoal, setNextGoal] = useState<Goal | null>(null);
 
@@ -66,6 +64,7 @@ export function DashboardClient({ transactions, goals }: DashboardClientProps) {
         }
 
         // Calculate gamification stats
+        // Each lesson is 1 point, each correct answer is 1 point.
         const totalPoints = lessonsCompleted + questionsAnswered;
         setPoints(totalPoints);
 
@@ -85,8 +84,7 @@ export function DashboardClient({ transactions, goals }: DashboardClientProps) {
             setProgressToNextLevel(100);
         }
 
-
-    }, [transactions, goals]);
+    }, [transactions, goals, lessonsCompleted, questionsAnswered]);
 
 
   const nextGoalRemaining = nextGoal ? nextGoal.targetAmount - nextGoal.currentAmount : 0;

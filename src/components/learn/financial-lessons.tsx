@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -39,6 +38,12 @@ type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
 };
 
+const splitIntoSentences = (text: string): string[] => {
+  if (!text) return [];
+  // This regex splits the text into sentences, respecting common punctuation.
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+};
 
 export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
   const [currentFinancialKnowledge, setCurrentFinancialKnowledge] = useState('');
@@ -123,7 +128,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(text);
+      speak(splitIntoSentences(text));
     }
   };
 

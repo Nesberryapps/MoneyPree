@@ -22,6 +22,12 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
+const splitIntoSentences = (text: string): string[] => {
+  if (!text) return [];
+  // This regex splits the text into sentences, respecting common punctuation.
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+};
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -56,7 +62,7 @@ export function ExpertQA() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(text);
+      speak(splitIntoSentences(text));
     }
   };
 

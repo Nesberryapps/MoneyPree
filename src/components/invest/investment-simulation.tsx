@@ -20,6 +20,14 @@ import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
+const splitIntoSentences = (text: string): string[] => {
+  if (!text) return [];
+  // This regex splits the text into sentences, respecting common punctuation.
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+};
+
+
 export function InvestmentSimulation() {
   const [currentHoldings, setCurrentHoldings] = useState('');
   const [investmentGoals, setInvestmentGoals] = useState('');
@@ -56,7 +64,7 @@ export function InvestmentSimulation() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(text);
+      speak(splitIntoSentences(text));
     }
   };
 

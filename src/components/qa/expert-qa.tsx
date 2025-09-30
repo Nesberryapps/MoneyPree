@@ -22,11 +22,10 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
-const splitIntoSentences = (text: string): string[] => {
+const splitIntoParagraphs = (text: string): string[] => {
   if (!text) return [];
-  // This regex splits the text into sentences, respecting common punctuation.
-  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
-  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+  // Split by one or more newline characters
+  return text.split(/\n+/).filter(p => p.trim().length > 0);
 };
 
 export function ExpertQA() {
@@ -62,7 +61,7 @@ export function ExpertQA() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoSentences(text));
+      speak(splitIntoParagraphs(text));
     }
   };
 

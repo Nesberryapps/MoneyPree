@@ -38,10 +38,13 @@ type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
 };
 
-const splitIntoParagraphs = (text: string): string[] => {
+const splitIntoSentences = (text: string): string[] => {
   if (!text) return [];
-  // Split by one or more newline characters
-  return text.split(/\n+/).filter(p => p.trim().length > 0);
+  // This regex splits by periods, question marks, and exclamation points
+  // that are followed by a space and an uppercase letter, or at the end of the string.
+  // It's not perfect but handles many common cases.
+  const sentences = text.match(/[^.!?]+[.!?]\s*|[^.!?]+$/g);
+  return sentences || [text]; // Return the original text if no sentences are found
 };
 
 export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
@@ -127,7 +130,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoParagraphs(text));
+      speak(splitIntoSentences(text));
     }
   };
 

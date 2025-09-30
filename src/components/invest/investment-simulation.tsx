@@ -20,10 +20,13 @@ import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
-const splitIntoParagraphs = (text: string): string[] => {
+const splitIntoSentences = (text: string): string[] => {
   if (!text) return [];
-  // Split by one or more newline characters
-  return text.split(/\n+/).filter(p => p.trim().length > 0);
+  // This regex splits by periods, question marks, and exclamation points
+  // that are followed by a space and an uppercase letter, or at the end of the string.
+  // It's not perfect but handles many common cases.
+  const sentences = text.match(/[^.!?]+[.!?]\s*|[^.!?]+$/g);
+  return sentences || [text]; // Return the original text if no sentences are found
 };
 
 
@@ -63,7 +66,7 @@ export function InvestmentSimulation() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoParagraphs(text));
+      speak(splitIntoSentences(text));
     }
   };
 

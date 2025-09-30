@@ -29,7 +29,7 @@ export type GenerateFinancialInsightsInput = {
 const FinancialInsightSchema = z.object({
     spendingAnalysis: z.string().describe("A brief, high-level analysis of the user's spending and income habits based on the transactions."),
     surprisingInsight: z.string().describe("One unique, non-obvious, and surprising insight discovered from the user's spending patterns."),
-    suggestions: z.array(z.string()).describe("A list of 2-3 actionable, personalized suggestions for improving financial health."),
+    suggestions: z.array(z.string()).describe("A list of 2-3 actionable, personalized smart nudges or suggestions for improving financial health. These should be specific and data-driven."),
     monthlyChallenge: z.string().describe("A specific, achievable financial challenge for the user to try over the next month."),
 });
 export type FinancialInsight = z.infer<typeof FinancialInsightSchema>;
@@ -53,7 +53,7 @@ Based on your analysis, provide the following in a friendly, encouraging, and ea
 
 1.  **Spending Analysis:** A brief, high-level analysis of the user's spending and income habits. Mention the ratio of income to expenses and the top spending categories.
 2.  **Surprising Insight:** Identify one single, non-obvious, and genuinely surprising insight from their spending patterns. This should be something they might not have noticed themselves. For example, maybe they spend more on coffee on Mondays, or their transportation costs spike on weekends.
-3.  **Actionable Suggestions:** Provide a list of 2-3 concrete, personalized, and actionable suggestions for how they could optimize their spending or increase their savings.
+3.  **Smart Nudges & Suggestions:** Provide a list of 2-3 concrete, personalized, and actionable "smart nudges". These should be data-driven suggestions to optimize spending or increase savings. For example: "Based on your spending patterns, you could redirect $50/month into your investment goal." or "You’re $150 away from your monthly budget goal—try a 3-day no-spend challenge!"
 4.  **Monthly Challenge:** Create a specific, fun, and achievable financial challenge for the user to try over the next month. For example, "Try a 'no-spend weekend' this month" or "Reduce your 'food' spending by 10% next month."
 `,
 });

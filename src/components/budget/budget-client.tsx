@@ -225,7 +225,7 @@ ${insights.surprisingInsight}
 ## Spending Analysis
 ${insights.spendingAnalysis}
 
-## Actionable Suggestions
+## Smart Nudges & Suggestions
 ${insights.suggestions.map(s => `- ${s}`).join('\n')}
 
 ## Your Next Monthly Challenge
@@ -607,7 +607,7 @@ ${insights.monthlyChallenge}
                 <p className="text-muted-foreground">{insights.spendingAnalysis}</p>
                 </div>
                 <div className="space-y-2">
-                <h3 className="font-semibold flex items-center gap-2"><Lightbulb className="text-primary"/> Actionable Suggestions</h3>
+                <h3 className="font-semibold flex items-center gap-2"><Lightbulb className="text-primary"/> Smart Nudges & Suggestions</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     {insights.suggestions.map((suggestion, index) => (
                         <li key={index}>{suggestion}</li>

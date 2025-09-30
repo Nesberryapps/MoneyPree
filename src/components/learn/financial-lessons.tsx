@@ -38,11 +38,6 @@ type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
 };
 
-const splitIntoParagraphs = (text: string): string[] => {
-  if (!text) return [];
-  // Split by one or more newline characters
-  return text.split(/\n+/).filter(p => p.trim().length > 0);
-};
 
 export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
   const [currentFinancialKnowledge, setCurrentFinancialKnowledge] = useState('');
@@ -127,7 +122,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoParagraphs(text));
+      speak(text);
     }
   };
 

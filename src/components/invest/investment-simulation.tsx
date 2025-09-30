@@ -20,12 +20,6 @@ import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
-const splitIntoParagraphs = (text: string): string[] => {
-  if (!text) return [];
-  // Split by one or more newline characters
-  return text.split(/\n+/).filter(p => p.trim().length > 0);
-};
-
 
 export function InvestmentSimulation() {
   const [currentHoldings, setCurrentHoldings] = useState('');
@@ -63,7 +57,7 @@ export function InvestmentSimulation() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoParagraphs(text));
+      speak(text);
     }
   };
 

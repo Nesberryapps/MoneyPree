@@ -22,12 +22,6 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
-const splitIntoParagraphs = (text: string): string[] => {
-  if (!text) return [];
-  // Split by one or more newline characters
-  return text.split(/\n+/).filter(p => p.trim().length > 0);
-};
-
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -62,7 +56,7 @@ export function ExpertQA() {
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      speak(splitIntoParagraphs(text));
+      speak(text);
     }
   };
 

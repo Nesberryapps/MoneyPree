@@ -24,7 +24,10 @@ export function useTextToSpeech() {
     if (currentAudioIndexRef.current < audioQueueRef.current.length) {
       isPlayingRef.current = true;
       const audio = audioQueueRef.current[currentAudioIndexRef.current];
+      // The audio source should already be loaded, so we just play.
       audio.play().catch((e) => {
+        // Ignore interruption errors as we handle the queue logic.
+        if (e.name === 'AbortError') return;
         console.error("Error playing audio:", e);
         setError("Error playing audio.");
         // Attempt to skip to the next clip
@@ -52,15 +55,20 @@ export function useTextToSpeech() {
     audioQueueRef.current = [];
 
     try {
-      // Create audio elements first
-      const audioElements = textSegments.map(segment => {
-        const audio = new Audio();
+      const audioPromises = textSegments.map(segment => textToSpeech({ text: segment }));
+      
+      const audioResults = await Promise.all(audioPromises);
+      
+      if (stopPlaybackRef.current) return;
+
+      audioQueueRef.current = audioResults.map(({ audio: audioSrc }) => {
+        const audio = new Audio(audioSrc);
         audio.onended = () => {
           currentAudioIndexRef.current++;
           playNextInQueue();
         };
-        audio.onerror = () => {
-          console.error("Error playing audio segment.");
+         audio.onerror = (e) => {
+          console.error("Error playing audio segment.", e);
           setError("Error playing audio.");
           currentAudioIndexRef.current++;
           playNextInQueue();
@@ -68,30 +76,11 @@ export function useTextToSpeech() {
         return audio;
       });
 
-      audioQueueRef.current = audioElements;
-      
-      // Start playing as soon as the first one is ready
-      playNextInQueue();
-
-      // Generate and load audio sources sequentially
-      for (let i = 0; i < textSegments.length; i++) {
-        if (stopPlaybackRef.current) break; // Stop fetching if user cancelled
-        try {
-            const { audio: audioSrc } = await textToSpeech({ text: textSegments[i] });
-            if (audioQueueRef.current[i]) {
-                audioQueueRef.current[i].src = audioSrc;
-                // If this is the currently playing (or about to be playing) audio, load it.
-                if (i === currentAudioIndexRef.current) {
-                    audioQueueRef.current[i].load();
-                }
-            }
-        } catch (e) {
-            console.error(`Failed to generate audio for segment ${i}:`, e);
-            // We can decide to skip this segment or stop entirely.
-            // For now, let's just log and the queue will skip it as it won't play.
-        }
+      if (audioQueueRef.current.length > 0) {
+        playNextInQueue();
+      } else {
+        setIsSpeaking(false);
       }
-
     } catch (e) {
       console.error("Text-to-speech failed:", e);
       setError('Failed to generate audio. Please try again.');
@@ -108,6 +97,7 @@ export function useTextToSpeech() {
         currentAudio.currentTime = 0;
       }
     }
+    audioQueueRef.current = [];
     isPlayingRef.current = false;
     setIsSpeaking(false);
   };

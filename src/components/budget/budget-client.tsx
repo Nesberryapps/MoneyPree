@@ -350,7 +350,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Total Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-500">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div className="text-2xl md:text-3xl font-bold text-green-500">${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
         <Card>
@@ -358,7 +358,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Total Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-500">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div className="text-2xl md:text-3xl font-bold text-red-500">${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
         <Card>
@@ -366,7 +366,7 @@ ${insights.monthlyChallenge}
             <CardTitle className="text-lg">Net Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div className={`text-2xl md:text-3xl font-bold ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>${netBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
       </div>

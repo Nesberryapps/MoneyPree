@@ -21,7 +21,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser();
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
-  const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
 
 
   useEffect(() => {
@@ -76,7 +75,10 @@ export default function LandingPage() {
       icon: BookOpen,
       title: 'Personalized Learning',
       description: 'Receive custom-tailored financial lessons based on your knowledge and interests. Complete quizzes to test your skills and level up your financial literacy at your own pace.',
-      image: featureLearnImage
+      image: {
+        imageUrl: '/personalized-learning.png',
+        imageHint: 'personalized learning course'
+      }
     },
     {
       icon: Bot,

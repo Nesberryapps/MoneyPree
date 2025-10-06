@@ -21,7 +21,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser();
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
-  const featureGoalsImage = PlaceHolderImages.find(img => img.id === 'landing-feature-2');
   const featureInvestImage = PlaceHolderImages.find(img => img.id === 'landing-feature-3');
   const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
   const featureQAImage = PlaceHolderImages.find(img => img.id === 'landing-feature-5');
@@ -62,7 +61,10 @@ export default function LandingPage() {
       icon: Target,
       title: 'Intelligent Goal Setting',
       description: 'Describe your financial dreams, and our AI will generate specific, measurable goals to help you get there faster. From saving for a house to planning retirement, we make your ambitions achievable.',
-      image: featureGoalsImage
+      image: {
+        imageUrl: '/intelligent-goals.png',
+        imageHint: 'financial planning goals'
+      }
     },
     {
       icon: LineChart,
@@ -186,3 +188,5 @@ export default function LandingPage() {
       </footer>
     </div>
   );
+
+    

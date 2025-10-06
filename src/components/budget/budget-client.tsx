@@ -85,13 +85,13 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 
 type BudgetClientProps = {
     transactions: Transaction[];
     setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+    isVoiceInteractionEnabled: boolean;
 };
 
 const CategoryIcon = ({ category }: { category: string }) => {
@@ -112,7 +112,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 };
 
 
-export function BudgetClient({ transactions, setTransactions }: BudgetClientProps) {
+export function BudgetClient({ transactions, setTransactions, isVoiceInteractionEnabled }: BudgetClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -142,7 +142,6 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
   const [category, setCategory] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   
-  const { isVoiceInteractionEnabled } = useVoiceInteraction();
   const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
   const { isListening: isListeningAmount, startListening: startListeningAmount, stopListening: stopListeningAmount } = useSpeechToText({ onTranscript: (text) => setAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
 
@@ -680,7 +679,3 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
-
-    
-
-    

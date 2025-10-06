@@ -24,6 +24,7 @@ import { FinancialLessons } from '@/components/learn/financial-lessons';
 import { ExpertQA } from '@/components/qa/expert-qa';
 import { NAV_LINKS } from '@/lib/constants';
 import Loading from '@/components/layout/loading';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 
 export default function DashboardTabPage() {
   const { user, isUserLoading } = useUser();
@@ -31,6 +32,7 @@ export default function DashboardTabPage() {
   const params = useParams();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
 
   // State for gamification
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
@@ -94,7 +96,11 @@ export default function DashboardTabPage() {
             </div>
           </TabsContent>
           <TabsContent value="budget">
-            <BudgetClient transactions={transactions} setTransactions={setTransactions} />
+            <BudgetClient 
+                transactions={transactions} 
+                setTransactions={setTransactions} 
+                isVoiceInteractionEnabled={isVoiceInteractionEnabled}
+            />
           </TabsContent>
           <TabsContent value="goals">
             <GoalsClient goals={goals} setGoals={setGoals} />

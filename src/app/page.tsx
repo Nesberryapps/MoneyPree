@@ -22,7 +22,6 @@ export default function LandingPage() {
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
   const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
-  const featureVoiceImage = PlaceHolderImages.find(img => img.id === 'landing-feature-6');
 
 
   useEffect(() => {
@@ -92,7 +91,10 @@ export default function LandingPage() {
       icon: Mic,
       title: 'Voice-Enabled Interaction',
       description: 'Interact with the app using your voice. Dictate questions, fill out forms, and have results read back to you for a truly hands-free financial management experience.',
-      image: featureVoiceImage
+      image: {
+        imageUrl: '/Voice-enabled.png',
+        imageHint: 'voice interaction app'
+      }
     }
   ];
 

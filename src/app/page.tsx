@@ -21,7 +21,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser();
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
-  const featureInvestImage = PlaceHolderImages.find(img => img.id === 'landing-feature-3');
   const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
   const featureQAImage = PlaceHolderImages.find(img => img.id === 'landing-feature-5');
   const featureVoiceImage = PlaceHolderImages.find(img => img.id === 'landing-feature-6');
@@ -70,7 +69,10 @@ export default function LandingPage() {
       icon: LineChart,
       title: 'Investment Simulation',
       description: 'Explore different investment strategies without the risk. Our AI analyzes your portfolio and goals to suggest diversification, assess risk, and project potential returns.',
-      image: featureInvestImage
+      image: {
+        imageUrl: '/investment-simulation.png',
+        imageHint: 'investment portfolio analysis'
+      }
     },
     {
       icon: BookOpen,
@@ -190,3 +192,4 @@ export default function LandingPage() {
   );
 
     
+}

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
-import { MoneyWizeIcon } from '../icons';
+import { MoneyPreeIcon } from '../icons';
 import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '../auth/auth-provider';
@@ -32,8 +32,8 @@ export function Header() {
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
        <Link href="/dashboard" className="flex items-center gap-2">
-          <MoneyWizeIcon className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold">MoneyWize</span>
+          <MoneyPreeIcon className="h-8 w-8 text-primary" />
+          <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
       <div className="w-full flex-1">
       </div>

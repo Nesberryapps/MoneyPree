@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoneyWizeIcon } from '@/components/icons';
+import { MoneyPreeIcon } from '@/components/icons';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
@@ -104,8 +104,8 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="w-full p-4 flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2">
-          <MoneyWizeIcon className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold">MoneyWize</span>
+          <MoneyPreeIcon className="h-8 w-8 text-primary" />
+          <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
         <div className="flex items-center gap-2">
             <AuthProvider />
@@ -136,7 +136,7 @@ export default function LandingPage() {
                     The Smartest Way to Manage Your Money
                 </h1>
                 <p className="max-w-3xl mx-auto mt-4 text-lg text-muted-foreground">
-                    MoneyWize is your AI-powered financial partner. From budgeting and goals to investing and learning, we provide the tools you need to achieve financial freedom.
+                    MoneyPree is your AI-powered financial partner. From budgeting and goals to investing and learning, we provide the tools you need to achieve financial freedom.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
                     <AuthProvider />
@@ -191,7 +191,7 @@ export default function LandingPage() {
 
        <footer className="w-full py-8 px-4 border-t">
         <div className="container mx-auto text-center">
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyWize. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyPree. All rights reserved.</p>
         </div>
       </footer>
     </div>

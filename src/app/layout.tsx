@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'MoneyWize',
+  title: 'MoneyPree',
   description: 'Teach, manage, and suggest financial investments using AI.',
 };
 

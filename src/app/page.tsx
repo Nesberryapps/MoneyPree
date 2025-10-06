@@ -21,7 +21,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser();
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
-  const featureBudgetingImage = PlaceHolderImages.find(img => img.id === 'landing-feature-1');
   const featureGoalsImage = PlaceHolderImages.find(img => img.id === 'landing-feature-2');
   const featureInvestImage = PlaceHolderImages.find(img => img.id === 'landing-feature-3');
   const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
@@ -54,7 +53,10 @@ export default function LandingPage() {
       icon: ScanLine,
       title: 'AI Budgeting & Receipt Scan',
       description: 'Track expenses effortlessly. Scan receipts with your camera and let our AI categorize and record transactions for you, giving you a crystal-clear overview of your spending.',
-      image: featureBudgetingImage
+      image: {
+        imageUrl: '/scan-receipt.png',
+        imageHint: 'receipt scanning'
+      }
     },
     {
       icon: Target,
@@ -184,4 +186,3 @@ export default function LandingPage() {
       </footer>
     </div>
   );
-}

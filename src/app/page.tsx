@@ -22,7 +22,6 @@ export default function LandingPage() {
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
   const featureLearnImage = PlaceHolderImages.find(img => img.id === 'landing-feature-4');
-  const featureQAImage = PlaceHolderImages.find(img => img.id === 'landing-feature-5');
   const featureVoiceImage = PlaceHolderImages.find(img => img.id === 'landing-feature-6');
 
 
@@ -84,7 +83,10 @@ export default function LandingPage() {
       icon: Bot,
       title: 'Expert Q&A',
       description: 'Have a question about taxes, stocks, or anything in between? Get instant, detailed answers from our AI financial expert, available 24/7 to guide you.',
-      image: featureQAImage
+      image: {
+        imageUrl: '/expert-q&a.png',
+        imageHint: 'AI expert answers'
+      }
     },
     {
       icon: Mic,

@@ -73,6 +73,7 @@ import {
   Calendar as CalendarIcon,
   Camera,
   ScanLine,
+  Mic,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
@@ -84,6 +85,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 
 type BudgetClientProps = {
@@ -138,6 +141,10 @@ export function BudgetClient({ transactions, setTransactions }: BudgetClientProp
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
+  
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
+  const { isListening: isListeningAmount, startListening: startListeningAmount, stopListening: stopListeningAmount } = useSpeechToText({ onTranscript: (text) => setAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
 
 
   const resetForm = () => {
@@ -432,15 +439,39 @@ ${insights.monthlyChallenge}
                     <DialogTitle>{editingTransaction ? 'Edit' : 'Add'} Transaction</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Amount</Label>
-                            <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                            <Label htmlFor="description">Description</Label>
+                            <div className="relative">
+                            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+                            {isVoiceInteractionEnabled && (
+                                <Button
+                                    size="icon"
+                                    variant={isListeningDescription ? 'destructive' : 'ghost'}
+                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                    onClick={isListeningDescription ? stopListeningDescription : startListeningDescription}
+                                >
+                                    <Mic className="h-4 w-4" />
+                                </Button>
+                            )}
+                            </div>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="amount">Amount</Label>
+                                <div className="relative">
+                                <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                                {isVoiceInteractionEnabled && (
+                                    <Button
+                                        size="icon"
+                                        variant={isListeningAmount ? 'destructive' : 'ghost'}
+                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                        onClick={isListeningAmount ? stopListeningAmount : startListeningAmount}
+                                    >
+                                        <Mic className="h-4 w-4" />
+                                    </Button>
+                                )}
+                                </div>
+                            </div>
                         <div className="grid gap-2">
                             <Label htmlFor="date">Date</Label>
                             <Popover>
@@ -649,5 +680,7 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
+
+    
 
     

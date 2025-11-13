@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -51,6 +50,9 @@ export function Header() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{user.isAnonymous ? 'Guest Account' : 'My Account'}</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/pricing">Pricing</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>
             </DropdownMenuItem>

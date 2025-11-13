@@ -26,6 +26,7 @@ import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useProStatus } from '@/hooks/use-pro-status';
 
 
 export default function DashboardTabPage() {
@@ -41,9 +42,7 @@ export default function DashboardTabPage() {
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
 
   // --- Pro Plan Simulation ---
-  // In a real app, this would come from the user's profile in Firestore,
-  // which would be set by a Stripe webhook after a successful subscription.
-  const [isPro, setIsPro] = useState(false);
+  const { isPro, setIsPro } = useProStatus();
   // --- End Pro Plan Simulation ---
 
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;

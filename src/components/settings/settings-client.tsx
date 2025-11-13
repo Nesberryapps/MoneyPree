@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,18 +20,8 @@ import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { createCustomerPortalSession } from '@/ai/flows/stripe-checkout';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
+import { useProStatus } from '@/hooks/use-pro-status';
 
-
-// This is a simulation. In a real app, this would be determined by the user's subscription status in your database.
-const useProStatus = () => {
-    const [isPro, setIsPro] = useState(false);
-    useEffect(() => {
-        // To test, you can toggle this in the dashboard and then navigate here.
-        const proStatus = localStorage.getItem('isPro');
-        setIsPro(proStatus === 'true');
-    }, []);
-    return { isPro };
-};
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();

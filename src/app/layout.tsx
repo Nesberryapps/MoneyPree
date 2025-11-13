@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { ProStatusProvider } from '@/hooks/use-pro-status';
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -32,7 +33,9 @@ export default function RootLayout({
             disableTransitionOnChange
         >
           <FirebaseClientProvider>
-            {children}
+            <ProStatusProvider>
+                {children}
+            </ProStatusProvider>
           </FirebaseClientProvider>
           <Toaster />
         </ThemeProvider>

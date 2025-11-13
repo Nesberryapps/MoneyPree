@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -93,6 +92,7 @@ type BudgetClientProps = {
     transactions: Transaction[];
     setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
     isVoiceInteractionEnabled: boolean;
+    isPro: boolean;
 };
 
 const CategoryIcon = ({ category }: { category: string }) => {
@@ -113,7 +113,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 };
 
 
-export function BudgetClient({ transactions, setTransactions, isVoiceInteractionEnabled }: BudgetClientProps) {
+export function BudgetClient({ transactions, setTransactions, isVoiceInteractionEnabled, isPro }: BudgetClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -384,7 +384,14 @@ ${insights.monthlyChallenge}
             <CardTitle>Transactions</CardTitle>
             <CardDescription>A list of your recent income and expenses.</CardDescription>
             <div className="ml-auto flex items-center gap-2 pt-2">
-                <PlaidLink />
+                <div className="relative group">
+                    <PlaidLink disabled={!isPro} />
+                    {!isPro && (
+                        <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs">
+                            Pro
+                        </Badge>
+                    )}
+                </div>
 
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>

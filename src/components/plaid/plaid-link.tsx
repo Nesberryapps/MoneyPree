@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -13,7 +12,7 @@ import { createLinkToken, setAccessToken } from '@/ai/flows/plaid-flows';
 import { Banknote, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export function PlaidLink() {
+export function PlaidLink({ disabled = false }: { disabled?: boolean }) {
   const { user } = useUser();
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,10 +75,26 @@ export function PlaidLink() {
 
   const { open, ready } = usePlaidLink(config);
 
+  const handleClick = () => {
+    if (disabled) {
+        toast({
+            title: 'Pro Feature',
+            description: 'Please upgrade to a Pro plan to connect your bank account.',
+            action: (
+                <a href="/pricing">
+                    <Button>Upgrade</Button>
+                </a>
+            )
+        })
+        return;
+    }
+    open();
+  }
+
   return (
     <Button
-      onClick={() => open()}
-      disabled={!ready || isLoading}
+      onClick={handleClick}
+      disabled={!ready || isLoading || disabled}
       size="sm"
       variant="outline"
       className="h-8 gap-1"

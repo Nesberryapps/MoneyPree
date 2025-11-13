@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
 import type { Transaction, Goal } from '@/lib/types';
 import { initialTransactions, initialGoals } from '@/lib/initial-data';
@@ -27,12 +27,16 @@ import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useProStatus } from '@/hooks/use-pro-status';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function DashboardTabPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
@@ -46,6 +50,20 @@ export default function DashboardTabPage() {
   // --- End Pro Plan Simulation ---
 
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
+
+  // Handle Stripe redirect
+  useEffect(() => {
+    const stripeSessionId = searchParams.get('session_id');
+    if (stripeSessionId) {
+      setIsPro(true);
+      toast({
+        title: 'Welcome to MoneyPree Pro!',
+        description: "You've successfully unlocked all premium features.",
+      });
+      // Clean up the URL
+      router.replace(`/dashboard/${activeTab}`);
+    }
+  }, [searchParams, setIsPro, toast, router, activeTab]);
 
   const handleTabChange = (value: string) => {
     router.push(`/dashboard/${value}`);

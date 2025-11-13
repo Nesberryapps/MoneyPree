@@ -110,6 +110,8 @@ const createCustomerPortalSessionFlow = ai.defineFlow(
             throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
         }
 
+        let customerId;
+
         // In a real application, you would retrieve the Stripe Customer ID
         // from your database (e.g., Firestore) based on the userId.
         // For this prototype, we'll search for the customer by metadata.
@@ -118,13 +120,19 @@ const createCustomerPortalSessionFlow = ai.defineFlow(
             email: 'test-customer@example.com' // A placeholder to find a test customer
         });
 
-        if (!customers.data || customers.data.length === 0) {
-            // If you want to test this, create a customer manually in your Stripe dashboard
-            // with the email 'test-customer@example.com'
-            throw new Error('Could not find a test Stripe customer. Please create one in your Stripe Dashboard.');
+        if (customers.data && customers.data.length > 0) {
+            customerId = customers.data[0].id;
+        } else {
+            // If no customer is found, create one. This makes the prototype more robust.
+            const newCustomer = await stripe.customers.create({
+                email: 'test-customer@example.com',
+                metadata: {
+                    // In a real app, you would associate this with your internal user ID
+                    // userId: userId, 
+                }
+            });
+            customerId = newCustomer.id;
         }
-
-        const customerId = customers.data[0].id;
         
         try {
             const portalSession = await stripe.billingPortal.sessions.create({

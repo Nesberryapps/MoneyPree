@@ -46,16 +46,22 @@ export default function PricingPage() {
         throw new Error('Stripe Price ID is not configured.');
       }
 
-      const { url } = await createCheckoutSession({
+      const { sessionId } = await createCheckoutSession({
         priceId,
         userId: user.uid,
       });
 
-      if (url) {
-        // Redirect the top-level window to the Stripe checkout URL
-        window.top!.location.href = url;
-      } else {
-        throw new Error('Could not create a checkout session.');
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Stripe.js has not loaded yet.');
+      }
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId,
+      });
+
+      if (error) {
+        throw error;
       }
 
     } catch (error: any) {

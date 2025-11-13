@@ -22,7 +22,6 @@ export type CheckoutSessionInput = z.infer<typeof CheckoutSessionInputSchema>;
 
 const CheckoutSessionOutputSchema = z.object({
   sessionId: z.string().describe('The ID of the created Stripe Checkout session.'),
-  url: z.string().nullable().describe('The URL to the checkout page.'),
 });
 export type CheckoutSessionOutput = z.infer<typeof CheckoutSessionOutputSchema>;
 
@@ -39,6 +38,11 @@ const createCheckoutSessionFlow = ai.defineFlow(
     outputSchema: CheckoutSessionOutputSchema,
   },
   async ({ priceId, userId }) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+        throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
+    }
+
     // In a real app, you would look up if the user already has a Stripe Customer ID
     // and re-use it. For this example, we'll create a new customer each time.
     const customer = await stripe.customers.create({
@@ -46,12 +50,6 @@ const createCheckoutSessionFlow = ai.defineFlow(
         userId: userId,
       },
     });
-
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!appUrl) {
-        throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
-    }
-
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -64,7 +62,6 @@ const createCheckoutSessionFlow = ai.defineFlow(
         ],
         mode: 'subscription',
         customer: customer.id,
-        // Make sure to configure these URLs in your Next.js app
         success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/pricing`,
       });
@@ -75,7 +72,6 @@ const createCheckoutSessionFlow = ai.defineFlow(
 
       return {
         sessionId: session.id,
-        url: session.url,
       };
     } catch (error) {
       console.error('Error creating Stripe checkout session:', error);

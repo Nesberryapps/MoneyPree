@@ -30,6 +30,7 @@ export type CheckoutSessionOutput = z.infer<typeof CheckoutSessionOutputSchema>;
 
 const CustomerPortalInputSchema = z.object({
     userId: z.string().describe('The internal user ID associated with the Stripe customer.'),
+    userEmail: z.string().optional().describe("The user's email address, used to look up the Stripe customer."),
 });
 export type CustomerPortalInput = z.infer<typeof CustomerPortalInputSchema>;
 
@@ -57,23 +58,26 @@ const createCheckoutSessionFlow = ai.defineFlow(
         throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
     }
 
-    // Look for an existing customer by userId metadata first.
-    const existingCustomers = await stripe.customers.list({
-      limit: 1,
-      metadata: { userId: userId },
-    });
-
+    // Look for an existing customer by email. If not found, create a new one.
     let customer;
-    if (existingCustomers.data.length > 0) {
-      customer = existingCustomers.data[0];
-    } else {
-      // If no customer is found, create a new one.
-      customer = await stripe.customers.create({
-        email: userEmail, // Pass the user's email if available
-        metadata: {
-          userId: userId, // Store our internal user ID in Stripe's metadata
-        },
-      });
+    if (userEmail) {
+        const existingCustomers = await stripe.customers.list({
+          email: userEmail,
+          limit: 1,
+        });
+
+        if (existingCustomers.data.length > 0) {
+          customer = existingCustomers.data[0];
+        }
+    }
+
+    if (!customer) {
+        customer = await stripe.customers.create({
+            email: userEmail,
+            metadata: {
+                userId: userId, // Store our internal user ID in Stripe's metadata
+            },
+        });
     }
 
     try {
@@ -86,7 +90,7 @@ const createCheckoutSessionFlow = ai.defineFlow(
           },
         ],
         mode: 'subscription',
-        customer: customer.id, // Use the found or newly created customer
+        customer: customer.id,
         success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/pricing`,
       });
@@ -116,22 +120,24 @@ const createCustomerPortalSessionFlow = ai.defineFlow(
         inputSchema: CustomerPortalInputSchema,
         outputSchema: CustomerPortalOutputSchema,
     },
-    async ({ userId }) => {
+    async ({ userId, userEmail }) => {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL;
         if (!appUrl) {
             throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
         }
 
-        // Find the Stripe Customer ID by looking up the userId in the metadata.
+        if (!userEmail) {
+            throw new Error('User email is required to find the customer portal.');
+        }
+        
+        // Find the Stripe Customer ID by looking up the user's email.
         const customers = await stripe.customers.list({
             limit: 1,
-            metadata: { userId: userId },
+            email: userEmail,
         });
 
         if (!customers.data || customers.data.length === 0) {
-            // This case should ideally not happen for a Pro user,
-            // but we'll handle it gracefully.
-            throw new Error('Could not find a subscription for your account.');
+            throw new Error('Could not find a subscription for your account. If you just subscribed, please wait a moment and try again.');
         }
         
         const customerId = customers.data[0].id;

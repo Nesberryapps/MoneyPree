@@ -59,9 +59,10 @@ export function SettingsClient() {
       }
       setIsPortalLoading(true);
       try {
-          // In a real app, you would have the Stripe Customer ID stored against the user.
-          // Here, our flow finds a test customer.
-          const { url } = await createCustomerPortalSession({ userId: user.uid });
+          const { url } = await createCustomerPortalSession({ 
+            userId: user.uid,
+            userEmail: user.email || undefined,
+          });
           window.open(url, '_blank');
       } catch (error: any) {
           console.error('Error creating customer portal session:', error);

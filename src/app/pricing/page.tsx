@@ -18,7 +18,7 @@ import { Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-// Make sure to add your publishable key to your environment variables
+// This is not needed for the new tab approach, but kept for Stripe.js initialization.
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
 );
@@ -46,23 +46,26 @@ export default function PricingPage() {
         throw new Error('Stripe Price ID is not configured.');
       }
 
-      const { sessionId } = await createCheckoutSession({
+      // 1. Create the checkout session and get the URL
+      const { url } = await createCheckoutSession({
         priceId,
         userId: user.uid,
       });
 
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error('Stripe.js has not loaded yet.');
+      if (!url) {
+        throw new Error("Could not retrieve Stripe checkout URL.");
       }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
+      
+      // 2. Open the URL in a new tab
+      window.open(url, '_blank');
+      
+      // We don't need to do anything else. The user completes the flow in the new tab.
+      // We can show a toast to inform the user.
+      toast({
+        title: 'Redirecting to Checkout',
+        description: 'Your Stripe checkout page has been opened in a new tab.',
       });
 
-      if (error) {
-        throw error;
-      }
 
     } catch (error: any) {
       console.error('Stripe checkout error:', error);
@@ -71,7 +74,8 @@ export default function PricingPage() {
         title: 'Error',
         description: error.message || 'Failed to start the subscription process. Please try again.',
       });
-      setIsLoading(false);
+    } finally {
+        setIsLoading(false);
     }
   };
 

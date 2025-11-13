@@ -22,6 +22,7 @@ export type CheckoutSessionInput = z.infer<typeof CheckoutSessionInputSchema>;
 
 const CheckoutSessionOutputSchema = z.object({
   sessionId: z.string().describe('The ID of the created Stripe Checkout session.'),
+  url: z.string().describe('The URL to redirect the user to for checkout.'),
 });
 export type CheckoutSessionOutput = z.infer<typeof CheckoutSessionOutputSchema>;
 
@@ -66,12 +67,13 @@ const createCheckoutSessionFlow = ai.defineFlow(
         cancel_url: `${appUrl}/pricing`,
       });
 
-      if (!session.id) {
-        throw new Error('Could not create Stripe session.');
+      if (!session.id || !session.url) {
+        throw new Error('Could not create Stripe session or URL.');
       }
 
       return {
         sessionId: session.id,
+        url: session.url,
       };
     } catch (error) {
       console.error('Error creating Stripe checkout session:', error);

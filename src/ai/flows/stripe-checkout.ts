@@ -22,6 +22,7 @@ export type CheckoutSessionInput = z.infer<typeof CheckoutSessionInputSchema>;
 
 const CheckoutSessionOutputSchema = z.object({
   sessionId: z.string().describe('The ID of the created Stripe Checkout session.'),
+  url: z.string().nullable().describe('The URL to the checkout page.'),
 });
 export type CheckoutSessionOutput = z.infer<typeof CheckoutSessionOutputSchema>;
 
@@ -74,6 +75,7 @@ const createCheckoutSessionFlow = ai.defineFlow(
 
       return {
         sessionId: session.id,
+        url: session.url,
       };
     } catch (error) {
       console.error('Error creating Stripe checkout session:', error);

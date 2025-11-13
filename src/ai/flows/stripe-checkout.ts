@@ -1,9 +1,10 @@
 'use server';
 
 /**
- * @fileOverview This file contains the Genkit flow for creating a Stripe Checkout session.
+ * @fileOverview This file contains the Genkit flows for creating a Stripe Checkout session and Customer Portal.
  * 
  * - createCheckoutSession - Creates a Stripe Checkout session for a given price ID.
+ * - createCustomerPortalSession - Creates a session for the Stripe Customer Portal.
  */
 
 import { ai } from '@/ai/genkit';
@@ -21,10 +22,21 @@ const CheckoutSessionInputSchema = z.object({
 export type CheckoutSessionInput = z.infer<typeof CheckoutSessionInputSchema>;
 
 const CheckoutSessionOutputSchema = z.object({
-  sessionId: z.string().describe('The ID of the created Stripe Checkout session.'),
   url: z.string().describe('The URL to redirect the user to for checkout.'),
 });
 export type CheckoutSessionOutput = z.infer<typeof CheckoutSessionOutputSchema>;
+
+
+const CustomerPortalInputSchema = z.object({
+    userId: z.string().describe('The internal user ID associated with the Stripe customer.'),
+});
+export type CustomerPortalInput = z.infer<typeof CustomerPortalInputSchema>;
+
+const CustomerPortalOutputSchema = z.object({
+    url: z.string().describe('The URL to the Stripe Customer Portal.'),
+});
+export type CustomerPortalOutput = z.infer<typeof CustomerPortalOutputSchema>;
+
 
 export async function createCheckoutSession(
   input: CheckoutSessionInput
@@ -67,12 +79,11 @@ const createCheckoutSessionFlow = ai.defineFlow(
         cancel_url: `${appUrl}/pricing`,
       });
 
-      if (!session.id || !session.url) {
-        throw new Error('Could not create Stripe session or URL.');
+      if (!session.url) {
+        throw new Error('Could not create Stripe session URL.');
       }
 
       return {
-        sessionId: session.id,
         url: session.url,
       };
     } catch (error) {
@@ -80,4 +91,54 @@ const createCheckoutSessionFlow = ai.defineFlow(
       throw new Error('Failed to create Stripe checkout session.');
     }
   }
+);
+
+
+export async function createCustomerPortalSession(input: CustomerPortalInput): Promise<CustomerPortalOutput> {
+    return createCustomerPortalSessionFlow(input);
+}
+
+const createCustomerPortalSessionFlow = ai.defineFlow(
+    {
+        name: 'createCustomerPortalSessionFlow',
+        inputSchema: CustomerPortalInputSchema,
+        outputSchema: CustomerPortalOutputSchema,
+    },
+    async ({ userId }) => {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        if (!appUrl) {
+            throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
+        }
+
+        // In a real application, you would retrieve the Stripe Customer ID
+        // from your database (e.g., Firestore) based on the userId.
+        // For this prototype, we'll search for the customer by metadata.
+        const customers = await stripe.customers.list({
+            limit: 1,
+            email: 'test-customer@example.com' // A placeholder to find a test customer
+        });
+
+        if (!customers.data || customers.data.length === 0) {
+            // If you want to test this, create a customer manually in your Stripe dashboard
+            // with the email 'test-customer@example.com'
+            throw new Error('Could not find a test Stripe customer. Please create one in your Stripe Dashboard.');
+        }
+
+        const customerId = customers.data[0].id;
+        
+        try {
+            const portalSession = await stripe.billingPortal.sessions.create({
+                customer: customerId,
+                return_url: `${appUrl}/settings`,
+            });
+            
+            return {
+                url: portalSession.url,
+            };
+
+        } catch (error) {
+            console.error('Error creating Stripe customer portal session:', error);
+            throw new Error('Failed to create Stripe customer portal session.');
+        }
+    }
 );

@@ -18,6 +18,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 const CheckoutSessionInputSchema = z.object({
   priceId: z.string().describe('The ID of the Stripe Price object.'),
   userId: z.string().describe('The internal user ID to associate with the Stripe customer.'),
+  userEmail: z.string().optional().describe("The user's email address."),
 });
 export type CheckoutSessionInput = z.infer<typeof CheckoutSessionInputSchema>;
 
@@ -50,19 +51,30 @@ const createCheckoutSessionFlow = ai.defineFlow(
     inputSchema: CheckoutSessionInputSchema,
     outputSchema: CheckoutSessionOutputSchema,
   },
-  async ({ priceId, userId }) => {
+  async ({ priceId, userId, userEmail }) => {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
         throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
     }
 
-    // In a real app, you would look up if the user already has a Stripe Customer ID
-    // and re-use it. For this example, we'll create a new customer each time.
-    const customer = await stripe.customers.create({
-      metadata: {
-        userId: userId,
-      },
+    // Look for an existing customer by userId metadata first.
+    const existingCustomers = await stripe.customers.list({
+      limit: 1,
+      metadata: { userId: userId },
     });
+
+    let customer;
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+    } else {
+      // If no customer is found, create a new one.
+      customer = await stripe.customers.create({
+        email: userEmail, // Pass the user's email if available
+        metadata: {
+          userId: userId, // Store our internal user ID in Stripe's metadata
+        },
+      });
+    }
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -74,7 +86,7 @@ const createCheckoutSessionFlow = ai.defineFlow(
           },
         ],
         mode: 'subscription',
-        customer: customer.id,
+        customer: customer.id, // Use the found or newly created customer
         success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/pricing`,
       });
@@ -110,29 +122,19 @@ const createCustomerPortalSessionFlow = ai.defineFlow(
             throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
         }
 
-        let customerId;
-
-        // In a real application, you would retrieve the Stripe Customer ID
-        // from your database (e.g., Firestore) based on the userId.
-        // For this prototype, we'll search for the customer by metadata.
+        // Find the Stripe Customer ID by looking up the userId in the metadata.
         const customers = await stripe.customers.list({
             limit: 1,
-            email: 'test-customer@example.com' // A placeholder to find a test customer
+            metadata: { userId: userId },
         });
 
-        if (customers.data && customers.data.length > 0) {
-            customerId = customers.data[0].id;
-        } else {
-            // If no customer is found, create one. This makes the prototype more robust.
-            const newCustomer = await stripe.customers.create({
-                email: 'test-customer@example.com',
-                metadata: {
-                    // In a real app, you would associate this with your internal user ID
-                    // userId: userId, 
-                }
-            });
-            customerId = newCustomer.id;
+        if (!customers.data || customers.data.length === 0) {
+            // This case should ideally not happen for a Pro user,
+            // but we'll handle it gracefully.
+            throw new Error('Could not find a subscription for your account.');
         }
+        
+        const customerId = customers.data[0].id;
         
         try {
             const portalSession = await stripe.billingPortal.sessions.create({

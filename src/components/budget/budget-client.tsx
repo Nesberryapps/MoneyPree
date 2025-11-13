@@ -86,6 +86,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { PlaidLink } from '@/components/plaid/plaid-link';
 
 
 type BudgetClientProps = {
@@ -383,6 +384,8 @@ ${insights.monthlyChallenge}
             <CardTitle>Transactions</CardTitle>
             <CardDescription>A list of your recent income and expenses.</CardDescription>
             <div className="ml-auto flex items-center gap-2 pt-2">
+                <PlaidLink />
+
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
                         <Button size="sm" variant="outline" className="h-8 gap-1">

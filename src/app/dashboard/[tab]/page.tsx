@@ -24,8 +24,6 @@ import { ExpertQA } from '@/components/qa/expert-qa';
 import { NAV_LINKS } from '@/lib/constants';
 import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { useToast } from '@/hooks/use-toast';
 
@@ -45,9 +43,7 @@ export default function DashboardTabPage() {
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
 
-  // --- Pro Plan Simulation ---
   const { isPro, setIsPro } = useProStatus();
-  // --- End Pro Plan Simulation ---
 
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
 
@@ -88,7 +84,7 @@ export default function DashboardTabPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex flex-1 flex-col p-4 md:p-8">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-start mb-4">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="flex flex-wrap h-auto justify-start mb-4">
                 {NAV_LINKS.map((link) => (
@@ -139,10 +135,6 @@ export default function DashboardTabPage() {
             <TabsContent value="qa"><ExpertQA /></TabsContent>
 
             </Tabs>
-            <div className="flex items-center space-x-2 p-2 rounded-lg bg-muted/50 ml-4">
-                <Switch id="pro-mode" checked={isPro} onCheckedChange={setIsPro} />
-                <Label htmlFor="pro-mode" className="text-sm font-medium">Pro Mode</Label>
-            </div>
         </div>
       </main>
     </div>

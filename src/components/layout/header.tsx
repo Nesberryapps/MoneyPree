@@ -16,12 +16,16 @@ import { MoneyPreeIcon } from '../icons';
 import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '../auth/auth-provider';
+import { useProStatus } from '@/hooks/use-pro-status';
+import { Badge } from '@/components/ui/badge';
+import { ShieldCheck } from 'lucide-react';
 
 export function Header() {
   const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
   const auth = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const { isPro } = useProStatus();
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -36,6 +40,12 @@ export function Header() {
         </Link>
       <div className="w-full flex-1">
       </div>
+      {isPro && (
+        <Badge variant="premium" className="mr-2">
+          <ShieldCheck className="h-4 w-4 mr-1" />
+          Pro
+        </Badge>
+      )}
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -244,7 +244,7 @@ export function SettingsClient() {
           <CardDescription>
             Manage accessibility features for a better experience.
           </CardDescription>
-        </Header>
+        </CardHeader>
         <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
                 <Label htmlFor="voice-interaction" className="flex flex-col space-y-1">

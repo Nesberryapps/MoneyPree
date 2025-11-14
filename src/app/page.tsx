@@ -190,8 +190,16 @@ export default function LandingPage() {
       </main>
 
        <footer className="w-full py-8 px-4 border-t">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyPree. All rights reserved.</p>
+            <div className="flex gap-4">
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
+                    Terms & Conditions
+                </Link>
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
+                    Privacy Policy
+                </Link>
+            </div>
         </div>
       </footer>
     </div>

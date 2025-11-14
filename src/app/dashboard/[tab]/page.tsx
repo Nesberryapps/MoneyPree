@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,6 +27,7 @@ import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { useToast } from '@/hooks/use-toast';
+import { BusinessDashboard } from '@/components/business/business-dashboard';
 
 
 export default function DashboardTabPage() {
@@ -133,6 +135,7 @@ export default function DashboardTabPage() {
                 <FinancialLessons onQuizComplete={handleQuizCompletion} />
             </TabsContent>
             <TabsContent value="qa"><ExpertQA /></TabsContent>
+            <TabsContent value="business"><BusinessDashboard /></TabsContent>
 
             </Tabs>
         </div>

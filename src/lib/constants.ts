@@ -1,6 +1,6 @@
 
 import type { NavItem } from '@/lib/types';
-import { LayoutDashboard, Wallet, Target, LineChart, BookOpen, Lightbulb, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Wallet, Target, LineChart, BookOpen, Lightbulb, Sparkles, Briefcase } from 'lucide-react';
 
 export const NAV_LINKS: NavItem[] = [
   {
@@ -32,6 +32,11 @@ export const NAV_LINKS: NavItem[] = [
     href: '/dashboard/qa',
     label: 'Expert Q&A',
     icon: Lightbulb,
+  },
+  {
+    href: '/dashboard/business',
+    label: 'Business',
+    icon: Briefcase,
   },
 ];
 

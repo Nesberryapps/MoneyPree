@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -239,6 +240,85 @@
         "timestamp",
         "isUserGenerated"
       ]
+    },
+    "Business": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Business",
+      "type": "object",
+      "description": "Represents a user's business.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the business."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who owns this business."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the business."
+        },
+        "industry": {
+          "type": "string",
+          "description": "The industry the business operates in."
+        },
+        "entityType": {
+          "type": "string",
+          "enum": [
+            "Sole Proprietorship",
+            "LLC",
+            "S-Corp",
+            "C-Corp",
+            "Partnership"
+          ],
+          "description": "The legal entity type of the business."
+        }
+      },
+      "required": ["id", "userId", "name"]
+    },
+    "BusinessTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BusinessTransaction",
+      "type": "object",
+      "description": "Represents a single financial transaction for a business.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "businessId": {
+          "type": "string",
+          "description": "Reference to the Business this transaction belongs to."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date of the transaction."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the transaction."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["revenue", "expense"],
+          "description": "The type of transaction."
+        },
+        "category": {
+          "type": "string",
+          "description": "The accounting category for the transaction (e.g., 'Office Supplies', 'Software', 'Revenue')."
+        },
+        "isTaxDeductible": {
+          "type": "boolean",
+          "description": "Whether the transaction is tax-deductible."
+        }
+      },
+      "required": ["id", "businessId", "date", "description", "amount", "type", "category"]
     }
   },
   "auth": {
@@ -367,9 +447,33 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/businesses/{businessId}",
+        "definition": {
+          "entityName": "Business",
+          "schema": { "$ref": "#/backend/entities/Business" },
+          "description": "Stores business profiles for each user.",
+          "params": [
+            { "name": "userId", "description": "The unique identifier of the user." },
+            { "name": "businessId", "description": "The unique identifier of the business." }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/businesses/{businessId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "BusinessTransaction",
+          "schema": { "$ref": "#/backend/entities/BusinessTransaction" },
+          "description": "Stores financial transactions for each business.",
+          "params": [
+            { "name": "userId", "description": "The unique identifier of the user." },
+            { "name": "businessId", "description": "The unique identifier of the business." },
+            { "name": "transactionId", "description": "The unique identifier of the business transaction." }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs (Queries are not Filters), and maintain data clarity.  User-owned data is organized under `/users/{userId}`, ensuring clear ownership and simplifies security rules.  The Membership Map pattern is not applicable here as there are no collaborative entities described.\n\n*   **Users:** User profiles are stored under `/users/{userId}`. This allows for easy management of user data and simplifies security rules based on user ID.\n*   **FinancialGoals, Budgets, Investments, ChatMessages:** These are all subcollections under `/users/{userId}`. This reflects the 1:N relationship between users and their goals, budgets, investments, and chat messages. This design ensures that only the user has access to their own data. The `userId` is implicitly denormalized because it's part of the path.\n*   **Authorization Independence:** Achieved by using path-based ownership for user data. Security rules can directly check `request.auth.uid` against the `userId` path parameter, avoiding the need for `get()` calls.\n*   **QAPs Support:**  Segregation of data by user ID allows for efficient and secure list operations. Security rules can allow listing only when `request.auth.uid == userId`, ensuring that users can only access their own data."
+    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, support QAPs (Queries are not Filters), and maintain data clarity.  User-owned data is organized under `/users/{userId}`, ensuring clear ownership and simplifies security rules.  The Membership Map pattern is not applicable here as there are no collaborative entities described.\n\n*   **Users:** User profiles are stored under `/users/{userId}`. This allows for easy management of user data and simplifies security rules based on user ID.\n*   **FinancialGoals, Budgets, Investments, ChatMessages:** These are all subcollections under `/users/{userId}`. This reflects the 1:N relationship between users and their goals, budgets, investments, and chat messages. This design ensures that only the user has access to their own data. The `userId` is implicitly denormalized because it's part of the path.\n*   **Business Data:** A new subcollection `businesses` is added under `/users/{userId}` to store business profiles. Business-specific data, like `transactions`, are then nested under each business, creating a clear and scalable hierarchy.\n*   **Authorization Independence:** Achieved by using path-based ownership for user data. Security rules can directly check `request.auth.uid` against the `userId` path parameter, avoiding the need for `get()` calls.\n*   **QAPs Support:**  Segregation of data by user ID allows for efficient and secure list operations. Security rules can allow listing only when `request.auth.uid == userId`, ensuring that users can only access their own data."
   }
 }
-    

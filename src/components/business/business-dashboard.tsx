@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,9 +19,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Briefcase, DollarSign, FileText } from 'lucide-react';
-import type { Business } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Briefcase, DollarSign, FileText, PlusCircle } from 'lucide-react';
+import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser } from '@/firebase';
+import { formatDate } from '@/lib/utils';
+
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -32,7 +50,14 @@ const ENTITY_TYPES: Business['entityType'][] = [
   'Partnership',
 ];
 
-function BusinessStats() {
+const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
+const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
+
+function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }) {
+    const totalRevenue = transactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const netProfit = totalRevenue - totalExpenses;
+
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
             <Card>
@@ -41,10 +66,7 @@ function BusinessStats() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">$0.00</div>
-                <p className="text-xs text-muted-foreground">
-                (Transaction tracking coming soon)
-                </p>
+                <div className="text-2xl font-bold text-green-500">${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
             <Card>
@@ -53,10 +75,7 @@ function BusinessStats() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">$0.00</div>
-                <p className="text-xs text-muted-foreground">
-                 (Transaction tracking coming soon)
-                </p>
+                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
             <Card>
@@ -75,10 +94,106 @@ function BusinessStats() {
     )
 }
 
+function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: string, onAddTransaction: (transaction: BusinessTransaction) => void }) {
+    const [open, setOpen] = useState(false);
+    const [description, setDescription] = useState('');
+    const [amount, setAmount] = useState('');
+    const [type, setType] = useState<'revenue' | 'expense'>('expense');
+    const [category, setCategory] = useState('');
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+    const handleSave = () => {
+        if (!description || !amount || !category || !date) return;
+
+        const newTransaction: BusinessTransaction = {
+            id: `txn-${Date.now()}`,
+            businessId,
+            description,
+            amount: parseFloat(amount),
+            type,
+            category,
+            date: new Date(date),
+        };
+        onAddTransaction(newTransaction);
+        setOpen(false);
+        // Reset form
+        setDescription('');
+        setAmount('');
+        setType('expense');
+        setCategory('');
+        setDate(new Date().toISOString().split('T')[0]);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                 <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Transaction
+                    </span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add Business Transaction</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="txn-desc">Description</Label>
+                        <Input id="txn-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="txn-amount">Amount</Label>
+                            <Input id="txn-amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="txn-date">Date</Label>
+                            <Input id="txn-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="txn-type">Type</Label>
+                            <Select onValueChange={(v: 'revenue' | 'expense') => setType(v)} defaultValue={type}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="revenue">Revenue</SelectItem>
+                                    <SelectItem value="expense">Expense</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="txn-category">Category</Label>
+                             <Select onValueChange={setCategory} value={category}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(type === 'revenue' ? REVENUE_CATEGORIES : EXPENSE_CATEGORIES).map(c => (
+                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button onClick={handleSave}>Save Transaction</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export function BusinessDashboard() {
   const { user } = useUser();
   // In a real app, this would be fetched from Firestore
   const [business, setBusiness] = useState<Business | null>(null);
+  const [transactions, setTransactions] = useState<BusinessTransaction[]>([]);
 
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState('');
@@ -100,6 +215,11 @@ export function BusinessDashboard() {
     setBusiness(newBusiness);
     console.log('New Business Created:', newBusiness);
   };
+  
+  const handleAddTransaction = (transaction: BusinessTransaction) => {
+      setTransactions(prev => [transaction, ...prev]);
+  };
+
 
   if (!business) {
     return (
@@ -164,7 +284,59 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-      <BusinessStats />
+      <BusinessStats transactions={transactions} />
+
+      <Card>
+        <CardHeader className="flex flex-row items-center">
+            <div className="grid gap-2">
+                 <CardTitle>Business Transactions</CardTitle>
+                 <CardDescription>
+                    A list of your business's revenue and expenses.
+                 </CardDescription>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+               <AddTransactionDialog businessId={business.id} onAddTransaction={handleAddTransaction} />
+            </div>
+        </CardHeader>
+        <CardContent>
+            <Table>
+                 <TableHeader>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {transactions.length > 0 ? transactions.map(txn => (
+                        <TableRow key={txn.id}>
+                            <TableCell>{formatDate(txn.date)}</TableCell>
+                             <TableCell className="font-medium">{txn.description}</TableCell>
+                             <TableCell>{txn.category}</TableCell>
+                             <TableCell>
+                                <Badge variant={txn.type === 'revenue' ? 'default' : 'destructive'} className="text-xs">
+                                    {txn.type}
+                                </Badge>
+                             </TableCell>
+                             <TableCell className={`text-right font-medium ${txn.type === 'revenue' ? 'text-green-500' : 'text-red-500'}`}>
+                                {txn.type === 'revenue' ? '+' : '-'}${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                        </TableRow>
+                    )) : (
+                        <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                                No transactions yet.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
+ 

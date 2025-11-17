@@ -51,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
@@ -184,6 +185,8 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState('');
+    const [isTaxDeductible, setIsTaxDeductible] = useState(false);
+
     const firestore = useFirestore();
     const { user } = useUser();
 
@@ -196,12 +199,14 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
                 setCategory(transaction.category);
                 const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
                 setDate(transactionDate.toISOString().split('T')[0]);
+                setIsTaxDeductible(transaction.isTaxDeductible || false);
             } else {
                 setDescription('');
                 setAmount('');
                 setType('expense');
                 setCategory('');
                 setDate(new Date().toISOString().split('T')[0]);
+                setIsTaxDeductible(false);
             }
         }
     }, [open, transaction]);
@@ -210,23 +215,22 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
     const handleSave = async () => {
         if (!description || !amount || !category || !date || !user) return;
         
+        const dataToSave = {
+            description,
+            amount: parseFloat(amount),
+            type,
+            category,
+            date: new Date(date),
+            isTaxDeductible: type === 'expense' ? isTaxDeductible : false,
+        };
+
         if (transaction) {
             const transactionRef = doc(firestore, 'users', user.uid, 'businesses', business.id, 'transactions', transaction.id);
-            await updateDoc(transactionRef, {
-                description,
-                amount: parseFloat(amount),
-                type,
-                category,
-                date: new Date(date),
-            });
+            await updateDoc(transactionRef, dataToSave);
         } else {
              const newTransactionData = {
+                ...dataToSave,
                 businessId: business.id,
-                description,
-                amount: parseFloat(amount),
-                type,
-                category,
-                date: new Date(date),
                 createdAt: serverTimestamp(),
             };
             const docRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
@@ -284,6 +288,21 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
                             </Select>
                         </div>
                     </div>
+                     {type === 'expense' && (
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="isTaxDeductible" 
+                                checked={isTaxDeductible}
+                                onCheckedChange={(checked) => setIsTaxDeductible(checked as boolean)}
+                            />
+                            <label
+                                htmlFor="isTaxDeductible"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                This is a tax-deductible expense
+                            </label>
+                        </div>
+                    )}
                 </div>
                 <DialogFooter>
                     <Button onClick={handleSave}>Save Transaction</Button>
@@ -438,12 +457,23 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1" onClick={() => setIsAddDialogOpen(true)}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Transaction
-                    </span>
-                </Button>
+                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                         <Button size="sm" className="h-8 gap-1" onClick={() => { setEditingTransaction(null); setIsAddDialogOpen(true); }}>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Add Transaction
+                            </span>
+                        </Button>
+                    </DialogTrigger>
+                    <TransactionDialog
+                        open={isAddDialogOpen}
+                        onOpenChange={setIsAddDialogOpen}
+                        business={business}
+                        transaction={null}
+                        onSave={() => setIsAddDialogOpen(false)}
+                    />
+                </Dialog>
             </div>
         </CardHeader>
         <CardContent>
@@ -469,7 +499,10 @@ export function BusinessDashboard() {
                         <TableRow key={txn.id}>
                             <TableCell>{formatDate(txn.date)}</TableCell>
                              <TableCell className="font-medium">{txn.description}</TableCell>
-                             <TableCell>{txn.category}</TableCell>
+                             <TableCell>
+                                {txn.category}
+                                {txn.isTaxDeductible && <Badge variant="outline" className="ml-2">Tax</Badge>}
+                            </TableCell>
                              <TableCell>
                                 <Badge variant={txn.type === 'revenue' ? 'default' : 'destructive'} className="text-xs">
                                     {txn.type}
@@ -504,24 +537,15 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-        <TransactionDialog
-            open={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
+      {editingTransaction && (
+         <TransactionDialog
+            open={!!editingTransaction}
+            onOpenChange={(open) => !open && setEditingTransaction(null)}
             business={business}
-            transaction={null}
-            onSave={() => setIsAddDialogOpen(false)}
+            transaction={editingTransaction}
+            onSave={() => setEditingTransaction(null)}
         />
-        
-        {editingTransaction && (
-             <TransactionDialog
-                open={!!editingTransaction}
-                onOpenChange={(open) => !open && setEditingTransaction(null)}
-                business={business}
-                transaction={editingTransaction}
-                onSave={() => setEditingTransaction(null)}
-            />
-        )}
-
+      )}
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
             <AlertDialogContent>
@@ -542,3 +566,5 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    

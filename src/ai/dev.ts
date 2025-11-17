@@ -11,3 +11,4 @@ import '@/ai/flows/parse-receipt.ts';
 import '@/ai/flows/text-to-speech.ts';
 import '@/ai/flows/plaid-flows.ts';
 import '@/ai/flows/stripe-checkout.ts';
+import '@/ai/flows/generate-pl-report.ts';

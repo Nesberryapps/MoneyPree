@@ -41,7 +41,8 @@ import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
 import { collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-
+import { generatePLReport, type PLReport } from '@/ai/flows/generate-pl-report';
+import { Separator } from '@/components/ui/separator';
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -53,6 +54,83 @@ const ENTITY_TYPES: Business['entityType'][] = [
 
 const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
 const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
+
+function PLReportCard({ transactions }: { transactions: BusinessTransaction[] }) {
+    const [report, setReport] = useState<PLReport | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleGenerateReport = async () => {
+        setIsLoading(true);
+        setError(null);
+        setReport(null);
+        try {
+            const result = await generatePLReport({ transactions });
+            setReport(result);
+        } catch (e) {
+            console.error(e);
+            setError('Failed to generate report. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                <div>
+                    <CardTitle className="text-sm font-medium">P&L Report</CardTitle>
+                    <CardDescription className="text-xs">
+                        AI-Generated Profit & Loss
+                    </CardDescription>
+                </div>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                {!report && (
+                     <Button onClick={handleGenerateReport} disabled={isLoading || transactions.length === 0} size="sm" variant="outline">
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Generate Report
+                    </Button>
+                )}
+               
+                {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+
+                {report && (
+                     <div className="space-y-4 text-sm mt-4">
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">{report.title}</h4>
+                             <p className="text-xs text-muted-foreground">{report.period}</p>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between">
+                            <span>Total Revenue</span>
+                            <span className="font-medium">${report.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Total Expenses</span>
+                            <span className="font-medium">${report.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between font-bold">
+                            <span>Net Profit</span>
+                            <span>${report.netProfit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                     </div>
+                )}
+            </CardContent>
+             {report && (
+                <CardFooter>
+                     <Button onClick={handleGenerateReport} disabled={isLoading} size="sm" variant="secondary">
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Regenerate
+                    </Button>
+                </CardFooter>
+            )}
+        </Card>
+    );
+}
+
 
 function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }) {
     const totalRevenue = transactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
@@ -79,18 +157,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
                 <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
-            <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">P&L Report</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">Not Generated</div>
-                <p className="text-xs text-muted-foreground">
-                (Reporting features coming soon)
-                </p>
-            </CardContent>
-            </Card>
+            <PLReportCard transactions={transactions} />
         </div>
     )
 }

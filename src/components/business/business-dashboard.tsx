@@ -89,9 +89,15 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
             // Convert Firestore Timestamps to serializable date strings before sending to the server action
             const serializableTransactions = transactions.map(t => {
                 const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
+                // We only select the fields that the AI flow needs to avoid passing complex objects like Timestamps
                 return {
-                    ...t,
+                    id: t.id,
+                    businessId: t.businessId,
                     date: date.toISOString().split('T')[0], // YYYY-MM-DD
+                    description: t.description,
+                    amount: t.amount,
+                    type: t.type,
+                    category: t.category,
                 }
             });
 

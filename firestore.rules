@@ -172,7 +172,8 @@ service cloud.firestore {
      * @path /users/{userId}/businesses/{businessId}
      */
     match /users/{userId}/businesses/{businessId} {
-      allow get, list, create, update, delete: if isOwner(userId);
+      allow get, create, update, delete: if isOwner(userId);
+      allow list: if isOwner(userId);
     }
 
     /**
@@ -180,7 +181,8 @@ service cloud.firestore {
      * @path /users/{userId}/businesses/{businessId}/transactions/{transactionId}
      */
     match /users/{userId}/businesses/{businessId}/transactions/{transactionId} {
-      allow get, list, create, update, delete: if isOwner(userId);
+      allow get, create, update, delete: if isOwner(userId);
+      allow list: if isOwner(userId);
     }
   }
 }

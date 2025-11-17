@@ -13,7 +13,12 @@ import { createLinkToken, setAccessToken } from '@/ai/flows/plaid-flows';
 import { Banknote, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export function PlaidLink({ disabled = false }: { disabled?: boolean }) {
+type PlaidLinkProps = {
+    disabled?: boolean;
+    onSuccessCallback: (accessToken: string) => void;
+};
+
+export function PlaidLink({ disabled = false, onSuccessCallback }: PlaidLinkProps) {
   const { user } = useUser();
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,10 +56,11 @@ export function PlaidLink({ disabled = false }: { disabled?: boolean }) {
       if (!user?.uid) return;
       
       try {
-        await setAccessToken({ public_token: public_token, userId: user.uid });
+        const { access_token } = await setAccessToken({ public_token: public_token, userId: user.uid });
+        onSuccessCallback(access_token);
         toast({
             title: 'Bank Account Connected!',
-            description: 'Your account has been successfully linked.',
+            description: 'Your account has been successfully linked. You can now sync transactions.',
         });
         // Here you would typically trigger a re-fetch of transactions
       } catch (error) {
@@ -66,7 +72,7 @@ export function PlaidLink({ disabled = false }: { disabled?: boolean }) {
         });
       }
     },
-    [user?.uid, toast]
+    [user?.uid, toast, onSuccessCallback]
   );
 
   const config: PlaidLinkOptions = {

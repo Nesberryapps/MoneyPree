@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import type { Transaction } from '@/lib/types';
+import type { Transaction as AppTransaction } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -74,6 +74,7 @@ import {
   Camera,
   ScanLine,
   Mic,
+  RefreshCw,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
@@ -89,10 +90,13 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { PlaidLink } from '@/components/plaid/plaid-link';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { getTransactions } from '@/ai/flows/plaid-flows';
+import type { Transaction as PlaidTransaction } from 'plaid';
+import { Separator } from '../ui/separator';
 
 
 type BudgetClientProps = {
-    transactions: Transaction[];
+    transactions: AppTransaction[];
     isVoiceInteractionEnabled: boolean;
     isPro: boolean;
 };
@@ -120,7 +124,7 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
   const firestore = useFirestore();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<AppTransaction | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
@@ -137,6 +141,10 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
 
   const { toast } = useToast();
 
+  // Plaid state
+  const [plaidAccessToken, setPlaidAccessToken] = useState<string | null>(null);
+  const [syncedTransactions, setSyncedTransactions] = useState<PlaidTransaction[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -161,15 +169,26 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
     setEditingTransaction(null);
   };
 
-  const handleOpenDialog = (transaction?: Transaction) => {
+  const handleOpenDialog = (transaction?: AppTransaction | PlaidTransaction) => {
     if (transaction) {
-      setEditingTransaction(transaction);
-      setDescription(transaction.description);
-      setAmount(String(transaction.amount));
-      setType(transaction.type);
-      setCategory(transaction.category);
-      const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
-      setDate(transactionDate);
+        // Check if it's a Plaid transaction
+        if ('transaction_id' in transaction) {
+            setEditingTransaction(null);
+            setDescription(transaction.name);
+            setAmount(String(transaction.amount));
+            setType(transaction.amount < 0 ? 'expense' : 'income');
+            const matchedCategory = BUDGET_CATEGORIES.expense.find(c => transaction.personal_finance_category?.primary.toLowerCase().includes(c.value))
+            setCategory(matchedCategory?.value || 'other');
+            setDate(new Date(transaction.date));
+        } else { // It's our own AppTransaction
+             setEditingTransaction(transaction);
+            setDescription(transaction.description);
+            setAmount(String(transaction.amount));
+            setType(transaction.type);
+            setCategory(transaction.category);
+            const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+            setDate(transactionDate);
+        }
     } else {
       resetForm();
     }
@@ -198,6 +217,12 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
       await addDoc(collectionRef, { ...transactionData, userId: user.uid, createdAt: serverTimestamp() });
     }
     
+    // If the saved transaction came from the synced list, remove it from the synced list
+    const plaidTxn = syncedTransactions.find(t => t.name === description && t.amount === parseFloat(amount));
+    if (plaidTxn) {
+        setSyncedTransactions(prev => prev.filter(t => t.transaction_id !== plaidTxn.transaction_id));
+    }
+
     setIsDialogOpen(false);
     resetForm();
   };
@@ -357,6 +382,33 @@ ${insights.monthlyChallenge}
     }
   };
 
+  const handleSyncTransactions = async () => {
+    if (!plaidAccessToken) return;
+    setIsSyncing(true);
+    try {
+        const { transactions } = await getTransactions({ accessToken: plaidAccessToken });
+        // Filter out transactions that are already in our main list to avoid duplicates
+        const existingDescriptions = new Set(transactions.map(t => t.description));
+        const newSynced = transactions.filter(t => !existingDescriptions.has(t.name) && t.amount > 0); // Plaid uses positive for income, negative for expense
+        setSyncedTransactions(newSynced);
+
+        toast({
+            title: 'Sync Complete',
+            description: `Found ${newSynced.length} new transactions.`,
+        });
+
+    } catch (error) {
+        console.error('Error syncing transactions:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Sync Failed',
+            description: 'Could not fetch transactions from your bank.',
+        });
+    } finally {
+        setIsSyncing(false);
+    }
+  };
+
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
@@ -392,19 +444,50 @@ ${insights.monthlyChallenge}
       </div>
 
       <div className="grid gap-4 lg:col-span-2">
+        {syncedTransactions.length > 0 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>New Synced Transactions</CardTitle>
+                    <CardDescription>Click a transaction to add it to your budget.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {syncedTransactions.map(txn => (
+                                <TableRow key={txn.transaction_id} onClick={() => handleOpenDialog(txn)} className="cursor-pointer">
+                                    <TableCell className="font-medium">{txn.name}</TableCell>
+                                    <TableCell>{txn.date}</TableCell>
+                                    <TableCell className={`text-right font-medium ${txn.amount < 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                        ${txn.amount.toLocaleString()}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                     </Table>
+                </CardContent>
+            </Card>
+        )}
         <Card>
             <CardHeader className="px-7">
             <CardTitle>Transactions</CardTitle>
             <CardDescription>A list of your recent income and expenses.</CardDescription>
             <div className="ml-auto flex items-center gap-2 pt-2">
-                <div className="relative group">
-                    <PlaidLink disabled={!isPro} />
-                    {!isPro && (
-                        <Badge variant="premium" className="absolute -top-2 -right-2 text-xs">
-                            Pro
-                        </Badge>
-                    )}
-                </div>
+                <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
+                {plaidAccessToken && (
+                    <Button onClick={handleSyncTransactions} disabled={isSyncing} size="sm" variant="outline" className="h-8 gap-1">
+                        {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Sync
+                        </span>
+                    </Button>
+                )}
 
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>

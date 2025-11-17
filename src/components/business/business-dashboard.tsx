@@ -103,9 +103,13 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
 
             const result = await generatePLReport({ transactions: serializableTransactions as any });
             setReport(result);
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            setError('Failed to generate report. Please try again.');
+            if (e.message && (e.message.includes('503') || e.message.toLowerCase().includes('overloaded'))) {
+                setError('The AI service is currently busy. Please try again in a few moments.');
+            } else {
+                setError('Failed to generate report. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }

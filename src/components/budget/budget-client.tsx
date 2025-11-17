@@ -400,7 +400,7 @@ ${insights.monthlyChallenge}
                 <div className="relative group">
                     <PlaidLink disabled={!isPro} />
                     {!isPro && (
-                        <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs">
+                        <Badge variant="premium" className="absolute -top-2 -right-2 text-xs">
                             Pro
                         </Badge>
                     )}

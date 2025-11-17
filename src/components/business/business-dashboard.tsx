@@ -28,6 +28,22 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Table,
   TableBody,
   TableCell,
@@ -36,11 +52,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2 } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
-import { collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { generatePLReport, type PLReport } from '@/ai/flows/generate-pl-report';
 import { Separator } from '@/components/ui/separator';
 
@@ -162,55 +178,76 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
     )
 }
 
-function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: string, onAddTransaction: (transaction: BusinessTransaction) => void }) {
+function TransactionDialog({ business, transaction, onSave, children }: { business: Business, transaction: BusinessTransaction | null, onSave: () => void, children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
     const [category, setCategory] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState('');
     const firestore = useFirestore();
     const { user } = useUser();
 
+    React.useEffect(() => {
+        if (open) {
+            if (transaction) {
+                setDescription(transaction.description);
+                setAmount(String(transaction.amount));
+                setType(transaction.type);
+                setCategory(transaction.category);
+                // Convert Date object from Firestore to YYYY-MM-DD string for input
+                const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+                setDate(transactionDate.toISOString().split('T')[0]);
+            } else {
+                // Reset for new transaction
+                setDescription('');
+                setAmount('');
+                setType('expense');
+                setCategory('');
+                setDate(new Date().toISOString().split('T')[0]);
+            }
+        }
+    }, [open, transaction]);
+    
 
     const handleSave = async () => {
         if (!description || !amount || !category || !date || !user) return;
         
-        const newTransactionData = {
-            businessId,
-            description,
-            amount: parseFloat(amount),
-            type,
-            category,
-            date: new Date(date),
-            createdAt: serverTimestamp(), // For ordering
-        };
+        if (transaction) {
+            // Update existing transaction
+            const transactionRef = doc(firestore, 'users', user.uid, 'businesses', business.id, 'transactions', transaction.id);
+            await updateDoc(transactionRef, {
+                description,
+                amount: parseFloat(amount),
+                type,
+                category,
+                date: new Date(date),
+            });
+        } else {
+            // Create new transaction
+             const newTransactionData = {
+                businessId: business.id,
+                description,
+                amount: parseFloat(amount),
+                type,
+                category,
+                date: new Date(date),
+                createdAt: serverTimestamp(), // For ordering
+            };
+            const docRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
+            await addDoc(docRef, newTransactionData);
+        }
 
-        const docRef = collection(firestore, 'users', user.uid, 'businesses', businessId, 'transactions');
-        await addDoc(docRef, newTransactionData);
-
+        onSave();
         setOpen(false);
-        // Reset form
-        setDescription('');
-        setAmount('');
-        setType('expense');
-        setCategory('');
-        setDate(new Date().toISOString().split('T')[0]);
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                 <Button size="sm" className="h-8 gap-1">
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Transaction
-                    </span>
-                </Button>
-            </DialogTrigger>
+            <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add Business Transaction</DialogTitle>
+                    <DialogTitle>{transaction ? 'Edit' : 'Add'} Business Transaction</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
@@ -230,7 +267,7 @@ function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: st
                      <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="txn-type">Type</Label>
-                            <Select onValueChange={(v: 'revenue' | 'expense') => { setType(v); setCategory(''); }} defaultValue={type}>
+                            <Select onValueChange={(v: 'revenue' | 'expense') => { setType(v); setCategory(''); }} value={type}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -320,6 +357,10 @@ export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
 
+  const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'businesses');
@@ -334,7 +375,7 @@ export function BusinessDashboard() {
     return query(transactionsRef, orderBy('date', 'desc'));
   }, [firestore, user, business]);
 
-  const { data: transactions, isLoading: isTransactionsLoading } = useCollection<BusinessTransaction>(transactionsQuery);
+  const { data: transactions, isLoading: isTransactionsLoading, error: transactionsError } = useCollection<BusinessTransaction>(transactionsQuery);
 
   
   const handleCreateBusiness = async (businessData: Omit<Business, 'id' | 'userId'>) => {
@@ -346,6 +387,20 @@ export function BusinessDashboard() {
       createdAt: serverTimestamp(),
     });
   };
+
+  const openDeleteDialog = (id: string) => {
+    setTransactionToDelete(id);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const handleDeleteTransaction = async () => {
+    if (!transactionToDelete || !user || !business) return;
+    const transactionRef = doc(firestore, 'users', user.uid, 'businesses', business.id, 'transactions', transactionToDelete);
+    await deleteDoc(transactionRef);
+    setTransactionToDelete(null);
+    setIsDeleteAlertOpen(false);
+  };
+
 
   if (isBusinessesLoading) {
       return (
@@ -389,7 +444,14 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-               <AddTransactionDialog businessId={business.id} onAddTransaction={() => {}} />
+               <TransactionDialog business={business} transaction={null} onSave={() => {}}>
+                 <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Transaction
+                    </span>
+                </Button>
+               </TransactionDialog>
             </div>
         </CardHeader>
         <CardContent>
@@ -401,12 +463,13 @@ export function BusinessDashboard() {
                         <TableHead>Category</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
+                        <TableHead><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {isTransactionsLoading ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">
+                            <TableCell colSpan={6} className="h-24 text-center">
                                 <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                             </TableCell>
                         </TableRow>
@@ -423,10 +486,25 @@ export function BusinessDashboard() {
                              <TableCell className={`text-right font-medium ${txn.type === 'revenue' ? 'text-green-500' : 'text-red-500'}`}>
                                 {txn.type === 'revenue' ? '+' : '-'}${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
+                            <TableCell className="text-right">
+                                <TransactionDialog business={business} transaction={txn} onSave={() => {}}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button size="icon" variant="ghost">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TransactionDialog>
+                            </TableCell>
                         </TableRow>
                     )) : (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">
+                            <TableCell colSpan={6} className="h-24 text-center">
                                 No transactions yet.
                             </TableCell>
                         </TableRow>
@@ -436,8 +514,22 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
 
+        <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete this transaction.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setTransactionToDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteTransaction}>
+                Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }
-
-    

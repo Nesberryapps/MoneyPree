@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ProStatusProvider } from '@/hooks/use-pro-status';
+import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -34,7 +35,9 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <ProStatusProvider>
+              <VoiceInteractionProvider>
                 {children}
+              </VoiceInteractionProvider>
             </ProStatusProvider>
           </FirebaseClientProvider>
           <Toaster />

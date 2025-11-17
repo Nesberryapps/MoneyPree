@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -36,10 +36,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2 } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
+import { collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -101,20 +102,26 @@ function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: st
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const firestore = useFirestore();
+    const { user } = useUser();
 
-    const handleSave = () => {
-        if (!description || !amount || !category || !date) return;
 
-        const newTransaction: BusinessTransaction = {
-            id: `txn-${Date.now()}`,
+    const handleSave = async () => {
+        if (!description || !amount || !category || !date || !user) return;
+        
+        const newTransactionData = {
             businessId,
             description,
             amount: parseFloat(amount),
             type,
             category,
             date: new Date(date),
+            createdAt: serverTimestamp(), // For ordering
         };
-        onAddTransaction(newTransaction);
+
+        const docRef = collection(firestore, 'users', user.uid, 'businesses', businessId, 'transactions');
+        await addDoc(docRef, newTransactionData);
+
         setOpen(false);
         // Reset form
         setDescription('');
@@ -156,7 +163,7 @@ function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: st
                      <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="txn-type">Type</Label>
-                            <Select onValueChange={(v: 'revenue' | 'expense') => setType(v)} defaultValue={type}>
+                            <Select onValueChange={(v: 'revenue' | 'expense') => { setType(v); setCategory(''); }} defaultValue={type}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -189,39 +196,16 @@ function AddTransactionDialog({ businessId, onAddTransaction }: { businessId: st
     )
 }
 
-export function BusinessDashboard() {
-  const { user } = useUser();
-  // In a real app, this would be fetched from Firestore
-  const [business, setBusiness] = useState<Business | null>(null);
-  const [transactions, setTransactions] = useState<BusinessTransaction[]>([]);
+function CreateBusinessForm({ onCreate }: { onCreate: (business: Omit<Business, 'id' | 'userId'>) => void }) {
+    const [name, setName] = useState('');
+    const [industry, setIndustry] = useState('');
+    const [entityType, setEntityType] = useState<Business['entityType'] | ''>('');
 
-  const [name, setName] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [entityType, setEntityType] = useState<Business['entityType'] | ''>('');
-  
-  const handleCreateBusiness = () => {
-    if (!name || !industry || !entityType || !user) return;
-    
-    const newBusiness: Business = {
-      id: `biz-${Date.now()}`,
-      userId: user.uid,
-      name,
-      industry,
-      entityType,
+    const handleCreate = () => {
+        if (!name || !industry || !entityType) return;
+        onCreate({ name, industry, entityType });
     };
-    
-    // In a real app, we would save this to Firestore.
-    // For now, we'll just set it in the local state.
-    setBusiness(newBusiness);
-    console.log('New Business Created:', newBusiness);
-  };
-  
-  const handleAddTransaction = (transaction: BusinessTransaction) => {
-      setTransactions(prev => [transaction, ...prev]);
-  };
 
-
-  if (!business) {
     return (
         <div className="max-w-2xl mx-auto">
             <Card>
@@ -258,11 +242,54 @@ export function BusinessDashboard() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleCreateBusiness} disabled={!name || !industry || !entityType}>Create Business</Button>
+                    <Button onClick={handleCreate} disabled={!name || !industry || !entityType}>Create Business</Button>
                 </CardFooter>
             </Card>
         </div>
     );
+}
+
+export function BusinessDashboard() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const businessesRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'users', user.uid, 'businesses');
+  }, [firestore, user]);
+
+  const { data: businesses, isLoading: isBusinessesLoading } = useCollection<Business>(businessesRef);
+  const business = businesses?.[0]; // For now, we assume only one business per user
+
+  const transactionsQuery = useMemoFirebase(() => {
+    if (!user || !business) return null;
+    const transactionsRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
+    return query(transactionsRef, orderBy('date', 'desc'));
+  }, [firestore, user, business]);
+
+  const { data: transactions, isLoading: isTransactionsLoading } = useCollection<BusinessTransaction>(transactionsQuery);
+
+  
+  const handleCreateBusiness = async (businessData: Omit<Business, 'id' | 'userId'>) => {
+    if (!user || !businessesRef) return;
+    
+    await addDoc(businessesRef, {
+      ...businessData,
+      userId: user.uid,
+      createdAt: serverTimestamp(),
+    });
+  };
+
+  if (isBusinessesLoading) {
+      return (
+          <div className="flex justify-center items-center h-40">
+              <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+      )
+  }
+
+  if (!business) {
+    return <CreateBusinessForm onCreate={handleCreateBusiness} />;
   }
 
   return (
@@ -284,7 +311,7 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-      <BusinessStats transactions={transactions} />
+      <BusinessStats transactions={transactions || []} />
 
       <Card>
         <CardHeader className="flex flex-row items-center">
@@ -295,7 +322,7 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-               <AddTransactionDialog businessId={business.id} onAddTransaction={handleAddTransaction} />
+               <AddTransactionDialog businessId={business.id} onAddTransaction={() => {}} />
             </div>
         </CardHeader>
         <CardContent>
@@ -310,7 +337,13 @@ export function BusinessDashboard() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {transactions.length > 0 ? transactions.map(txn => (
+                    {isTransactionsLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                            </TableCell>
+                        </TableRow>
+                    ) : transactions && transactions.length > 0 ? transactions.map(txn => (
                         <TableRow key={txn.id}>
                             <TableCell>{formatDate(txn.date)}</TableCell>
                              <TableCell className="font-medium">{txn.description}</TableCell>
@@ -339,4 +372,5 @@ export function BusinessDashboard() {
     </div>
   );
 }
- 
+
+    

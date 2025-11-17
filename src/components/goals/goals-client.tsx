@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateFinancialGoals } from '@/ai/flows/generate-financial-goals';
 import type { Goal } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -42,13 +43,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/lib/utils';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 type GoalsClientProps = {
     goals: Goal[];
-    setGoals: React.Dispatch<React.SetStateAction<Goal[]>>;
 };
 
-export function GoalsClient({ goals, setGoals }: GoalsClientProps) {
+export function GoalsClient({ goals }: GoalsClientProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
   const [prompt, setPrompt] = useState('');
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,43 +100,42 @@ export function GoalsClient({ goals, setGoals }: GoalsClientProps) {
       setName(goal.name);
       setTargetAmount(String(goal.targetAmount));
       setCurrentAmount(String(goal.currentAmount));
-      setDeadline(goal.deadline.toISOString().split('T')[0]); // Format for date input
+      const goalDeadline = goal.deadline instanceof Date ? goal.deadline : (goal.deadline as any).toDate();
+      setDeadline(goalDeadline.toISOString().split('T')[0]); // Format for date input
     } else {
       resetForm();
     }
     setIsDialogOpen(true);
   }
 
-  const handleSaveGoal = () => {
-    if (!name || !targetAmount || !currentAmount || !deadline) {
-      // Basic validation
+  const handleSaveGoal = async () => {
+    if (!name || !targetAmount || !currentAmount || !deadline || !user) {
       return;
     }
-    
-    if (editingGoal) {
-      // Edit existing goal
-      const updatedGoals = goals.map(g =>
-        g.id === editingGoal.id ? { ...g, name, targetAmount: parseFloat(targetAmount), currentAmount: parseFloat(currentAmount), deadline: new Date(deadline) } : g
-      );
-      setGoals(updatedGoals);
 
+    const goalData = {
+      name,
+      targetAmount: parseFloat(targetAmount),
+      currentAmount: parseFloat(currentAmount),
+      deadline: new Date(deadline),
+    };
+
+    if (editingGoal) {
+      const docRef = doc(firestore, 'users', user.uid, 'financialGoals', editingGoal.id);
+      await updateDoc(docRef, goalData);
     } else {
-      // Add new goal
-       const newGoal: Goal = {
-        id: `goal-${Date.now()}`,
-        name,
-        targetAmount: parseFloat(targetAmount),
-        currentAmount: parseFloat(currentAmount),
-        deadline: new Date(deadline),
-      };
-      setGoals([newGoal, ...goals]);
+      const collectionRef = collection(firestore, 'users', user.uid, 'financialGoals');
+      await addDoc(collectionRef, { ...goalData, userId: user.uid, createdAt: serverTimestamp() });
     }
+    
     setIsDialogOpen(false);
     resetForm();
   };
   
-  const handleDeleteGoal = (id: string) => {
-    setGoals(goals.filter(g => g.id !== id));
+  const handleDeleteGoal = async (id: string) => {
+    if (!user) return;
+    const docRef = doc(firestore, 'users', user.uid, 'financialGoals', id);
+    await deleteDoc(docRef);
     setGoalToDelete(null);
     setIsDeleteAlertOpen(false);
   }

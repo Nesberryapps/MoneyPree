@@ -3,9 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { Transaction, Goal } from '@/lib/types';
-import { initialTransactions, initialGoals } from '@/lib/initial-data';
 import {
   Card,
   CardContent,
@@ -28,6 +27,7 @@ import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { useToast } from '@/hooks/use-toast';
 import { BusinessDashboard } from '@/components/business/business-dashboard';
+import { collection, query, where } from 'firebase/firestore';
 
 
 export default function DashboardTabPage() {
@@ -36,18 +36,32 @@ export default function DashboardTabPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
 
-  // State for gamification
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
 
   const { isPro, setIsPro } = useProStatus();
 
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
+
+  // Firestore collections
+  const transactionsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    // This is a simplification. In a real app, you might query a specific budget.
+    // Assuming one budget 'main' per user for now under a 'budgets' collection.
+    return query(collection(firestore, 'users', user.uid, 'budgets', 'main', 'expenses'));
+  }, [firestore, user]);
+  const { data: transactions, isLoading: isTransactionsLoading } = useCollection<Transaction>(transactionsQuery);
+
+  const goalsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(collection(firestore, 'users', user.uid, 'financialGoals'));
+  }, [firestore, user]);
+  const { data: goals, isLoading: isGoalsLoading } = useCollection<Goal>(goalsQuery);
+
 
   // Handle Stripe redirect
   useEffect(() => {
@@ -78,7 +92,7 @@ export default function DashboardTabPage() {
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || isTransactionsLoading || isGoalsLoading) {
     return <Loading />;
   }
 
@@ -99,8 +113,8 @@ export default function DashboardTabPage() {
             <TabsContent value="dashboard">
                 <div className="flex flex-1 flex-col gap-4 md:gap-8">
                     <DashboardClient
-                        transactions={transactions}
-                        goals={goals}
+                        transactions={transactions || []}
+                        goals={goals || []}
                         lessonsCompleted={lessonsCompleted}
                         questionsAnswered={questionsAnswered}
                     />
@@ -113,22 +127,21 @@ export default function DashboardTabPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pl-2">
-                            <BudgetSummaryChart transactions={transactions} />
+                            <BudgetSummaryChart transactions={transactions || []} />
                         </CardContent>
                         </Card>
                     </div>
                 </div>
             </TabsContent>
             <TabsContent value="budget">
-                <BudgetClient 
-                    transactions={transactions} 
-                    setTransactions={setTransactions} 
+                <BudgetClient
+                    transactions={transactions || []}
                     isVoiceInteractionEnabled={isVoiceInteractionEnabled}
                     isPro={isPro}
                 />
             </TabsContent>
             <TabsContent value="goals">
-                <GoalsClient goals={goals} setGoals={setGoals} />
+                <GoalsClient goals={goals || []} />
             </TabsContent>
             <TabsContent value="invest"><InvestmentSimulation /></TabsContent>
             <TabsContent value="learn">

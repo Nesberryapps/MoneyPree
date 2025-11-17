@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Transaction } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -86,11 +87,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { PlaidLink } from '@/components/plaid/plaid-link';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 
 type BudgetClientProps = {
     transactions: Transaction[];
-    setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
     isVoiceInteractionEnabled: boolean;
     isPro: boolean;
 };
@@ -113,7 +115,10 @@ const CategoryIcon = ({ category }: { category: string }) => {
 };
 
 
-export function BudgetClient({ transactions, setTransactions, isVoiceInteractionEnabled, isPro }: BudgetClientProps) {
+export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }: BudgetClientProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -163,39 +168,46 @@ export function BudgetClient({ transactions, setTransactions, isVoiceInteraction
       setAmount(String(transaction.amount));
       setType(transaction.type);
       setCategory(transaction.category);
-      setDate(new Date(transaction.date));
+      const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+      setDate(transactionDate);
     } else {
       resetForm();
     }
     setIsDialogOpen(true);
   }
 
-  const handleSaveTransaction = () => {
+  const handleSaveTransaction = async () => {
+    if (!user) return;
+    
     const transactionDate = date || new Date();
+    const transactionData = {
+      description,
+      amount: parseFloat(amount),
+      type,
+      category,
+      date: transactionDate,
+    };
+    
+    const budgetId = 'main'; // Simplified: assume one budget per user
+
     if (editingTransaction) {
-      // Edit existing transaction
-      const updatedTransactions = transactions.map(t => 
-        t.id === editingTransaction.id ? { ...t, description, amount: parseFloat(amount), type, category, date: transactionDate } : t
-      );
-      setTransactions(updatedTransactions);
+      const docRef = doc(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses', editingTransaction.id);
+      await updateDoc(docRef, transactionData);
     } else {
-      // Add new transaction
-      const newTransaction: Transaction = {
-        id: `trans-${Date.now()}`,
-        date: transactionDate,
-        description,
-        amount: parseFloat(amount),
-        type,
-        category,
-      };
-      setTransactions([newTransaction, ...transactions]);
+      const collectionRef = collection(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses');
+      await addDoc(collectionRef, { ...transactionData, userId: user.uid, createdAt: serverTimestamp() });
     }
+    
     setIsDialogOpen(false);
     resetForm();
   };
   
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter(t => t.id !== id));
+  const handleDeleteTransaction = async (id: string) => {
+    if (!user) return;
+    const budgetId = 'main'; // Simplified
+    const docRef = doc(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses', id);
+    await deleteDoc(docRef);
+
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   }
@@ -210,7 +222,8 @@ export function BudgetClient({ transactions, setTransactions, isVoiceInteraction
     setInsightsError(null);
     setInsights(null);
     try {
-      const result = await generateFinancialInsights({ transactions });
+      const serializableTransactions = transactions.map(t => ({...t, date: (t.date as any).toDate()}))
+      const result = await generateFinancialInsights({ transactions: serializableTransactions });
       setInsights(result);
     } catch (e) {
       setInsightsError('Failed to generate insights. Please try again.');

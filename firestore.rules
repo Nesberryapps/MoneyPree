@@ -74,11 +74,8 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/financialGoals/{financialGoalId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      allow get, update, delete: if isOwner(userId);
+      allow list, create: if isOwner(userId);
     }
 
     /******************** BUDGETS ********************/
@@ -95,11 +92,8 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/budgets/{budgetId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      allow get, update, delete: if isOwner(userId);
+      allow list, create: if isOwner(userId);
     }
 
     /******************** EXPENSES ********************/
@@ -116,11 +110,8 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/budgets/{budgetId}/expenses/{expenseId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.budgetId == budgetId;
-      allow update: if isExistingOwner(userId) && request.resource.data.budgetId == budgetId;
-      allow delete: if isExistingOwner(userId);
+      allow get, update, delete: if isOwner(userId);
+      allow list, create: if isOwner(userId);
     }
 
     /******************** INVESTMENTS ********************/

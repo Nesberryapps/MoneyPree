@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -188,7 +188,7 @@ function TransactionDialog({ business, transaction, onSave, children }: { busine
     const firestore = useFirestore();
     const { user } = useUser();
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (open) {
             if (transaction) {
                 setDescription(transaction.description);
@@ -360,6 +360,7 @@ export function BusinessDashboard() {
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -392,6 +393,11 @@ export function BusinessDashboard() {
     setTransactionToDelete(id);
     setIsDeleteAlertOpen(true);
   };
+  
+  const openEditDialog = (transaction: BusinessTransaction) => {
+    setEditingTransaction(transaction);
+    setIsEditDialogOpen(true);
+  }
 
   const handleDeleteTransaction = async () => {
     if (!transactionToDelete || !user || !business) return;
@@ -487,19 +493,17 @@ export function BusinessDashboard() {
                                 {txn.type === 'revenue' ? '+' : '-'}${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
                             <TableCell className="text-right">
-                                <TransactionDialog business={business} transaction={txn} onSave={() => {}}>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button size="icon" variant="ghost">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TransactionDialog>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => openEditDialog(txn)}>Edit</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </TableCell>
                         </TableRow>
                     )) : (
@@ -513,6 +517,21 @@ export function BusinessDashboard() {
             </Table>
         </CardContent>
       </Card>
+      
+        {business && editingTransaction && (
+            <TransactionDialog 
+                business={business} 
+                transaction={editingTransaction} 
+                onSave={() => {
+                    setEditingTransaction(null);
+                    setIsEditDialogOpen(false);
+                }}
+            >
+                {/* This is a controlled dialog, the trigger is handled by state */}
+                <div />
+            </TransactionDialog>
+        )}
+
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
             <AlertDialogContent>

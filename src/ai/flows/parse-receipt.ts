@@ -11,8 +11,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { BUDGET_CATEGORIES } from '@/lib/constants';
-import { EXPENSE_CATEGORIES as BUSINESS_EXPENSE_CATEGORIES } from '@/components/business/business-dashboard';
+import { BUDGET_CATEGORIES, EXPENSE_CATEGORIES as BUSINESS_EXPENSE_CATEGORIES } from '@/lib/constants';
 
 const ParseReceiptInputSchema = z.object({
   receiptImage: z

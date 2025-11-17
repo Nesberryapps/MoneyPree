@@ -57,4 +57,7 @@ export const BUDGET_CATEGORIES = {
     { value: 'shopping', label: 'Shopping' },
     { value: 'other', label: 'Other' },
   ]
-}
+};
+
+export const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
+export const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];

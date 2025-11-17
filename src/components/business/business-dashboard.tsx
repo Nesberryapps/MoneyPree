@@ -70,6 +70,7 @@ import { useProStatus } from '@/hooks/use-pro-status';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { parseReceipt } from '@/ai/flows/parse-receipt';
+import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -79,9 +80,6 @@ const ENTITY_TYPES: Business['entityType'][] = [
   'C-Corp',
   'Partnership',
 ];
-
-export const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
-export const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
 
 function PLReportCard({ transactions }: { transactions: BusinessTransaction[] }) {
     const [report, setReport] = useState<PLReport | null>(null);

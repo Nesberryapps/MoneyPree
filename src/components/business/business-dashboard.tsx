@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, ReactElement } from 'react';
 import {
   Card,
   CardContent,
@@ -64,6 +64,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDebounce } from 'use-debounce';
 import { TaxCenter } from './tax-center';
+import { PlaidLink } from '../plaid/plaid-link';
+import { useProStatus } from '@/hooks/use-pro-status';
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -202,7 +204,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
     )
 }
 
-function TransactionDialog({ open, onOpenChange, business, transaction, onSave }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null, onSave: () => void }) {
+function TransactionDialog({ open, onOpenChange, business, transaction }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null }) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
@@ -218,26 +220,24 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
     const { user } = useUser();
 
     useEffect(() => {
-        if (open) {
-            if (transaction) {
-                setDescription(transaction.description);
-                setAmount(String(transaction.amount));
-                setType(transaction.type);
-                setCategory(transaction.category);
-                const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
-                setDate(transactionDate.toISOString().split('T')[0]);
-                setIsTaxDeductible(transaction.isTaxDeductible || false);
-            } else {
-                setDescription('');
-                setAmount('');
-                setType('expense');
-                setCategory('');
-                setDate(new Date().toISOString().split('T')[0]);
-                setIsTaxDeductible(false);
-            }
-            setAiSuggestion(null); // Reset AI suggestion when dialog opens
+        if (transaction) {
+            setDescription(transaction.description);
+            setAmount(String(transaction.amount));
+            setType(transaction.type);
+            setCategory(transaction.category);
+            const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+            setDate(transactionDate.toISOString().split('T')[0]);
+            setIsTaxDeductible(transaction.isTaxDeductible || false);
+        } else {
+            setDescription('');
+            setAmount('');
+            setType('expense');
+            setCategory('');
+            setDate(new Date().toISOString().split('T')[0]);
+            setIsTaxDeductible(false);
         }
-    }, [open, transaction]);
+        setAiSuggestion(null); // Reset AI suggestion when dialog opens
+    }, [transaction, open]);
     
     useEffect(() => {
         const getAiSuggestion = async () => {
@@ -286,7 +286,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
             await addDoc(docRef, newTransactionData);
         }
 
-        onSave();
+        onOpenChange(false);
     };
 
     return (
@@ -433,9 +433,10 @@ function CreateBusinessForm({ onCreate }: { onCreate: (business: Omit<Business, 
 export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { isPro } = useProStatus();
 
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 
@@ -466,18 +467,13 @@ export function BusinessDashboard() {
     });
   };
 
-  const handleOpenAddDialog = () => {
-    setEditingTransaction(null);
-    setIsAddDialogOpen(true);
-  };
-  
-  const handleOpenEditDialog = (txn: BusinessTransaction) => {
-    setEditingTransaction(txn);
-    setIsAddDialogOpen(true);
+  const handleOpenDialog = (txn?: BusinessTransaction) => {
+    setEditingTransaction(txn || null);
+    setIsDialogVisible(true);
   };
   
   const handleCloseDialog = () => {
-    setIsAddDialogOpen(false);
+    setIsDialogVisible(false);
     setEditingTransaction(null);
   };
 
@@ -538,7 +534,15 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1" onClick={handleOpenAddDialog}>
+                <div className="relative group">
+                    <PlaidLink disabled={!isPro} />
+                    {!isPro && (
+                        <Badge variant="premium" className="absolute -top-2 -right-2 text-xs">
+                            Pro
+                        </Badge>
+                    )}
+                </div>
+                <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Add Transaction
@@ -589,7 +593,7 @@ export function BusinessDashboard() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => handleOpenEditDialog(txn)}>Edit</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleOpenDialog(txn)}>Edit</DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -608,11 +612,10 @@ export function BusinessDashboard() {
       </Card>
       
       <TransactionDialog
-        open={isAddDialogOpen}
+        open={isDialogVisible}
         onOpenChange={handleCloseDialog}
         business={business}
         transaction={editingTransaction}
-        onSave={handleCloseDialog}
       />
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -634,5 +637,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    

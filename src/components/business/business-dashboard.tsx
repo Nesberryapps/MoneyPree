@@ -63,6 +63,7 @@ import { suggestTaxDeduction, type SuggestTaxDeductionOutput } from '@/ai/flows/
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDebounce } from 'use-debounce';
+import { TaxCenter } from './tax-center';
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -416,9 +417,9 @@ export function BusinessDashboard() {
 
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'businesses');
@@ -446,6 +447,21 @@ export function BusinessDashboard() {
     });
   };
 
+  const handleOpenAddDialog = () => {
+    setEditingTransaction(null);
+    setIsAddDialogOpen(true);
+  };
+  
+  const handleOpenEditDialog = (txn: BusinessTransaction) => {
+    setEditingTransaction(txn);
+    setIsAddDialogOpen(true);
+  };
+  
+  const handleCloseDialog = () => {
+    setIsAddDialogOpen(false);
+    setEditingTransaction(null);
+  };
+
   const openDeleteDialog = (id: string) => {
     setTransactionToDelete(id);
     setIsDeleteAlertOpen(true);
@@ -458,22 +474,6 @@ export function BusinessDashboard() {
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   };
-
-  const handleOpenAddDialog = () => {
-    setEditingTransaction(null);
-    setIsAddDialogOpen(true);
-  };
-  
-  const handleOpenEditDialog = (txn: BusinessTransaction) => {
-    setEditingTransaction(txn);
-    setIsAddDialogOpen(true);
-  };
-  
-  const handleCloseDialog = () => {
-      setIsAddDialogOpen(false);
-      setEditingTransaction(null);
-  }
-
 
   if (isBusinessesLoading) {
       return (
@@ -507,6 +507,8 @@ export function BusinessDashboard() {
       </Card>
       
       <BusinessStats transactions={transactions || []} />
+
+      <TaxCenter transactions={transactions || []} />
 
       <Card>
         <CardHeader className="flex flex-row items-center">

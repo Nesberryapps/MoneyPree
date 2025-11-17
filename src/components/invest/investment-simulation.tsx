@@ -32,7 +32,7 @@ export function InvestmentSimulation() {
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
   
   const { isListening: isListeningHoldings, startListening: startListeningHoldings, stopListening: stopListeningHoldings } = useSpeechToText({ onTranscript: (text) => setCurrentHoldings(prev => prev + text) });
-  const { isListening: isListeningGoals, startListening: startListeningGoals, stopListening: stopListeningGoals } = useSpeechToTect({ onTranscript: (text) => setInvestmentGoals(prev => prev + text) });
+  const { isListening: isListeningGoals, startListening: startListeningGoals, stopListening: stopListeningGoals } = useSpeechToText({ onTranscript: (text) => setInvestmentGoals(prev => prev + text) });
 
   const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
 

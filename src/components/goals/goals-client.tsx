@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Loader2, MoreHorizontal, Mic } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +45,8 @@ import {
 import { formatDate } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 type GoalsClientProps = {
     goals: Goal[];
@@ -68,6 +70,13 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   const [targetAmount, setTargetAmount] = useState('');
   const [currentAmount, setCurrentAmount] = useState('');
   const [deadline, setDeadline] = useState('');
+  
+  const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  const { isListening: isListeningPrompt, startListening: startListeningPrompt, stopListening: stopListeningPrompt } = useSpeechToText({ onTranscript: (text) => setPrompt(prev => prev + text) });
+  const { isListening: isListeningName, startListening: startListeningName, stopListening: stopListeningName } = useSpeechToText({ onTranscript: (text) => setName(prev => prev + text) });
+  const { isListening: isListeningTarget, startListening: startListeningTarget, stopListening: stopListeningTarget } = useSpeechToText({ onTranscript: (text) => setTargetAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
+  const { isListening: isListeningCurrent, startListening: startListeningCurrent, stopListening: stopListeningCurrent } = useSpeechToText({ onTranscript: (text) => setCurrentAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
+
 
   useEffect(() => {
     setIsClient(true);
@@ -205,15 +214,51 @@ export function GoalsClient({ goals }: GoalsClientProps) {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Goal Name</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vacation Fund" />
+                    <div className="relative">
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vacation Fund" />
+                        {isVoiceInteractionEnabled && (
+                            <Button
+                                size="icon"
+                                variant={isListeningName ? 'destructive' : 'ghost'}
+                                className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                onClick={isListeningName ? stopListeningName : startListeningName}
+                            >
+                                <Mic className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="targetAmount">Target Amount</Label>
-                    <Input id="targetAmount" type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} placeholder="e.g. 5000" />
+                    <div className="relative">
+                        <Input id="targetAmount" type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} placeholder="e.g. 5000" />
+                        {isVoiceInteractionEnabled && (
+                             <Button
+                                size="icon"
+                                variant={isListeningTarget ? 'destructive' : 'ghost'}
+                                className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                onClick={isListeningTarget ? stopListeningTarget : startListeningTarget}
+                            >
+                                <Mic className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                   </div>
                    <div className="grid gap-2">
                     <Label htmlFor="currentAmount">Current Amount</Label>
-                    <Input id="currentAmount" type="number" value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} placeholder="e.g. 1200" />
+                     <div className="relative">
+                        <Input id="currentAmount" type="number" value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} placeholder="e.g. 1200" />
+                         {isVoiceInteractionEnabled && (
+                             <Button
+                                size="icon"
+                                variant={isListeningCurrent ? 'destructive' : 'ghost'}
+                                className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                onClick={isListeningCurrent ? stopListeningCurrent : startListeningCurrent}
+                            >
+                                <Mic className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="deadline">Deadline</Label>
@@ -238,12 +283,24 @@ export function GoalsClient({ goals }: GoalsClientProps) {
         <CardContent>
           <div className="space-y-4">
             <Label htmlFor="dream">My financial dream is...</Label>
-            <Textarea
-              id="dream"
-              placeholder="e.g., to retire early, buy a house, or travel the world."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
+             <div className="relative">
+                <Textarea
+                id="dream"
+                placeholder="e.g., to retire early, buy a house, or travel the world."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                />
+                 {isVoiceInteractionEnabled && (
+                    <Button
+                        size="icon"
+                        variant={isListeningPrompt ? 'destructive' : 'ghost'}
+                        className="absolute bottom-2 right-2"
+                        onClick={isListeningPrompt ? stopListeningPrompt : startListeningPrompt}
+                    >
+                        <Mic className="h-4 w-4" />
+                    </Button>
+                )}
+            </div>
             <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Generate Goals

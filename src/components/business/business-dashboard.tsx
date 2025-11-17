@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
@@ -73,6 +73,8 @@ import { parseReceipt } from '@/ai/flows/parse-receipt';
 import { getTransactions } from '@/ai/flows/plaid-flows';
 import type { Transaction as PlaidTransaction } from 'plaid';
 import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
+import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -222,6 +224,11 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
 
     const firestore = useFirestore();
     const { user } = useUser();
+    
+    const { isVoiceInteractionEnabled } = useVoiceInteraction();
+    const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
+    const { isListening: isListeningAmount, startListening: startListeningAmount, stopListening: stopListeningAmount } = useSpeechToText({ onTranscript: (text) => setAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
+
 
     useEffect(() => {
         const data = transaction || initialData;
@@ -303,12 +310,36 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                         <Label htmlFor="txn-desc">Description</Label>
-                        <Input id="txn-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+                        <div className="relative">
+                            <Input id="txn-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+                             {isVoiceInteractionEnabled && (
+                                <Button
+                                    size="icon"
+                                    variant={isListeningDescription ? 'destructive' : 'ghost'}
+                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                    onClick={isListeningDescription ? stopListeningDescription : startListeningDescription}
+                                >
+                                    <Mic className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="txn-amount">Amount</Label>
-                            <Input id="txn-amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                            <div className="relative">
+                                <Input id="txn-amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                                {isVoiceInteractionEnabled && (
+                                    <Button
+                                        size="icon"
+                                        variant={isListeningAmount ? 'destructive' : 'ghost'}
+                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
+                                        onClick={isListeningAmount ? stopListeningAmount : startListeningAmount}
+                                    >
+                                        <Mic className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="txn-date">Date</Label>
@@ -891,5 +922,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    

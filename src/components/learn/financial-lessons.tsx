@@ -55,8 +55,8 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
 
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
   const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
-  const { transcript: knowledgeTranscript, isListening: isListeningKnowledge, startListening: startListeningKnowledge, stopListening: stopListeningKnowledge } = useSpeechToText({ onTranscript: (text) => setCurrentFinancialKnowledge(prev => prev + text) });
-  const { transcript: topicsTranscript, isListening: isListeningTopics, startListening: startListeningTopics, stopListening: stopListeningTopics } = useSpeechToText({ onTranscript: (text) => setSpecificTopicsOfInterest(prev => prev + text) });
+  const { isListening: isListeningKnowledge, startListening: startListeningKnowledge, stopListening: stopListeningKnowledge } = useSpeechToText({ onTranscript: (text) => setCurrentFinancialKnowledge(prev => prev + text) });
+  const { isListening: isListeningTopics, startListening: startListeningTopics, stopListening: stopListeningTopics } = useSpeechToText({ onTranscript: (text) => setSpecificTopicsOfInterest(prev => prev + text) });
 
 
   const handleGenerateLesson = async () => {
@@ -199,8 +199,10 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
 
       {lesson && (
         <Card>
-          <CardHeader className="flex items-center justify-between">
-            <CardTitle>Your Personalized Lesson</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>{lesson.lessonTitle}</CardTitle>
+            </div>
              {isVoiceInteractionEnabled && (
                 <Button
                   size="icon"
@@ -214,7 +216,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
           <CardContent>
             <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger className="text-xl font-semibold">{lesson.lessonTitle}</AccordionTrigger>
+                <AccordionTrigger className="text-xl font-semibold">Lesson Content</AccordionTrigger>
                 <AccordionContent className="prose dark:prose-invert max-w-none pt-4">
                   {lesson.lessonContent.split('\n').map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -31,7 +32,7 @@ export function ExpertQA() {
   const quickLinkImage = PlaceHolderImages.find(img => img.id === 'quick-link');
 
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ onTranscript: (text) => setQuestion(prev => prev + text) });
+  const { isListening, startListening, stopListening } = useSpeechToText({ onTranscript: (text) => setQuestion(prev => prev + text) });
   const { isSpeaking, speak, stopSpeaking } = useTextToSpeech();
 
 
@@ -117,7 +118,7 @@ export function ExpertQA() {
                 <AvatarImage src={quickLinkImage?.imageUrl} data-ai-hint={quickLinkImage?.imageHint} />
                 <AvatarFallback>AI</AvatarFallback>
               </Avatar>
-              <div className="flex-1 flex justify-between items-center">
+              <div className="flex-1 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>AI Expert's Answer</CardTitle>
                   <CardDescription>Here is the response to your question.</CardDescription>
@@ -129,7 +130,7 @@ export function ExpertQA() {
                       onClick={() => handleSpeak(answer.answer)}
                     >
                       <Volume2 className={`h-5 w-5 ${isSpeaking ? 'text-primary' : ''}`} />
-                    </Button>
+                    </Button>                  
                   )}
               </div>
             </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef, ReactElement } from 'react';
@@ -54,13 +53,14 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic, Sparkles, AlertTriangle } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { generatePLReport, type PLReport } from '@/ai/flows/generate-pl-report';
 import { suggestTaxDeduction, type SuggestTaxDeductionOutput } from '@/ai/flows/suggest-tax-deduction';
+import { analyzePLReport, type PLReportAnalysis } from '@/ai/flows/analyze-pl-report';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDebounce } from 'use-debounce';
@@ -87,28 +87,34 @@ const ENTITY_TYPES: Business['entityType'][] = [
 
 function PLReportCard({ transactions }: { transactions: BusinessTransaction[] }) {
     const [report, setReport] = useState<PLReport | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [analysis, setAnalysis] = useState<PLReportAnalysis | null>(null);
+    const [isReportLoading, setIsReportLoading] = useState(false);
+    const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    const serializableTransactions = useMemo(() => {
+        return transactions.map(t => {
+            const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
+            return {
+                id: t.id,
+                businessId: t.businessId,
+                date: date.toISOString().split('T')[0],
+                description: t.description,
+                amount: t.amount,
+                type: t.type,
+                category: t.category,
+                isTaxDeductible: t.isTaxDeductible,
+            }
+        });
+    }, [transactions]);
+
 
     const handleGenerateReport = async () => {
-        setIsLoading(true);
+        setIsReportLoading(true);
         setError(null);
         setReport(null);
+        setAnalysis(null);
         try {
-            const serializableTransactions = transactions.map(t => {
-                const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
-                return {
-                    id: t.id,
-                    businessId: t.businessId,
-                    date: date.toISOString().split('T')[0],
-                    description: t.description,
-                    amount: t.amount,
-                    type: t.type,
-                    category: t.category,
-                    isTaxDeductible: t.isTaxDeductible,
-                }
-            });
-
             const result = await generatePLReport({ transactions: serializableTransactions as any });
             setReport(result);
         } catch (e: any) {
@@ -119,26 +125,42 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
                 setError('Failed to generate report. Please try again.');
             }
         } finally {
-            setIsLoading(false);
+            setIsReportLoading(false);
         }
     };
     
+    const handleAnalyzeReport = async () => {
+        if (!report) return;
+        setIsAnalysisLoading(true);
+        setError(null);
+        setAnalysis(null);
+        try {
+            const result = await analyzePLReport({ plReport: report, transactions });
+            setAnalysis(result);
+        } catch (e: any) {
+            console.error(e);
+            setError('Failed to analyze the report. Please try again.');
+        } finally {
+            setIsAnalysisLoading(false);
+        }
+    };
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div>
-                    <CardTitle className="text-sm font-medium">P&L Report</CardTitle>
+                    <CardTitle className="text-sm font-medium">AI Business Analysis</CardTitle>
                     <CardDescription className="text-xs">
-                        AI-Generated Profit & Loss
+                        Generate a P&L and get insights.
                     </CardDescription>
                 </div>
                 <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 {!report && (
-                     <Button onClick={handleGenerateReport} disabled={isLoading || transactions.length === 0} size="sm" variant="outline">
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Generate Report
+                     <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
+                        {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Generate P&L Report
                     </Button>
                 )}
                
@@ -166,12 +188,39 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
                         </div>
                      </div>
                 )}
+                {analysis && (
+                    <div className="mt-6 space-y-4">
+                        <Separator />
+                        <h4 className="font-semibold pt-2">CFO Analysis</h4>
+                         <div className="space-y-1">
+                            <h5 className="text-xs font-medium flex items-center gap-1.5"><Sparkles className="h-3 w-3 text-primary" /> Performance Summary</h5>
+                            <p className="text-xs text-muted-foreground">{analysis.performanceSummary}</p>
+                         </div>
+                         <div className="space-y-1">
+                            <h5 className="text-xs font-medium flex items-center gap-1.5"><Lightbulb className="h-3 w-3 text-primary" /> Actionable Advice</h5>
+                            <p className="text-xs text-muted-foreground">{analysis.actionableAdvice}</p>
+                         </div>
+                         {analysis.riskAlert && (
+                             <Alert variant="destructive" className="p-3">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle className="text-xs font-semibold">Risk Alert</AlertTitle>
+                                <AlertDescription className="text-xs">
+                                    {analysis.riskAlert}
+                                </AlertDescription>
+                            </Alert>
+                         )}
+                    </div>
+                )}
             </CardContent>
              {report && (
-                <CardFooter>
-                     <Button onClick={handleGenerateReport} disabled={isLoading} size="sm" variant="secondary">
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <CardFooter className="gap-2">
+                     <Button onClick={handleGenerateReport} disabled={isReportLoading} size="sm" variant="secondary">
+                        {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Regenerate
+                    </Button>
+                    <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading} size="sm" variant="default">
+                        {isAnalysisLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Analyze Report
                     </Button>
                 </CardFooter>
             )}

@@ -12,3 +12,4 @@ import '@/ai/flows/text-to-speech.ts';
 import '@/ai/flows/plaid-flows.ts';
 import '@/ai/flows/stripe-checkout.ts';
 import '@/ai/flows/generate-pl-report.ts';
+import '@/ai/flows/suggest-tax-deduction.ts';

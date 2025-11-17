@@ -53,13 +53,16 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { generatePLReport, type PLReport } from '@/ai/flows/generate-pl-report';
+import { suggestTaxDeduction, type SuggestTaxDeductionOutput } from '@/ai/flows/suggest-tax-deduction';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useDebounce } from 'use-debounce';
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -186,6 +189,10 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
     const [category, setCategory] = useState('');
     const [date, setDate] = useState('');
     const [isTaxDeductible, setIsTaxDeductible] = useState(false);
+    
+    const [debouncedDescription] = useDebounce(description, 500);
+    const [aiSuggestion, setAiSuggestion] = useState<SuggestTaxDeductionOutput | null>(null);
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     const firestore = useFirestore();
     const { user } = useUser();
@@ -208,9 +215,31 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
                 setDate(new Date().toISOString().split('T')[0]);
                 setIsTaxDeductible(false);
             }
+            setAiSuggestion(null); // Reset AI suggestion when dialog opens
         }
     }, [open, transaction]);
     
+    useEffect(() => {
+        const getAiSuggestion = async () => {
+            if (type === 'expense' && debouncedDescription.length > 3 && category) {
+                setIsAiLoading(true);
+                setAiSuggestion(null);
+                try {
+                    const result = await suggestTaxDeduction({ description: debouncedDescription, category });
+                    setAiSuggestion(result);
+                    if (result.isDeductible) {
+                        setIsTaxDeductible(true);
+                    }
+                } catch (e) {
+                    console.error("AI suggestion failed:", e);
+                } finally {
+                    setIsAiLoading(false);
+                }
+            }
+        };
+        getAiSuggestion();
+    }, [debouncedDescription, category, type]);
+
 
     const handleSave = async () => {
         if (!description || !amount || !category || !date || !user) return;
@@ -289,7 +318,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
                         </div>
                     </div>
                      {type === 'expense' && (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 pt-2">
                             <Checkbox 
                                 id="isTaxDeductible" 
                                 checked={isTaxDeductible}
@@ -301,6 +330,22 @@ function TransactionDialog({ open, onOpenChange, business, transaction, onSave }
                             >
                                 This is a tax-deductible expense
                             </label>
+                            {isAiLoading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                            {aiSuggestion?.isDeductible && !isAiLoading && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                             <Badge variant="outline" className="ml-2 border-yellow-400 text-yellow-400 cursor-help">
+                                                <Lightbulb className="h-3 w-3 mr-1" />
+                                                AI Suggestion
+                                            </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{aiSuggestion.reasoning}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
                         </div>
                     )}
                 </div>
@@ -369,8 +414,8 @@ export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   
@@ -388,7 +433,7 @@ export function BusinessDashboard() {
     return query(transactionsRef, orderBy('date', 'desc'));
   }, [firestore, user, business]);
 
-  const { data: transactions, isLoading: isTransactionsLoading, error: transactionsError } = useCollection<BusinessTransaction>(transactionsQuery);
+  const { data: transactions, isLoading: isTransactionsLoading } = useCollection<BusinessTransaction>(transactionsQuery);
 
   
   const handleCreateBusiness = async (businessData: Omit<Business, 'id' | 'userId'>) => {
@@ -413,6 +458,21 @@ export function BusinessDashboard() {
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   };
+
+  const handleOpenAddDialog = () => {
+    setEditingTransaction(null);
+    setIsAddDialogOpen(true);
+  };
+  
+  const handleOpenEditDialog = (txn: BusinessTransaction) => {
+    setEditingTransaction(txn);
+    setIsAddDialogOpen(true);
+  };
+  
+  const handleCloseDialog = () => {
+      setIsAddDialogOpen(false);
+      setEditingTransaction(null);
+  }
 
 
   if (isBusinessesLoading) {
@@ -457,23 +517,12 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                         <Button size="sm" className="h-8 gap-1" onClick={() => { setEditingTransaction(null); setIsAddDialogOpen(true); }}>
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                Add Transaction
-                            </span>
-                        </Button>
-                    </DialogTrigger>
-                    <TransactionDialog
-                        open={isAddDialogOpen}
-                        onOpenChange={setIsAddDialogOpen}
-                        business={business}
-                        transaction={null}
-                        onSave={() => setIsAddDialogOpen(false)}
-                    />
-                </Dialog>
+                <Button size="sm" className="h-8 gap-1" onClick={handleOpenAddDialog}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Add Transaction
+                    </span>
+                </Button>
             </div>
         </CardHeader>
         <CardContent>
@@ -519,7 +568,7 @@ export function BusinessDashboard() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => setEditingTransaction(txn)}>Edit</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleOpenEditDialog(txn)}>Edit</DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -537,15 +586,13 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-      {editingTransaction && (
-         <TransactionDialog
-            open={!!editingTransaction}
-            onOpenChange={(open) => !open && setEditingTransaction(null)}
-            business={business}
-            transaction={editingTransaction}
-            onSave={() => setEditingTransaction(null)}
-        />
-      )}
+      <TransactionDialog
+        open={isAddDialogOpen}
+        onOpenChange={handleCloseDialog}
+        business={business}
+        transaction={editingTransaction}
+        onSave={handleCloseDialog}
+      />
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
             <AlertDialogContent>
@@ -566,5 +613,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    

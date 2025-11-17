@@ -178,8 +178,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
     )
 }
 
-function TransactionDialog({ business, transaction, onSave, children }: { business: Business, transaction: BusinessTransaction | null, onSave: () => void, children: React.ReactNode }) {
-    const [open, setOpen] = useState(false);
+function TransactionDialog({ open, onOpenChange, business, transaction, onSave }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null, onSave: () => void }) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
@@ -195,11 +194,9 @@ function TransactionDialog({ business, transaction, onSave, children }: { busine
                 setAmount(String(transaction.amount));
                 setType(transaction.type);
                 setCategory(transaction.category);
-                // Convert Date object from Firestore to YYYY-MM-DD string for input
                 const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
                 setDate(transactionDate.toISOString().split('T')[0]);
             } else {
-                // Reset for new transaction
                 setDescription('');
                 setAmount('');
                 setType('expense');
@@ -214,7 +211,6 @@ function TransactionDialog({ business, transaction, onSave, children }: { busine
         if (!description || !amount || !category || !date || !user) return;
         
         if (transaction) {
-            // Update existing transaction
             const transactionRef = doc(firestore, 'users', user.uid, 'businesses', business.id, 'transactions', transaction.id);
             await updateDoc(transactionRef, {
                 description,
@@ -224,7 +220,6 @@ function TransactionDialog({ business, transaction, onSave, children }: { busine
                 date: new Date(date),
             });
         } else {
-            // Create new transaction
              const newTransactionData = {
                 businessId: business.id,
                 description,
@@ -232,19 +227,17 @@ function TransactionDialog({ business, transaction, onSave, children }: { busine
                 type,
                 category,
                 date: new Date(date),
-                createdAt: serverTimestamp(), // For ordering
+                createdAt: serverTimestamp(),
             };
             const docRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
             await addDoc(docRef, newTransactionData);
         }
 
         onSave();
-        setOpen(false);
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{transaction ? 'Edit' : 'Add'} Business Transaction</DialogTitle>
@@ -357,18 +350,18 @@ export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
 
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
+  
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'businesses');
   }, [firestore, user]);
 
   const { data: businesses, isLoading: isBusinessesLoading } = useCollection<Business>(businessesRef);
-  const business = businesses?.[0]; // For now, we assume only one business per user
+  const business = businesses?.[0];
 
   const transactionsQuery = useMemoFirebase(() => {
     if (!user || !business) return null;
@@ -393,11 +386,6 @@ export function BusinessDashboard() {
     setTransactionToDelete(id);
     setIsDeleteAlertOpen(true);
   };
-  
-  const openEditDialog = (transaction: BusinessTransaction) => {
-    setEditingTransaction(transaction);
-    setIsEditDialogOpen(true);
-  }
 
   const handleDeleteTransaction = async () => {
     if (!transactionToDelete || !user || !business) return;
@@ -450,14 +438,12 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-               <TransactionDialog business={business} transaction={null} onSave={() => {}}>
-                 <Button size="sm" className="h-8 gap-1">
+                <Button size="sm" className="h-8 gap-1" onClick={() => setIsAddDialogOpen(true)}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Add Transaction
                     </span>
                 </Button>
-               </TransactionDialog>
             </div>
         </CardHeader>
         <CardContent>
@@ -500,7 +486,7 @@ export function BusinessDashboard() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => openEditDialog(txn)}>Edit</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setEditingTransaction(txn)}>Edit</DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -518,18 +504,22 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-        {business && editingTransaction && (
-            <TransactionDialog 
-                business={business} 
-                transaction={editingTransaction} 
-                onSave={() => {
-                    setEditingTransaction(null);
-                    setIsEditDialogOpen(false);
-                }}
-            >
-                {/* This is a controlled dialog, the trigger is handled by state */}
-                <div />
-            </TransactionDialog>
+        <TransactionDialog
+            open={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            business={business}
+            transaction={null}
+            onSave={() => setIsAddDialogOpen(false)}
+        />
+        
+        {editingTransaction && (
+             <TransactionDialog
+                open={!!editingTransaction}
+                onOpenChange={(open) => !open && setEditingTransaction(null)}
+                business={business}
+                transaction={editingTransaction}
+                onSave={() => setEditingTransaction(null)}
+            />
         )}
 
 

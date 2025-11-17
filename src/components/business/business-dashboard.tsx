@@ -86,7 +86,16 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setError(null);
         setReport(null);
         try {
-            const result = await generatePLReport({ transactions });
+            // Convert Firestore Timestamps to serializable date strings before sending to the server action
+            const serializableTransactions = transactions.map(t => {
+                const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
+                return {
+                    ...t,
+                    date: date.toISOString().split('T')[0], // YYYY-MM-DD
+                }
+            });
+
+            const result = await generatePLReport({ transactions: serializableTransactions as any });
             setReport(result);
         } catch (e) {
             console.error(e);
@@ -615,3 +624,5 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    

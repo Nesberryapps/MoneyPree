@@ -785,3 +785,5 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
+
+    

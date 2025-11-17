@@ -137,11 +137,14 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setAnalysis(null);
         try {
             // Convert Timestamps to ISO strings before passing to the server action
-            const plainTransactions = transactions.map(t => ({
-                ...t,
-                date: (t.date as any).toDate().toISOString(),
-                createdAt: undefined, // Ensure non-serializable fields are removed
-            }));
+            const plainTransactions = transactions.map(t => {
+                const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
+                return {
+                    ...t,
+                    date: date.toISOString(),
+                    createdAt: undefined, // Ensure non-serializable fields are removed
+                }
+            });
 
             const result = await analyzePLReport({ plReport: report, transactions: plainTransactions as any });
             setAnalysis(result);
@@ -267,7 +270,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
     )
 }
 
-function TransactionDialog({ open, onOpenChange, business, transaction, initialData }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null, initialData?: Partial<BusinessTransaction> }) {
+function TransactionDialog({ open, onOpenChange, business, transaction, initialData, onSave }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null, initialData?: Partial<BusinessTransaction>, onSave: (data: Partial<BusinessTransaction>) => void }) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
@@ -284,7 +287,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
     
     const { isVoiceInteractionEnabled } = useVoiceInteraction();
     const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
-    const { isListening: isListeningAmount, startListening: startListeningAmount, stopListening: stopListeningAmount } = useSpeechToText({ onTranscript: (text) => setAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
+    const { isListening: isListeningAmount, startListening: startListeningAmount, stopListening: stopListeningStopListeningDescription } = useSpeechToText({ onTranscript: (text) => setAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
 
 
     useEffect(() => {
@@ -354,7 +357,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
             const docRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
             await addDoc(docRef, newTransactionData);
         }
-
+        onSave(dataToSave);
         onOpenChange(false);
     };
 
@@ -391,7 +394,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
                                         size="icon"
                                         variant={isListeningAmount ? 'destructive' : 'ghost'}
                                         className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7"
-                                        onClick={isListeningAmount ? stopListeningAmount : startListeningAmount}
+                                        onClick={isListeningAmount ? stopListeningStopListeningDescription : stopListeningStopListeningDescription}
                                     >
                                         <Mic className="h-4 w-4" />
                                     </Button>
@@ -732,6 +735,13 @@ export function BusinessDashboard() {
     }
   };
 
+  const handleSavePlaidTransaction = (savedData: Partial<BusinessTransaction>) => {
+    const plaidTxn = syncedTransactions.find(t => t.name === savedData.description);
+    if (plaidTxn) {
+        setSyncedTransactions(prev => prev.filter(t => t.transaction_id !== plaidTxn.transaction_id));
+    }
+  };
+
 
   if (isBusinessesLoading) {
       return (
@@ -744,13 +754,6 @@ export function BusinessDashboard() {
   if (!business) {
     return <CreateBusinessForm onCreate={handleCreateBusiness} />;
   }
-
-  const handleSavePlaidTransaction = (initialPlaidData: Partial<BusinessTransaction>) => {
-      const plaidTxn = syncedTransactions.find(t => t.name === initialPlaidData.description && (t.amount > 0 ? t.amount : -t.amount) === initialPlaidData.amount);
-      if (plaidTxn) {
-          setSyncedTransactions(prev => prev.filter(t => t.transaction_id !== plaidTxn.transaction_id));
-      }
-  };
 
   return (
     <div className="grid gap-8">
@@ -946,10 +949,6 @@ export function BusinessDashboard() {
         open={isDialogVisible}
         onOpenChange={(isOpen) => {
             if (!isOpen) {
-                // If closing the dialog AND we were working with a plaid txn, remove it from the synced list
-                if (scannedData && syncedTransactions.some(t => t.name === scannedData.description)) {
-                    handleSavePlaidTransaction(scannedData);
-                }
                 handleCloseDialog();
             } else {
                 setIsDialogVisible(true);
@@ -958,6 +957,7 @@ export function BusinessDashboard() {
         business={business}
         transaction={editingTransaction}
         initialData={scannedData || undefined}
+        onSave={handleSavePlaidTransaction}
       />
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -979,3 +979,5 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    

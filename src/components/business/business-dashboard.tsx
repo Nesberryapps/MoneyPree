@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo, useEffect, ReactElement } from 'react';
+import React, { useState, useMemo, useEffect, useRef, ReactElement } from 'react';
 import {
   Card,
   CardContent,
@@ -53,7 +54,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
@@ -66,6 +67,10 @@ import { useDebounce } from 'use-debounce';
 import { TaxCenter } from './tax-center';
 import { PlaidLink } from '../plaid/plaid-link';
 import { useProStatus } from '@/hooks/use-pro-status';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { parseReceipt } from '@/ai/flows/parse-receipt';
+
 
 const ENTITY_TYPES: Business['entityType'][] = [
   'Sole Proprietorship',
@@ -75,8 +80,8 @@ const ENTITY_TYPES: Business['entityType'][] = [
   'Partnership',
 ];
 
-const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
-const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
+export const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
+export const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
 
 function PLReportCard({ transactions }: { transactions: BusinessTransaction[] }) {
     const [report, setReport] = useState<PLReport | null>(null);
@@ -100,6 +105,7 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
                     amount: t.amount,
                     type: t.type,
                     category: t.category,
+                    isTaxDeductible: t.isTaxDeductible,
                 }
             });
 
@@ -204,7 +210,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
     )
 }
 
-function TransactionDialog({ open, onOpenChange, business, transaction }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null }) {
+function TransactionDialog({ open, onOpenChange, business, transaction, initialData }: { open: boolean, onOpenChange: (open: boolean) => void, business: Business, transaction: BusinessTransaction | null, initialData?: Partial<BusinessTransaction> }) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [type, setType] = useState<'revenue' | 'expense'>('expense');
@@ -220,14 +226,15 @@ function TransactionDialog({ open, onOpenChange, business, transaction }: { open
     const { user } = useUser();
 
     useEffect(() => {
-        if (transaction) {
-            setDescription(transaction.description);
-            setAmount(String(transaction.amount));
-            setType(transaction.type);
-            setCategory(transaction.category);
-            const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+        const data = transaction || initialData;
+        if (data) {
+            setDescription(data.description || '');
+            setAmount(data.amount ? String(data.amount) : '');
+            setType(data.type || 'expense');
+            setCategory(data.category || '');
+            const transactionDate = data.date ? (data.date instanceof Date ? data.date : (data.date as any).toDate()) : new Date();
             setDate(transactionDate.toISOString().split('T')[0]);
-            setIsTaxDeductible(transaction.isTaxDeductible || false);
+            setIsTaxDeductible(data.isTaxDeductible || false);
         } else {
             setDescription('');
             setAmount('');
@@ -237,7 +244,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction }: { open
             setIsTaxDeductible(false);
         }
         setAiSuggestion(null); // Reset AI suggestion when dialog opens
-    }, [transaction, open]);
+    }, [transaction, initialData, open]);
     
     useEffect(() => {
         const getAiSuggestion = async () => {
@@ -434,11 +441,19 @@ export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { isPro } = useProStatus();
+  const { toast } = useToast();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BusinessTransaction | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [scannedData, setScannedData] = useState<Partial<BusinessTransaction> | null>(null);
+  
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | undefined>(undefined);
+  const [isScanning, setIsScanning] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -469,12 +484,14 @@ export function BusinessDashboard() {
 
   const handleOpenDialog = (txn?: BusinessTransaction) => {
     setEditingTransaction(txn || null);
+    setScannedData(null);
     setIsDialogVisible(true);
   };
   
   const handleCloseDialog = () => {
     setIsDialogVisible(false);
     setEditingTransaction(null);
+    setScannedData(null);
   };
 
   const openDeleteDialog = (id: string) => {
@@ -489,6 +506,98 @@ export function BusinessDashboard() {
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   };
+  
+  useEffect(() => {
+    let stream: MediaStream;
+    const startCamera = async () => {
+      if (isScannerOpen) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          setHasCameraPermission(true);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          toast({
+            variant: 'destructive',
+            title: 'Camera Access Denied',
+            description: 'Please enable camera permissions in your browser settings to use this feature.',
+          });
+        }
+      }
+    };
+    startCamera();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isScannerOpen, toast]);
+
+  const handleCaptureAndScan = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    setIsScanning(true);
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    const imageDataUri = canvas.toDataURL('image/jpeg');
+
+    try {
+      const result = await parseReceipt({ receiptImage: imageDataUri, isBusiness: true });
+      
+      const parsedData: Partial<BusinessTransaction> = {
+        description: result.description || '',
+        amount: result.amount || undefined,
+        type: 'expense',
+      };
+      
+      if (result.date) {
+        const parsedDate = new Date(result.date);
+        if (!isNaN(parsedDate.getTime())) {
+          parsedData.date = parsedDate;
+        } else {
+            parsedData.date = new Date(); 
+        }
+      } else {
+        parsedData.date = new Date();
+      }
+      
+      if (result.category && EXPENSE_CATEGORIES.includes(result.category)) {
+        parsedData.category = result.category;
+      } else {
+        parsedData.category = 'Other';
+      }
+
+      setScannedData(parsedData);
+      setIsScannerOpen(false);
+      setIsDialogVisible(true);
+      
+      toast({
+        title: 'Receipt Scanned!',
+        description: 'Please verify the details and save the transaction.',
+      });
+
+    } catch (e) {
+      console.error("Failed to scan receipt:", e);
+      toast({
+        variant: 'destructive',
+        title: 'Scan Failed',
+        description: 'Could not extract details from the receipt. Please try again or enter manually.',
+      });
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
 
   if (isBusinessesLoading) {
       return (
@@ -542,6 +651,46 @@ export function BusinessDashboard() {
                         </Badge>
                     )}
                 </div>
+                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-8 gap-1">
+                            <Camera className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Scan Receipt
+                            </span>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Scan Business Receipt</DialogTitle>
+                        </DialogHeader>
+                        <div className="relative">
+                            <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
+                            {isScanning && (
+                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
+                                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                <p className="text-white mt-2">Scanning...</p>
+                            </div>
+                            )}
+                            <ScanLine className="absolute inset-0 m-auto h-full w-full text-white/20" />
+                        </div>
+                        
+                        {hasCameraPermission === false && (
+                           <Alert variant="destructive">
+                              <AlertTitle>Camera Access Required</AlertTitle>
+                              <AlertDescription>
+                                To scan a receipt, please allow camera access in your browser settings and refresh the page.
+                              </AlertDescription>
+                           </Alert>
+                        )}
+
+                        <DialogFooter>
+                            <Button onClick={handleCaptureAndScan} disabled={isScanning || hasCameraPermission === false}>
+                            {isScanning ? 'Processing...' : 'Capture & Scan'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
                 <Button size="sm" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -611,11 +760,14 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
+      <canvas ref={canvasRef} className="hidden"></canvas>
+
       <TransactionDialog
         open={isDialogVisible}
         onOpenChange={handleCloseDialog}
         business={business}
         transaction={editingTransaction}
+        initialData={scannedData}
       />
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>

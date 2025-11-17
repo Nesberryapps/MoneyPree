@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -72,10 +73,11 @@ const analyzePLReportFlow = ai.defineFlow(
     outputSchema: PLReportAnalysisSchema,
   },
   async (input) => {
-    const transactionsForPrompt = input.transactions.map(t => {
-        const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
-        return { ...t, date: date.toISOString().split('T')[0] };
-    });
+    // The date is already an ISO string from the client, so no need to convert.
+    const transactionsForPrompt = input.transactions.map(t => ({
+      ...t,
+      date: new Date(t.date).toISOString().split('T')[0]
+    }));
 
     const { output } = await prompt({
         plReportJson: JSON.stringify(input.plReport),

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef, ReactElement } from 'react';
@@ -135,7 +136,14 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setError(null);
         setAnalysis(null);
         try {
-            const result = await analyzePLReport({ plReport: report, transactions });
+            // Convert Timestamps to ISO strings before passing to the server action
+            const plainTransactions = transactions.map(t => ({
+                ...t,
+                date: (t.date as any).toDate().toISOString(),
+                createdAt: undefined, // Ensure non-serializable fields are removed
+            }));
+
+            const result = await analyzePLReport({ plReport: report, transactions: plainTransactions as any });
             setAnalysis(result);
         } catch (e: any) {
             console.error(e);

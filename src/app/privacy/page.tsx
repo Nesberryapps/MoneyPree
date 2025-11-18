@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             
             <h2>8. Contact Us</h2>
             <p>
-              If you have any questions about this Privacy Policy, please contact us at support@moneypree-placeholder.com.
+              If you have any questions about this Privacy Policy, please contact us at support@moneypree.com.
             </p>
           </CardContent>
         </Card>

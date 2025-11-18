@@ -57,7 +57,7 @@ export default function TermsPage() {
 
             <h2>8. Contact Us</h2>
             <p>
-              If you have any questions about these Terms, please contact us at support@moneypree-placeholder.com.
+              If you have any questions about these Terms, please contact us at support@moneypree.com.
             </p>
 
           </CardContent>

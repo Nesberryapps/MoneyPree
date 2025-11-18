@@ -10,6 +10,9 @@ import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 export const metadata: Metadata = {
   title: 'MoneyPree',
   description: 'Teach, manage, and suggest financial investments using AI.',
+  other: {
+    'google-adsense-account': 'ca-pub-6191158195654090',
+  },
 };
 
 export default function RootLayout({

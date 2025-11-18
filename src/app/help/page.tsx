@@ -24,7 +24,7 @@ export default function HelpPage() {
                   How do I add a new transaction?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Navigate to the "Budget" page and click the "Add Transaction" button. A dialog will appear where you can manually enter the details of your income or expense. You can also use the "Scan Receipt" button to use your device's camera to automatically fill in the details.
+                  Navigate to the "Budget" page and click the "Add Transaction" button to manually enter details. Pro users can also use the "Scan Receipt" button to automatically fill in details using their device's camera.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
@@ -40,7 +40,7 @@ export default function HelpPage() {
                   How does the AI Business Analysis work?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Go to the "Business" tab. Once you have logged some transactions, click the "Generate P&L Report" button. After the report is generated, an "Analyze Report" button will appear. Clicking it will provide you with a detailed analysis from our AI, including a performance summary, key trends, and actionable advice.
+                  This is a Pro feature available on the "Business" tab. Once you have logged some business transactions, click the "Generate P&L Report" button. After the report is generated, an "Analyze Report" button will appear. Clicking it will provide you with a detailed analysis from our AI, including a performance summary, key trends, and actionable advice.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
@@ -58,7 +58,7 @@ export default function HelpPage() {
                   How do I use voice commands?
                 </AccordionTrigger>
                 <AccordionContent>
-                  First, enable "Voice Interaction" on the "Settings" page. Once enabled, microphone icons (🎤) will appear next to input fields. Click the icon to start dictating. Speaker icons (🔊) will appear next to AI-generated text; click them to have the text read aloud.
+                  Voice interaction is a Pro feature. First, enable "Voice Interaction" on the "Settings" page. Once enabled, microphone icons (🎤) will appear next to input fields. Click the icon to start dictating. Speaker icons (🔊) will appear next to AI-generated text; click them to have the text read aloud.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-6">

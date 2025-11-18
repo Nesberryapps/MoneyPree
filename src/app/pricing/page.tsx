@@ -79,6 +79,7 @@ export default function PricingPage() {
     'AI-Powered P&L Generation & Analysis',
     'AI Tax Deduction Suggestions',
     'AI-Powered Goal Generation',
+    'AI Receipt Scanning',
     'Comprehensive Investment Scenarios',
     'Personalized Financial Lessons & Quizzes',
     'Unlimited AI Expert Q&A',

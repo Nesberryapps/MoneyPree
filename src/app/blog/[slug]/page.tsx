@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Header } from '@/components/layout/header';
@@ -51,7 +51,10 @@ export default function BlogPostPage() {
 
     const [post, setPost] = useState<BlogPost | null>(null);
 
-    const postQuery = query(collection(firestore, 'blogPosts'), where('slug', '==', slug));
+    const postQuery = useMemoFirebase(() => {
+        if (!firestore || !slug) return null;
+        return query(collection(firestore, 'blogPosts'), where('slug', '==', slug))
+    }, [firestore, slug]);
     const { data: posts, isLoading } = useCollection<BlogPost>(postQuery);
 
     useEffect(() => {

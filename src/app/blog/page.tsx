@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Header } from '@/components/layout/header';
@@ -14,7 +14,10 @@ import { formatDate } from '@/lib/utils';
 
 export default function BlogIndexPage() {
     const firestore = useFirestore();
-    const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishedAt', 'desc'));
+    const postsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'blogPosts'), orderBy('publishedAt', 'desc'))
+    }, [firestore]);
     const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 
     return (

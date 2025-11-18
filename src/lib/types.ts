@@ -1,4 +1,5 @@
 
+
 export type Transaction = {
   id: string;
   date: Date;
@@ -40,4 +41,14 @@ export type BusinessTransaction = {
     type: 'revenue' | 'expense';
     category: string;
     isTaxDeductible?: boolean;
+};
+
+export type BlogPost = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  publishedAt: Date;
 };

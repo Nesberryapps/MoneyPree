@@ -25,6 +25,8 @@ export default function LandingPage() {
   const intelligentGoalsImage = PlaceHolderImages.find(img => img.id === 'intelligent-goals');
   const investmentSimImage = PlaceHolderImages.find(img => img.id === 'investment-simulation');
   const businessDashboardImage = PlaceHolderImages.find(img => img.id === 'business-dashboard');
+  const businessAnalysisImage = PlaceHolderImages.find(img => img.id === 'business-analysis');
+  const voiceInteractionImage = PlaceHolderImages.find(img => img.id === 'voice-interaction');
 
 
   useEffect(() => {
@@ -64,10 +66,7 @@ export default function LandingPage() {
         icon: FileText,
         title: 'AI-Powered Business Analysis',
         description: 'Go beyond the numbers. Our AI acts as your virtual CFO, analyzing your P&L report to provide actionable insights, identify key trends, and alert you to potential risks.',
-        image: {
-            imageUrl: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxidXNpbmVzcyUyMGFuYWx5c2lzfGVufDB8fHx8MTc1OTQ4NDg0Mnww&ixlib=rb-4.1.0&q=80&w=1080',
-            imageHint: 'business analysis'
-        }
+        image: businessAnalysisImage
     },
     {
       icon: Target,
@@ -85,7 +84,7 @@ export default function LandingPage() {
       icon: Mic,
       title: 'Voice-Enabled Interaction',
       description: 'Interact with the app using your voice. Dictate transactions, ask the AI expert questions, and have results read back to you for a truly hands-free financial management experience.',
-      image: PlaceHolderImages.find(img => img.id === 'landing-feature-6')
+      image: voiceInteractionImage
     }
   ];
 
@@ -183,6 +182,9 @@ export default function LandingPage() {
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyPree. All rights reserved.</p>
             <div className="flex gap-4">
+                <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
+                    Blog
+                </Link>
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
                     Terms & Conditions
                 </Link>

@@ -1,3 +1,4 @@
+
 'use server';
 import { config } from 'dotenv';
 config();
@@ -15,3 +16,4 @@ import '@/ai/flows/stripe-checkout.ts';
 import '@/ai/flows/generate-pl-report.ts';
 import '@/ai/flows/suggest-tax-deduction.ts';
 import '@/ai/flows/analyze-pl-report.ts';
+import '@/ai/flows/generate-blog-post.ts';

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -74,17 +75,20 @@ export default function PricingPage() {
 
   const proFeatures = [
     'Automatic Bank Sync (Plaid)',
-    'Unlimited AI Financial Analysis',
-    'Unlimited AI Expert Q&A',
-    'Unlimited Investment Scenarios',
+    'Full Business Dashboard',
+    'AI-Powered P&L Generation & Analysis',
+    'AI Tax Deduction Suggestions',
     'AI-Powered Goal Generation',
-    'Personalized Financial Lessons',
+    'Comprehensive Investment Scenarios',
+    'Personalized Financial Lessons & Quizzes',
+    'Unlimited AI Expert Q&A',
+    'Voice-Enabled Interaction',
   ];
 
   const freeFeatures = [
       'Manual Transaction Entry',
-      'Budget Creation',
-      'Goal Tracking (manual)',
+      'Basic Budget Creation',
+      'Manual Goal Tracking',
       'Limited AI interactions'
   ]
 
@@ -131,7 +135,7 @@ export default function PricingPage() {
              <CardHeader>
               <CardTitle className="text-2xl">MoneyPree Pro</CardTitle>
               <CardDescription>
-                For comprehensive, AI-powered financial management.
+                For comprehensive, AI-powered financial management for you and your business.
               </CardDescription>
               <div className="text-4xl font-bold pt-4">$7 <span className="text-lg font-normal text-muted-foreground">/ month</span></div>
             </CardHeader>
@@ -144,7 +148,7 @@ export default function PricingPage() {
                 ))}
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSubscribe} className="w-full" disabled={isLoading}>
+              <Button onClick={handleSubscribe} className="w-full" disabled={isLoading || !user}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {user ? 'Upgrade to Pro' : 'Sign in to Subscribe'}
               </Button>

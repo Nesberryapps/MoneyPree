@@ -19,31 +19,31 @@
       "imageHint": "finance dashboard"
     },
     {
-      "id": "landing-feature-1",
+      "id": "receipt-scan",
       "description": "Image illustrating AI budgeting or receipt scanning.",
       "imageUrl": "https://images.unsplash.com/photo-1585930437945-2ebd52d059ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxidWRnZXRpbmclMjBhcHB8ZW58MHx8fHwxNzU5MjgyMDExfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "budgeting app"
+      "imageHint": "receipt scanning"
     },
     {
-      "id": "landing-feature-2",
+      "id": "intelligent-goals",
       "description": "Image illustrating intelligent financial goal setting.",
       "imageUrl": "https://images.unsplash.com/photo-1705948734339-a399544d5b68?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZmluYW5jaWFsJTIwZ29hbHN8ZW58MHx8fHwxNzU5MjgyMDExfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "financial goals"
     },
     {
-      "id": "landing-feature-3",
+      "id": "investment-simulation",
       "description": "Image illustrating investment simulation and portfolio analysis.",
       "imageUrl": "https://images.unsplash.com/photo-1647510284152-473953f84acc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxpbnZlc3RtZW50JTIwY2hhcnR8ZW58MHx8fHwxNzU5MjQ4NzkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "investment chart"
     },
     {
-      "id": "landing-feature-4",
+      "id": "personalized-learning",
       "description": "Image illustrating personalized financial learning and education.",
       "imageUrl": "https://images.unsplash.com/photo-1611131922192-9e1d9f483900?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxvbmxpbmUlMjBsZWFybmluZ3xlbnwwfHx8fDE3NTkyNjYyODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "online learning"
     },
     {
-      "id": "landing-feature-5",
+      "id": "expert-qa",
       "description": "Image illustrating an AI expert providing answers.",
       "imageUrl": "https://images.unsplash.com/photo-1715869428589-366729e7fdcd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8QUklMjBhc3Npc3RhbnR8ZW58MHx8fHwxNzU5MjIwNjc5fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "AI assistant"
@@ -53,6 +53,12 @@
       "description": "Image illustrating voice interaction with an application.",
       "imageUrl": "https://images.unsplash.com/photo-1562851529-f2a6c33f7ace?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2b2ljZSUyMGNvbW1hbmR8ZW58MHx8fHwxNzU5MjgyMDExfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "voice command"
+    },
+    {
+      "id": "business-dashboard",
+      "description": "Image illustrating a small business owner working on finances.",
+      "imageUrl": "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzbWFsbCUyMGJ1c2luZXNzJTIwZmluYW5jZXN8ZW58MHx8fHwxNzU5NDg0NTMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "business finance"
     }
   ]
 }

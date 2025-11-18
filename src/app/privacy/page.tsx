@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import Link from 'next/link';
@@ -21,7 +22,7 @@ export default function PrivacyPage() {
             
             <h2>1. Information We Collect</h2>
             <p>
-                We collect information you provide directly to us, such as when you create an account, enter financial data, or communicate with us. This may include your name, email, and financial information you choose to share.
+                We collect information you provide directly to us, such as when you create an account, enter financial data, or communicate with us. This may include your name, email, and financial information you choose to share. When you connect a bank account, we receive transaction data from our third-party partner, Plaid. We do not receive or store your bank login credentials.
             </p>
             
             <h2>2. How We Use Your Information</h2>
@@ -29,29 +30,30 @@ export default function PrivacyPage() {
                 We use the information we collect to operate, maintain, and provide the features and functionality of the Service, including:
             </p>
             <ul>
-                <li>To provide personalized financial insights and suggestions through our AI models.</li>
+                <li>To sync and display your financial transactions.</li>
+                <li>To provide personalized financial insights, business analysis, and other suggestions through our AI models.</li>
                 <li>To process subscription payments through our third-party provider, Stripe.</li>
                 <li>To communicate with you, including sending service-related notices.</li>
             </ul>
             
             <h2>3. AI and Data Processing</h2>
             <p>
-                Your financial data may be processed by third-party AI models (such as Google's Gemini) to generate insights. We take steps to ensure that this data is handled securely. We do not use your personal financial data to train general-purpose AI models.
+                Your financial data (such as transaction lists and amounts) may be sent to third-party AI models (e.g., Google's Gemini) to generate insights and analysis. We take steps to ensure that this data is handled securely and in accordance with our partners' privacy policies. We do not use your personal financial data to train general-purpose AI models.
             </p>
             
             <h2>4. Third-Party Services</h2>
             <p>
-                We use third-party services like Firebase for authentication and database management, Stripe for payments, and Plaid for bank account connections. These services have their own privacy policies, and we encourage you to review them.
+                We use third-party services like Firebase for authentication and database management, Stripe for payments, and Plaid for bank account connections. These services are essential for the app's functionality and have their own privacy policies, which we encourage you to review. We are not responsible for the privacy practices of these third parties.
             </p>
             
             <h2>5. Data Security</h2>
             <p>
-                We implement reasonable security measures to protect your information. However, no security system is impenetrable, and we cannot guarantee the security of our systems 100%.
+                We implement reasonable security measures, including Firestore Security Rules, to protect your information from unauthorized access. However, no security system is impenetrable, and we cannot guarantee the security of our systems 100%.
             </p>
             
             <h2>6. Your Choices</h2>
             <p>
-                You can access and update your account information through your account settings. You can also cancel your subscription and request deletion of your account data by contacting us.
+                You can access and update your account information through your account settings. You can disconnect your bank account at any time. You can also cancel your subscription and request deletion of your account data by contacting us.
             </p>
             
             <h2>7. Changes to This Policy</h2>

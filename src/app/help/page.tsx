@@ -1,3 +1,4 @@
+
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +11,7 @@ import { Header } from '@/components/layout/header';
 export default function HelpPage() {
   return (
     <div className="flex flex-col">
-      <Header title="Help & FAQ" />
+      <Header />
       <main className="flex-1 p-4 md:p-8">
         <Card>
           <CardHeader>
@@ -23,41 +24,49 @@ export default function HelpPage() {
                   How do I add a new transaction?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Navigate to the "Budget" page and click the "Add Transaction"
-                  button. A dialog will appear where you can enter the details
-                  of your income or expense.
+                  Navigate to the "Budget" page and click the "Add Transaction" button. A dialog will appear where you can manually enter the details of your income or expense. You can also use the "Scan Receipt" button to use your device's camera to automatically fill in the details.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
                 <AccordionTrigger>
-                  Can the AI help me set financial goals?
+                  How do I sync my bank account?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Yes! Go to the "Goals" page and use the "AI Goal Generator".
-                  Describe your financial dreams, and the AI will suggest
-                  specific, actionable goals for you.
+                  Bank syncing is a Pro feature. If you have a Pro subscription, go to the "Budget" or "Business" tab and click the "Connect Bank" button. Follow the prompts from Plaid to securely link your financial institution. Once connected, you can click "Sync" to fetch new transactions.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
                 <AccordionTrigger>
-                  How does the Investment Simulator work?
+                  How does the AI Business Analysis work?
                 </AccordionTrigger>
                 <AccordionContent>
-                  On the "Invest" page, you can input your current assets and
-                  investment goals. The AI will analyze your information and
-                  suggest a diversified portfolio, assess risks, and estimate
-                  potential returns. It can consider a wide range of
-                  investments, including real estate and business ventures.
+                  Go to the "Business" tab. Once you have logged some transactions, click the "Generate P&L Report" button. After the report is generated, an "Analyze Report" button will appear. Clicking it will provide you with a detailed analysis from our AI, including a performance summary, key trends, and actionable advice.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
                 <AccordionTrigger>
-                  How do I change the application's theme?
+                  How does the Investment Simulator work?
                 </AccordionTrigger>
                 <AccordionContent>
-                  You can change the theme by going to the "Settings" page.
-                  There you will find options to switch between light, dark, and
-                  system themes.
+                  On the "Invest" page, you can input your current assets and investment goals. The AI will analyze your information and
+                  suggest a diversified portfolio, assess risks, and estimate potential returns. It can consider a wide range of
+                  investments, including real estate and business ventures.
+                </AccordionContent>
+              </AccordionItem>
+               <AccordionItem value="item-5">
+                <AccordionTrigger>
+                  How do I use voice commands?
+                </AccordionTrigger>
+                <AccordionContent>
+                  First, enable "Voice Interaction" on the "Settings" page. Once enabled, microphone icons (🎤) will appear next to input fields. Click the icon to start dictating. Speaker icons (🔊) will appear next to AI-generated text; click them to have the text read aloud.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-6">
+                <AccordionTrigger>
+                  How do I manage my Pro subscription?
+                </AccordionTrigger>
+                <AccordionContent>
+                  You can manage your subscription by going to the "Settings" page and clicking the "Manage Subscription" button. This will open the Stripe customer portal where you can update your payment method, view invoices, or cancel your subscription.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

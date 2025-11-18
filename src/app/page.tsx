@@ -9,7 +9,7 @@ import { AuthProvider } from '@/components/auth/auth-provider';
 import { useAuth, useUser } from '@/firebase';
 import { signInAnonymously } from 'firebase/auth';
 import { useEffect } from 'react';
-import { ScanLine, Target, BookOpen, LineChart, Bot, Mic } from 'lucide-react';
+import { ScanLine, Target, BookOpen, LineChart, Bot, Mic, Briefcase, FileText } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -21,6 +21,10 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser();
 
   const landingHeroImage = PlaceHolderImages.find(img => img.id === 'landing-hero');
+  const receiptScanImage = PlaceHolderImages.find(img => img.id === 'receipt-scan');
+  const intelligentGoalsImage = PlaceHolderImages.find(img => img.id === 'intelligent-goals');
+  const investmentSimImage = PlaceHolderImages.find(img => img.id === 'investment-simulation');
+  const businessDashboardImage = PlaceHolderImages.find(img => img.id === 'business-dashboard');
 
 
   useEffect(() => {
@@ -48,55 +52,40 @@ export default function LandingPage() {
       icon: ScanLine,
       title: 'AI Budgeting & Receipt Scan',
       description: 'Track expenses effortlessly. Scan receipts with your camera and let our AI categorize and record transactions for you, giving you a crystal-clear overview of your spending.',
-      image: {
-        imageUrl: '/scan-receipt.png',
-        imageHint: 'receipt scanning'
-      }
+      image: receiptScanImage
+    },
+    {
+      icon: Briefcase,
+      title: 'Small Business Dashboard',
+      description: 'Manage your business finances with ease. Track revenue and expenses, get AI-powered tax-deduction suggestions, and generate Profit & Loss statements instantly.',
+      image: businessDashboardImage
+    },
+    {
+        icon: FileText,
+        title: 'AI-Powered Business Analysis',
+        description: 'Go beyond the numbers. Our AI acts as your virtual CFO, analyzing your P&L report to provide actionable insights, identify key trends, and alert you to potential risks.',
+        image: {
+            imageUrl: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxidXNpbmVzcyUyMGFuYWx5c2lzfGVufDB8fHx8MTc1OTQ4NDg0Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+            imageHint: 'business analysis'
+        }
     },
     {
       icon: Target,
       title: 'Intelligent Goal Setting',
       description: 'Describe your financial dreams, and our AI will generate specific, measurable goals to help you get there faster. From saving for a house to planning retirement, we make your ambitions achievable.',
-      image: {
-        imageUrl: '/intelligent-goals.png',
-        imageHint: 'financial planning goals'
-      }
+      image: intelligentGoalsImage
     },
     {
       icon: LineChart,
-      title: 'Investment Simulation',
-      description: 'Explore different investment strategies without the risk. Our AI analyzes your portfolio and goals to suggest diversification, assess risk, and project potential returns.',
-      image: {
-        imageUrl: '/investment-simulation.png',
-        imageHint: 'investment portfolio analysis'
-      }
-    },
-    {
-      icon: BookOpen,
-      title: 'Personalized Learning',
-      description: 'Receive custom-tailored financial lessons based on your knowledge and interests. Complete quizzes to test your skills and level up your financial literacy at your own pace.',
-      image: {
-        imageUrl: '/personalized-learning.png',
-        imageHint: 'personalized learning course'
-      }
-    },
-    {
-      icon: Bot,
-      title: 'Expert Q&A',
-      description: 'Have a question about taxes, stocks, or anything in between? Get instant, detailed answers from our AI financial expert, available 24/7 to guide you.',
-      image: {
-        imageUrl: '/expert-q&a.png',
-        imageHint: 'AI expert answers'
-      }
+      title: 'Comprehensive Investment Simulation',
+      description: 'Explore different investment strategies without the risk. From stocks and bonds to real estate and starting a business, our AI analyzes your portfolio and goals to suggest diversification, assess risk, and project potential returns.',
+      image: investmentSimImage
     },
     {
       icon: Mic,
       title: 'Voice-Enabled Interaction',
-      description: 'Interact with the app using your voice. Dictate questions, fill out forms, and have results read back to you for a truly hands-free financial management experience.',
-      image: {
-        imageUrl: '/Voice-enabled.png',
-        imageHint: 'voice interaction app'
-      }
+      description: 'Interact with the app using your voice. Dictate transactions, ask the AI expert questions, and have results read back to you for a truly hands-free financial management experience.',
+      image: PlaceHolderImages.find(img => img.id === 'landing-feature-6')
     }
   ];
 
@@ -126,6 +115,7 @@ export default function LandingPage() {
                         fill
                         className="object-cover"
                         data-ai-hint={landingHeroImage.imageHint}
+                        priority
                     />
                 )}
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
@@ -133,10 +123,10 @@ export default function LandingPage() {
 
             <div className="relative z-10">
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
-                    The Smartest Way to Manage Your Money
+                    Your Personal & Business CFO
                 </h1>
                 <p className="max-w-3xl mx-auto mt-4 text-lg text-muted-foreground">
-                    MoneyPree is your AI-powered financial partner. From budgeting and goals to investing and learning, we provide the tools you need to achieve financial freedom.
+                    MoneyPree is your AI-powered financial partner. From automated budgeting and goal setting to business P&L analysis and investment simulation, we provide the tools you need to achieve financial freedom.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
                     <AuthProvider />

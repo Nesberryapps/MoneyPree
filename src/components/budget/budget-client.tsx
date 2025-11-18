@@ -414,6 +414,18 @@ ${insights.monthlyChallenge}
   const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const netBalance = totalIncome - totalExpenses;
 
+  const handleProFeatureClick = () => {
+    toast({
+        title: 'Pro Feature',
+        description: 'Please upgrade to a Pro plan to use this feature.',
+        action: (
+            <a href="/pricing">
+                <Button>Upgrade</Button>
+            </a>
+        )
+    });
+  };
+
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-3">
        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:col-span-3 lg:grid-cols-3">
@@ -491,12 +503,17 @@ ${insights.monthlyChallenge}
 
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" className="h-8 gap-1">
-                            <Camera className="h-3.5 w-3.5" />
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                Scan Receipt
-                            </span>
-                        </Button>
+                        <div className="relative group">
+                            <Button size="sm" variant="outline" className="h-8 gap-1" disabled={!isPro} onClick={!isPro ? handleProFeatureClick : undefined}>
+                                <Camera className="h-3.5 w-3.5" />
+                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                    Scan Receipt
+                                </span>
+                            </Button>
+                            {!isPro && (
+                                <Badge variant="premium" className="absolute -top-2 -right-2 text-xs">Pro</Badge>
+                            )}
+                        </div>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>

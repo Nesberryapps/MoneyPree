@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,6 +23,7 @@ import { createCustomerPortalSession } from '@/ai/flows/stripe-checkout';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { useProStatus } from '@/hooks/use-pro-status';
+import { Badge } from '../ui/badge';
 
 
 export function SettingsClient() {
@@ -38,6 +40,18 @@ export function SettingsClient() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleProFeatureClick = () => {
+    toast({
+        title: 'Pro Feature',
+        description: 'Please upgrade to a Pro plan to use this feature.',
+        action: (
+            <a href="/pricing">
+                <Button>Upgrade</Button>
+            </a>
+        )
+    });
+  };
 
   const handleSave = () => {
     // In a real app, these settings would be saved to a user profile in Firestore
@@ -237,16 +251,20 @@ export function SettingsClient() {
         </CardHeader>
         <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
-                <Label htmlFor="voice-interaction" className="flex flex-col space-y-1">
-                <span>Voice Interaction</span>
-                <span className="font-normal leading-snug text-muted-foreground">
-                    Enable voice commands and text-to-speech feedback.
-                </span>
+                <Label htmlFor="voice-interaction" className="flex flex-col space-y-1 grow mr-4">
+                  <div className="flex items-center gap-2">
+                    <span>Voice Interaction</span>
+                    {!isPro && <Badge variant="premium">Pro</Badge>}
+                  </div>
+                  <span className="font-normal leading-snug text-muted-foreground">
+                      Enable voice commands and text-to-speech feedback.
+                  </span>
                 </Label>
                 <Switch
                 id="voice-interaction"
                 checked={isVoiceInteractionEnabled}
-                onCheckedChange={setIsVoiceInteractionEnabled}
+                onCheckedChange={isPro ? setIsVoiceInteractionEnabled : handleProFeatureClick}
+                disabled={!isPro}
                 />
             </div>
         </CardContent>

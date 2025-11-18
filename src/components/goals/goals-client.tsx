@@ -47,6 +47,9 @@ import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useProStatus } from '@/hooks/use-pro-status';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '../ui/badge';
 
 type GoalsClientProps = {
     goals: Goal[];
@@ -72,6 +75,9 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   const [deadline, setDeadline] = useState('');
   
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
+  const { isPro } = useProStatus();
+  const { toast } = useToast();
+
   const { isListening: isListeningPrompt, startListening: startListeningPrompt, stopListening: stopListeningPrompt } = useSpeechToText({ onTranscript: (text) => setPrompt(prev => prev + text) });
   const { isListening: isListeningName, startListening: startListeningName, stopListening: stopListeningName } = useSpeechToText({ onTranscript: (text) => setName(prev => prev + text) });
   const { isListening: isListeningTarget, startListening: startListeningTarget, stopListening: stopListeningTarget } = useSpeechToText({ onTranscript: (text) => setTargetAmount(prev => prev + text.replace(/[^0-9.]/g, '')) });
@@ -82,7 +88,23 @@ export function GoalsClient({ goals }: GoalsClientProps) {
     setIsClient(true);
   }, []);
 
+  const handleProFeatureClick = () => {
+    toast({
+        title: 'Pro Feature',
+        description: 'Please upgrade to a Pro plan to use the AI Goal Generator.',
+        action: (
+            <a href="/pricing">
+                <Button>Upgrade</Button>
+            </a>
+        )
+    });
+  };
+
   const handleGenerateGoals = async () => {
+    if (!isPro) {
+        handleProFeatureClick();
+        return;
+    }
     setIsLoading(true);
     setGeneratedGoals([]);
     try {
@@ -275,7 +297,10 @@ export function GoalsClient({ goals }: GoalsClientProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>AI Goal Generator</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            AI Goal Generator
+            {!isPro && <Badge variant="premium">Pro</Badge>}
+          </CardTitle>
           <CardDescription>
             Describe your financial dreams, and let our AI create actionable goals for you.
           </CardDescription>
@@ -289,8 +314,9 @@ export function GoalsClient({ goals }: GoalsClientProps) {
                 placeholder="e.g., to retire early, buy a house, or travel the world."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
+                disabled={!isPro}
                 />
-                 {isVoiceInteractionEnabled && (
+                 {isVoiceInteractionEnabled && isPro && (
                     <Button
                         size="icon"
                         variant={isListeningPrompt ? 'destructive' : 'ghost'}
@@ -301,7 +327,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
                     </Button>
                 )}
             </div>
-            <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
+            <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt || !isPro}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Generate Goals
             </Button>

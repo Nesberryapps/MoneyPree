@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,17 +19,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { createCustomerPortalSession } from '@/ai/flows/stripe-checkout';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { useProStatus } from '@/hooks/use-pro-status';
-import { generateAndPublishAiBlogPost } from '@/ai/flows/generate-and-publish-ai-blog-post';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const firestore = useFirestore();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
   const { isVoiceInteractionEnabled, setIsVoiceInteractionEnabled } = useVoiceInteraction();
@@ -38,10 +34,6 @@ export function SettingsClient() {
   const { isPro } = useProStatus();
   const { user } = useUser();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
-
-  // State for blog generation
-  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
-
 
   useEffect(() => {
     setMounted(true);
@@ -84,30 +76,6 @@ export function SettingsClient() {
           setIsPortalLoading(false);
       }
   };
-
-  const handleGeneratePost = async () => {
-    if (!firestore) return;
-    setIsGeneratingPost(true);
-    try {
-        const postData = await generateAndPublishAiBlogPost();
-        
-        toast({
-            title: 'Blog Post Published!',
-            description: `"${postData.title}" is now live.`,
-        });
-
-    } catch (error: any) {
-        console.error('Error generating blog post:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Generation Failed',
-            description: error.message || 'Could not generate the blog post.',
-        });
-    } finally {
-        setIsGeneratingPost(false);
-    }
-  };
-
 
   if (!mounted) {
       return (
@@ -162,20 +130,6 @@ export function SettingsClient() {
 
   return (
     <div className="grid gap-8">
-       <Card>
-            <CardHeader>
-                <CardTitle>AI Blog Assistant</CardTitle>
-                <CardDescription>
-                    Let the AI brainstorm, write, and publish a new financial article for your blog with a single click. (Admin)
-                </CardDescription>
-            </CardHeader>
-            <CardFooter>
-                <Button onClick={handleGeneratePost} disabled={isGeneratingPost}>
-                    {isGeneratingPost && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Generate & Publish New AI Article
-                </Button>
-            </CardFooter>
-        </Card>
       {isPro && (
           <Card>
               <CardHeader>

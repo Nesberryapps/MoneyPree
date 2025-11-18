@@ -1,21 +1,19 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import Loading from '@/components/layout/loading';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { ALL_POSTS } from '@/lib/blog-content';
 
 // A simple Markdown renderer
 const MarkdownRenderer = ({ content }: { content: string }) => {
     // This is a very basic renderer. For a real app, a library like 'react-markdown' would be better.
-    const sections = content.split('\\n\\n');
+    const sections = content.split('\n\n');
 
     return (
         <div className="prose dark:prose-invert max-w-none space-y-6">
@@ -30,14 +28,16 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
                     return <h1 key={index} className="text-4xl font-extrabold tracking-tight">{section.replace('# ', '')}</h1>;
                 }
                  if (section.startsWith('* ')) {
-                    const items = section.split('\\n* ').map(item => item.replace('* ', ''));
+                    const items = section.split('\n* ').map(item => item.replace('* ', ''));
                     return (
                         <ul key={index} className="list-disc list-inside space-y-2">
                             {items.map((item, i) => <li key={i}>{item}</li>)}
                         </ul>
                     );
                 }
-                return <p key={index}>{section.replace(/\\n/g, '<br />')}</p>;
+                // Handle paragraphs with escaped newlines from AI
+                const paragraphs = section.split(/\\n/g).map((p, i) => <p key={i}>{p}</p>);
+                return <div key={index}>{paragraphs}</div>;
             })}
         </div>
     );
@@ -47,23 +47,16 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
 export default function BlogPostPage() {
     const params = useParams();
     const slug = params.slug as string;
-    const firestore = useFirestore();
-
-    const [post, setPost] = useState<BlogPost | null>(null);
-
-    const postQuery = useMemoFirebase(() => {
-        if (!firestore || !slug) return null;
-        return query(collection(firestore, 'blogPosts'), where('slug', '==', slug))
-    }, [firestore, slug]);
-    const { data: posts, isLoading } = useCollection<BlogPost>(postQuery);
-
+    const [post, setPost] = useState<BlogPost | null | undefined>(undefined);
+    
     useEffect(() => {
-        if (posts && posts.length > 0) {
-            setPost(posts[0]);
+        if (slug) {
+            const foundPost = ALL_POSTS.find(p => p.slug === slug);
+            setPost(foundPost || null);
         }
-    }, [posts]);
+    }, [slug]);
 
-    if (isLoading) {
+    if (post === undefined) {
         return <Loading />;
     }
 

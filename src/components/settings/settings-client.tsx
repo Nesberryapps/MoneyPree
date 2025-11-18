@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ import { createCustomerPortalSession } from '@/ai/flows/stripe-checkout';
 import { useUser, useFirestore } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { useProStatus } from '@/hooks/use-pro-status';
-import { generateBlogPost } from '@/ai/flows/generate-blog-post';
+import { generateAndPublishAiBlogPost } from '@/ai/flows/generate-and-publish-ai-blog-post';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 
@@ -39,7 +40,6 @@ export function SettingsClient() {
   const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   // State for blog generation
-  const [blogTopic, setBlogTopic] = useState('');
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
 
 
@@ -86,22 +86,15 @@ export function SettingsClient() {
   };
 
   const handleGeneratePost = async () => {
-    if (!blogTopic || !firestore) return;
+    if (!firestore) return;
     setIsGeneratingPost(true);
     try {
-        const postData = await generateBlogPost({ topic: blogTopic });
+        const postData = await generateAndPublishAiBlogPost();
         
-        const blogPostsRef = collection(firestore, 'blogPosts');
-        await addDoc(blogPostsRef, {
-            ...postData,
-            publishedAt: serverTimestamp(),
-        });
-
         toast({
             title: 'Blog Post Published!',
             description: `"${postData.title}" is now live.`,
         });
-        setBlogTopic('');
 
     } catch (error: any) {
         console.error('Error generating blog post:', error);
@@ -171,26 +164,15 @@ export function SettingsClient() {
     <div className="grid gap-8">
        <Card>
             <CardHeader>
-                <CardTitle>Blog Content Generation</CardTitle>
+                <CardTitle>AI Blog Assistant</CardTitle>
                 <CardDescription>
-                    Use AI to generate and publish a new article for your blog. (Admin)
+                    Let the AI brainstorm, write, and publish a new financial article for your blog with a single click. (Admin)
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="blog-topic">Blog Post Topic</Label>
-                    <Input 
-                        id="blog-topic" 
-                        placeholder="e.g., 'The basics of ETF investing'"
-                        value={blogTopic}
-                        onChange={(e) => setBlogTopic(e.target.value)}
-                    />
-                </div>
-            </CardContent>
             <CardFooter>
-                <Button onClick={handleGeneratePost} disabled={isGeneratingPost || !blogTopic}>
+                <Button onClick={handleGeneratePost} disabled={isGeneratingPost}>
                     {isGeneratingPost && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Generate & Publish Post
+                    Generate & Publish New AI Article
                 </Button>
             </CardFooter>
         </Card>

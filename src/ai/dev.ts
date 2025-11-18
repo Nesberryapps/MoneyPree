@@ -17,3 +17,4 @@ import '@/ai/flows/generate-pl-report.ts';
 import '@/ai/flows/suggest-tax-deduction.ts';
 import '@/ai/flows/analyze-pl-report.ts';
 import '@/ai/flows/generate-blog-post.ts';
+import '@/ai/flows/generate-and-publish-ai-blog-post.ts';

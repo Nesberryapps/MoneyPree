@@ -61,13 +61,16 @@ export type GetTransactionsOutput = {
     transactions: Transaction[];
 };
 
+// Determine Plaid environment from environment variable
+const PLAID_ENV = process.env.PLAID_ENVIRONMENT || 'sandbox';
+const plaidEnvironment = (PlaidEnvironments as any)[PLAID_ENV];
 
 const configuration = new Configuration({
-  basePath: PlaidEnvironments.sandbox,
+  basePath: plaidEnvironment,
   baseOptions: {
     headers: {
       'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SANDBOX_SECRET,
+      'PLAID-SECRET': process.env.PLAID_SECRET,
     },
   },
 });

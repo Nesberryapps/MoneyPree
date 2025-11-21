@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic, Sparkles, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic, Sparkles, AlertTriangle, ShieldCheck, Banknote } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { formatDate } from '@/lib/utils';
@@ -898,7 +898,7 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                {plaidEnabled && (
+                {plaidEnabled ? (
                   <>
                     <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
                     {plaidAccessToken && (
@@ -910,6 +910,22 @@ export function BusinessDashboard() {
                         </Button>
                     )}
                   </>
+                ) : (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button size="sm" variant="outline" className="h-8 gap-1" disabled>
+                                    <Banknote className="h-3.5 w-3.5" />
+                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                        Connect Bank
+                                    </span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>This feature is coming soon!</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 )}
                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
@@ -1056,5 +1072,7 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    
 
     

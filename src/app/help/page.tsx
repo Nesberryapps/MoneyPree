@@ -32,7 +32,7 @@ export default function HelpPage() {
                   How do I sync my bank account?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Bank syncing is a Pro feature. If you have a Pro subscription, go to the "Budget" or "Business" tab and click the "Connect Bank" button. Follow the prompts from Plaid to securely link your financial institution. Once connected, you can click "Sync" to fetch new transactions.
+                  Bank syncing is a Pro feature that is currently being finalized and will be available soon. Once enabled, you will be able to go to the "Budget" or "Business" tab and click the "Connect Bank" button. Follow the prompts from Plaid to securely link your financial institution.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
@@ -76,3 +76,5 @@ export default function HelpPage() {
     </div>
   );
 }
+
+    

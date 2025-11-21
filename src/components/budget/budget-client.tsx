@@ -75,6 +75,7 @@ import {
   ScanLine,
   Mic,
   RefreshCw,
+  Banknote,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
@@ -93,6 +94,7 @@ import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from '
 import { getTransactions } from '@/ai/flows/plaid-flows';
 import type { Transaction as PlaidTransaction } from 'plaid';
 import { Separator } from '../ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 type BudgetClientProps = {
@@ -492,7 +494,7 @@ ${insights.monthlyChallenge}
             <CardTitle>Transactions</CardTitle>
             <CardDescription>A list of your recent income and expenses.</CardDescription>
             <div className="ml-auto flex items-center gap-2 pt-2">
-                {plaidEnabled && (
+                {plaidEnabled ? (
                   <>
                     <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
                     {plaidAccessToken && (
@@ -504,6 +506,22 @@ ${insights.monthlyChallenge}
                         </Button>
                     )}
                   </>
+                ) : (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button size="sm" variant="outline" className="h-8 gap-1" disabled>
+                                    <Banknote className="h-3.5 w-3.5" />
+                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                        Connect Bank
+                                    </span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>This feature is coming soon!</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 )}
 
                 <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
@@ -807,5 +825,7 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
+
+    
 
     

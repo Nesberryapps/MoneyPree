@@ -80,14 +80,11 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="w-full p-4 flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
+       <header className="w-full p-4 flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2">
           <MoneyPreeIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
-        <div className="flex items-center gap-2">
-            <AuthProvider />
-        </div>
       </header>
 
       <main className="flex flex-1 flex-col">
@@ -107,15 +104,19 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
             </div>
 
-            <div className="relative z-10">
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
-                    Your Personal & Business CFO
-                </h1>
-                <p className="max-w-3xl mx-auto mt-4 text-lg text-muted-foreground">
-                    MoneyPree is your AI-powered financial partner. From automated budgeting and goal setting to business P&L analysis and investment simulation, we provide the tools you need to achieve financial freedom.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
-                    <AuthProvider />
+            <div className="relative z-10 container mx-auto">
+                 <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="text-center md:text-left">
+                        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
+                            Your Personal & Business CFO
+                        </h1>
+                        <p className="max-w-xl mt-4 text-lg text-muted-foreground mx-auto md:mx-0">
+                            MoneyPree is your AI-powered financial partner. From automated budgeting and goal setting to business P&L analysis and investment simulation, we provide the tools you need to achieve financial freedom.
+                        </p>
+                    </div>
+                    <div className="flex justify-center">
+                        <AuthProvider />
+                    </div>
                 </div>
             </div>
         </section>

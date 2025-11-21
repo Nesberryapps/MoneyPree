@@ -74,7 +74,6 @@ export default function PricingPage() {
   };
 
   const proFeatures = [
-    'Automatic Bank Sync (Plaid)',
     'Full Business Dashboard',
     'AI-Powered P&L Generation & Analysis',
     'AI Tax Deduction Suggestions',

@@ -27,14 +27,6 @@ export default function HelpPage() {
                   Navigate to the "Budget" page and click the "Add Transaction" button to manually enter details. Pro users can also use the "Scan Receipt" button to automatically fill in details using their device's camera.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>
-                  How do I sync my bank account?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Bank syncing is a Pro feature that is currently being finalized and will be available soon. Once enabled, you will be able to go to the "Budget" or "Business" tab and click the "Connect Bank" button. Follow the prompts from Plaid to securely link your financial institution.
-                </AccordionContent>
-              </AccordionItem>
               <AccordionItem value="item-3">
                 <AccordionTrigger>
                   How does the AI Business Analysis work?

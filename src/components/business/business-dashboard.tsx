@@ -899,21 +899,22 @@ export function BusinessDashboard() {
             </div>
             <div className="ml-auto flex items-center gap-2">
                 {plaidEnabled ? (
-                  <>
-                    <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
-                    {plaidAccessToken && (
+                  isPro ? (
+                    <>
+                      <PlaidLink onSuccessCallback={setPlaidAccessToken} />
+                      {plaidAccessToken && (
                         <Button onClick={handleSyncTransactions} disabled={isSyncing} size="sm" variant="outline" className="h-8 gap-1">
                             {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                                 Sync
                             </span>
                         </Button>
-                    )}
-                  </>
-                ) : (
+                      )}
+                    </>
+                  ) : (
                     <TooltipProvider>
                         <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                                 <Button size="sm" variant="outline" className="h-8 gap-1" disabled>
                                     <Banknote className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -926,7 +927,8 @@ export function BusinessDashboard() {
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                )}
+                  )
+                ) : null}
                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
                          <Button size="sm" variant="outline" className="h-8 gap-1" disabled={!isPro} onClick={!isPro ? handleProFeatureClick : undefined}>

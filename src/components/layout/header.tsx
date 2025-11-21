@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -18,7 +19,7 @@ import { useRouter } from 'next/navigation';
 import { AuthProvider } from '../auth/auth-provider';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { Badge } from '@/components/ui/badge';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Sparkles } from 'lucide-react';
 
 export function Header() {
   const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
@@ -40,11 +41,20 @@ export function Header() {
         </Link>
       <div className="w-full flex-1">
       </div>
-      {isPro && (
-        <Badge variant="premium" className="mr-2">
-          <ShieldCheck className="h-4 w-4 mr-1" />
-          Pro
-        </Badge>
+      {user && (
+        isPro ? (
+          <Badge variant="premium" className="mr-2">
+            <ShieldCheck className="h-4 w-4 mr-1" />
+            Pro
+          </Badge>
+        ) : (
+          <Button asChild variant="premium" size="sm">
+            <Link href="/pricing">
+              <Sparkles className="h-4 w-4 mr-1" />
+              Upgrade to Pro
+            </Link>
+          </Button>
+        )
       )}
       {user ? (
         <DropdownMenu>

@@ -35,16 +35,6 @@ export default function LandingPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const handleGuestSignIn = async () => {
-    if (!auth) return;
-    try {
-      await signInAnonymously(auth);
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error signing in as guest', error);
-    }
-  };
-
   if (isUserLoading || user) {
     return null; // Or a loading spinner
   }
@@ -97,9 +87,6 @@ export default function LandingPage() {
         </Link>
         <div className="flex items-center gap-2">
             <AuthProvider />
-            <Button variant="secondary" onClick={handleGuestSignIn}>
-                Guest
-            </Button>
         </div>
       </header>
 
@@ -129,9 +116,6 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
                     <AuthProvider />
-                    <Button variant="secondary" size="lg" onClick={handleGuestSignIn}>
-                    Try It as a Guest
-                    </Button>
                 </div>
             </div>
         </section>

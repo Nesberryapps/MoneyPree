@@ -596,6 +596,7 @@ export function BusinessDashboard() {
   const [plaidAccessToken, setPlaidAccessToken] = useState<string | null>(null);
   const [syncedTransactions, setSyncedTransactions] = useState<PlaidTransaction[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const plaidEnabled = process.env.NEXT_PUBLIC_PLAID_ENABLED === 'true';
 
   const businessesRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -897,14 +898,18 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
-                 {plaidAccessToken && (
-                    <Button onClick={handleSyncTransactions} disabled={isSyncing} size="sm" variant="outline" className="h-8 gap-1">
-                        {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Sync
-                        </span>
-                    </Button>
+                {plaidEnabled && (
+                  <>
+                    <PlaidLink disabled={!isPro} onSuccessCallback={setPlaidAccessToken} />
+                    {plaidAccessToken && (
+                        <Button onClick={handleSyncTransactions} disabled={isSyncing} size="sm" variant="outline" className="h-8 gap-1">
+                            {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Sync
+                            </span>
+                        </Button>
+                    )}
+                  </>
                 )}
                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>

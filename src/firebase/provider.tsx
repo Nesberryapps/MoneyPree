@@ -8,36 +8,57 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
-import { getFirebase } from '.';
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth, User } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 
+// Define the shape of the context value
 interface FirebaseContextValue {
-  app: FirebaseApp | null;
-  auth: Auth | null;
-  firestore: Firestore | null;
+  app: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
   user: User | null;
   isUserLoading: boolean;
 }
 
-const FirebaseContext = createContext<FirebaseContextValue | undefined>(
+// Create the context with an undefined initial value
+export const FirebaseContext = createContext<FirebaseContextValue | undefined>(
   undefined
 );
 
-export function FirebaseProvider({ children }: { children: ReactNode }) {
-  const { app, auth, firestore } = getFirebase();
+// Define the props for the provider component
+interface FirebaseProviderProps {
+  children: ReactNode;
+  app: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
+}
+
+/**
+ * The main Firebase provider.
+ * It takes initialized Firebase services as props and manages the user's auth state.
+ */
+export function FirebaseProvider({
+  children,
+  app,
+  auth,
+  firestore,
+}: FirebaseProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
 
   useEffect(() => {
+    // Subscribe to Firebase auth state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setIsUserLoading(false);
     });
+
+    // Unsubscribe on unmount
     return () => unsubscribe();
   }, [auth]);
 
+  // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(
     () => ({
       app,
@@ -50,33 +71,31 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <FirebaseContext.Provider value={value}>
-      {children}
-    </FirebaseContext.Provider>
+    <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>
   );
 }
 
-export function useFirebase() {
+// Custom hooks to easily access Firebase services and user state
+export function useFirebaseApp() {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider');
+    throw new Error('useFirebaseApp must be used within a FirebaseProvider');
   }
-  if (!context.app || !context.auth || !context.firestore) {
-    throw new Error('Firebase services are not available');
-  }
-  return context;
+  return context.app;
 }
 
 export function useAuth() {
-  return useFirebase().auth;
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within a FirebaseProvider');
+  }
+  return context.auth;
 }
 
 export function useFirestore() {
-  return useFirebase().firestore;
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useFirestore must be used within a FirebaseProvider');
+  }
+  return context.firestore;
 }
-
-export function useUser() {
-  return useFirebase();
-}
-
-    

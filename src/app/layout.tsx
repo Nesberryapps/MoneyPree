@@ -3,9 +3,10 @@ import Script from 'next/script';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
-import { FirebaseProvider } from '@/firebase/provider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ProStatusProvider } from '@/hooks/use-pro-status';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -37,13 +38,14 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <FirebaseProvider>
-            <ProStatusProvider>
-              <VoiceInteractionProvider>
+          <ProStatusProvider>
+            <VoiceInteractionProvider>
+              <FirebaseClientProvider>
+                <FirebaseErrorListener />
                 {children}
-              </VoiceInteractionProvider>
-            </ProStatusProvider>
-          </FirebaseProvider>
+              </FirebaseClientProvider>
+            </VoiceInteractionProvider>
+          </ProStatusProvider>
           <Toaster />
         </ThemeProvider>
         <Script
@@ -56,5 +58,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

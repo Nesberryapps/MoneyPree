@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInAnonymously
 } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/firebase';

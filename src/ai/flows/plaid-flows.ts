@@ -93,9 +93,8 @@ const createLinkTokenFlow = ai.defineFlow(
     // The redirect URI is required for OAuth flows.
     // It should be the URL of the page where you are initializing Plaid Link.
     // Ensure this URL is also added to your Plaid dashboard under "Allowed redirect URIs".
-    const redirectUri = process.env.NEXT_PUBLIC_APP_URL
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/budget`
-      : 'http://localhost:9002/dashboard/budget';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
+    const redirectUri = `${appUrl}/dashboard/budget`;
     
     const request = {
       user: {

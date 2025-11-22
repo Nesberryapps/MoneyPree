@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -53,7 +54,7 @@ const createCheckoutSessionFlow = ai.defineFlow(
     outputSchema: CheckoutSessionOutputSchema,
   },
   async ({ priceId, userId, userEmail }) => {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
     if (!appUrl) {
         throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
     }
@@ -121,7 +122,7 @@ const createCustomerPortalSessionFlow = ai.defineFlow(
         outputSchema: CustomerPortalOutputSchema,
     },
     async ({ userId, userEmail }) => {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
         if (!appUrl) {
             throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set.');
         }

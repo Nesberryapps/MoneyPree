@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
@@ -30,7 +29,6 @@ export function SettingsClient() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
   const { isVoiceInteractionEnabled, setIsVoiceInteractionEnabled } = useVoiceInteraction();
   const [mounted, setMounted] = useState(false);
   const { isPro } = useProStatus();
@@ -58,7 +56,6 @@ export function SettingsClient() {
     console.log('Settings saved:', {
       theme,
       emailNotifications,
-      pushNotifications,
       isVoiceInteractionEnabled,
     });
     toast({
@@ -120,7 +117,6 @@ export function SettingsClient() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                     <Skeleton className="h-10" />
                      <Skeleton className="h-10" />
                 </CardContent>
             </Card>
@@ -225,19 +221,6 @@ export function SettingsClient() {
               id="email-notifications"
               checked={emailNotifications}
               onCheckedChange={setEmailNotifications}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="push-notifications" className="flex flex-col space-y-1">
-              <span>Push Notifications</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Get notified on your devices.
-              </span>
-            </Label>
-            <Switch
-              id="push-notifications"
-              checked={pushNotifications}
-              onCheckedChange={setPushNotifications}
             />
           </div>
         </CardContent>

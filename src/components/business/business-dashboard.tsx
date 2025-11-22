@@ -56,7 +56,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic, Sparkles, AlertTriangle, ShieldCheck, Banknote } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { formatDate } from '@/lib/utils';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { generatePLReport, type PLReport } from '@/ai/flows/generate-pl-report';
@@ -598,7 +598,7 @@ export function BusinessDashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
   const plaidEnabled = process.env.NEXT_PUBLIC_PLAID_ENABLED === 'true';
 
-  const businessesRef = useMemoFirebase(() => {
+  const businessesRef = useMemo(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'businesses');
   }, [firestore, user]);
@@ -606,7 +606,7 @@ export function BusinessDashboard() {
   const { data: businesses, isLoading: isBusinessesLoading } = useCollection<Business>(businessesRef);
   const business = businesses?.[0];
 
-  const transactionsQuery = useMemoFirebase(() => {
+  const transactionsQuery = useMemo(() => {
     if (!user || !business) return null;
     const transactionsRef = collection(firestore, 'users', user.uid, 'businesses', business.id, 'transactions');
     return query(transactionsRef, orderBy('date', 'desc'));
@@ -1074,7 +1074,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    
-
-    

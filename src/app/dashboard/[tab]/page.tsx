@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import type { Transaction, Goal } from '@/lib/types';
 import {
   Card,
@@ -48,7 +48,7 @@ export default function DashboardTabPage() {
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
 
   // Firestore collections
-  const transactionsQuery = useMemoFirebase(() => {
+  const transactionsQuery = useMemo(() => {
     if (!user) return null;
     // This is a simplification. In a real app, you might query a specific budget.
     // Assuming one budget 'main' per user for now under a 'budgets' collection.
@@ -56,7 +56,7 @@ export default function DashboardTabPage() {
   }, [firestore, user]);
   const { data: transactions, isLoading: isTransactionsLoading } = useCollection<Transaction>(transactionsQuery);
 
-  const goalsQuery = useMemoFirebase(() => {
+  const goalsQuery = useMemo(() => {
     if (!user) return null;
     return query(collection(firestore, 'users', user.uid, 'financialGoals'));
   }, [firestore, user]);

@@ -3,7 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { FirebaseProvider } from '@/firebase/provider';
 import { ProStatusProvider } from '@/hooks/use-pro-status';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 
@@ -37,13 +37,13 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <FirebaseClientProvider>
+          <FirebaseProvider>
             <ProStatusProvider>
               <VoiceInteractionProvider>
                 {children}
               </VoiceInteractionProvider>
             </ProStatusProvider>
-          </FirebaseClientProvider>
+          </FirebaseProvider>
           <Toaster />
         </ThemeProvider>
         <Script
@@ -56,3 +56,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

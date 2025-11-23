@@ -245,56 +245,6 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
     setIsDeleteAlertOpen(true);
   }
 
-  const sendInsightEmail = async (insightData: FinancialInsight) => {
-    if (!user || !user.email) return;
-
-    const mailCollection = collection(firestore, 'mail');
-    const emailContent = {
-      to: [user.email],
-      message: {
-        subject: "Your Weekly MoneyPree Financial Insights",
-        html: `
-          <h1>Your Financial Insights Report</h1>
-          <h2>Hi ${user.displayName || 'there'},</h2>
-          <p>Here's your latest financial analysis from MoneyPree:</p>
-          
-          <h3>✨ Surprising Insight</h3>
-          <p>${insightData.surprisingInsight}</p>
-          
-          <h3>📈 Spending Analysis</h3>
-          <p>${insightData.spendingAnalysis}</p>
-          
-          <h3>💡 Smart Nudges & Suggestions</h3>
-          <ul>
-            ${insightData.suggestions.map(s => `<li>${s}</li>`).join('')}
-          </ul>
-          
-          <h3>🏆 Your Next Monthly Challenge</h3>
-          <p>${insightData.monthlyChallenge}</p>
-
-          <br/>
-          <p>Keep up the great work!</p>
-          <p>The MoneyPree Team</p>
-        `,
-      },
-    };
-
-    try {
-      await addDoc(mailCollection, emailContent);
-      toast({
-        title: "Email Queued!",
-        description: "Your financial insights report is being sent to your email.",
-      });
-    } catch (error) {
-      console.error("Error queueing email:", error);
-      toast({
-        variant: "destructive",
-        title: "Email Error",
-        description: "Could not queue the insights email for sending.",
-      });
-    }
-  };
-
   const handleGenerateInsights = async () => {
     setIsInsightsLoading(true);
     setInsightsError(null);
@@ -303,10 +253,6 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled, isPro }:
       const serializableTransactions = transactions.map(t => ({...t, date: (t.date as any).toDate()}))
       const result = await generateFinancialInsights({ transactions: serializableTransactions });
       setInsights(result);
-      
-      // After generating insights, trigger the email
-      await sendInsightEmail(result);
-
     } catch (e) {
       setInsightsError('Failed to generate insights. Please try again.');
       console.error(e);
@@ -804,7 +750,7 @@ ${insights.monthlyChallenge}
             <CardContent>
             <Button onClick={handleGenerateInsights} disabled={isInsightsLoading}>
                 {isInsightsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Analyze & Email My Finances
+                Analyze My Finances
             </Button>
             </CardContent>
         </Card>
@@ -881,5 +827,3 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
-
-    

@@ -11,7 +11,6 @@
  * - No public listing of any user-specific collections.
  * - All write operations on user data require a verified user identity (request.auth != null).
  * - Blog posts are publicly readable but writable only by authenticated users (future: admins).
- * - The /mail collection is write-only for authenticated users to trigger emails.
  *
  * Denormalization for Authorization:
  * The userId is implicitly denormalized by being part of the path for all user-owned data. This enables simpler, more performant security rules by avoiding the need for additional `get()` calls to check ownership.
@@ -128,19 +127,5 @@ service cloud.firestore {
       allow get, list: if true;
       allow create, update, delete: if isSignedIn(); // Simplified for now. Should be admin-only.
     }
-    
-    /******************** MAIL ********************/
-
-    /**
-     * @description Collection used by the "Trigger Email" extension.
-     * Allows any authenticated user to create (i.e., queue an email for sending).
-     * Disallows read, update, and delete to protect user privacy and prevent tampering.
-     */
-    match /mail/{mailId} {
-      allow get, list, update, delete: if false;
-      allow create: if isSignedIn();
-    }
   }
 }
-
-    

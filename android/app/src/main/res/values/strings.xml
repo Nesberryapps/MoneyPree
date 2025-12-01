@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MoneyPree</string>
+    <string name="title_activity_main">MoneyPree</string>
+    <string name="package_name">com.nesberry.moneypree</string>
+    <string name="custom_url_scheme">com.nesberry.moneypree</string>
+</resources>

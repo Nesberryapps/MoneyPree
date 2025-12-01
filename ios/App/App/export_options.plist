@@ -11,7 +11,7 @@
     <key>provisioningProfiles</key>
     <dict>
         <key>com.nesberry.moneypree</key>
-        <string>MoneyPree Store</string>
+        <string>MoneyPree</string>
     </dict>
 </dict>
 </plist>

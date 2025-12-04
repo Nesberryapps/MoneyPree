@@ -1,26 +1,41 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
 import Link from 'next/link';
 import { MoneyPreeIcon } from '@/components/icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScanLine, Briefcase, FileText, Target, LineChart, BookOpen } from 'lucide-react';
 
 export default function AboutPage() {
-    const team = [
+    const features = [
         {
-            name: 'Jane Doe',
-            role: 'Founder & CEO',
-            bio: 'Jane is a certified financial planner with over a decade of experience helping individuals and businesses achieve their financial goals. She founded MoneyPree with the mission to make expert financial guidance accessible to everyone.',
-            imageUrl: 'https://picsum.photos/seed/jane/400/400',
-            imageHint: 'female portrait'
+            icon: ScanLine,
+            title: 'Automated Budgeting',
+            description: 'Effortlessly track your personal finances. Our AI can categorize transactions, and Pro users can scan receipts to automate expense entry, providing a crystal-clear overview of spending.',
         },
         {
-            name: 'John Smith',
-            role: 'Lead AI Engineer',
-            bio: 'John leads the development of our powerful AI engine. With a background in machine learning and financial technology, he is passionate about using AI to solve real-world financial challenges.',
-            imageUrl: 'https://picsum.photos/seed/john/400/400',
-            imageHint: 'male portrait'
-        }
+            icon: Briefcase,
+            title: 'Small Business Management',
+            description: 'A dedicated dashboard for entrepreneurs. Manage revenue, track expenses, get AI-powered tax deduction suggestions, and generate Profit & Loss statements instantly.',
+        },
+        {
+            icon: FileText,
+            title: 'AI-Powered Analysis',
+            description: 'Go beyond the numbers. Our AI acts as your virtual CFO, analyzing your P&L report to provide actionable insights, identify key trends, and alert you to potential risks.',
+        },
+        {
+            icon: Target,
+            title: 'Intelligent Goal Setting',
+            description: 'Describe your financial dreams, and our AI will help you craft specific, measurable goals to make your ambitions achievable, from saving for a house to planning for retirement.',
+        },
+        {
+            icon: LineChart,
+            title: 'Investment Simulation',
+            description: 'Explore various investment strategies without the risk. Our simulator analyzes your portfolio and goals to suggest diversification, assess risk, and project potential returns.',
+        },
+        {
+            icon: BookOpen,
+            title: 'Personalized Financial Learning',
+            description: 'Grow your financial knowledge with lessons and quizzes tailored to you. Whether you\'re a novice or an expert, our platform helps you learn at your own pace.',
+        },
     ];
 
     return (
@@ -50,26 +65,28 @@ export default function AboutPage() {
                     </div>
                 </section>
 
-                {/* Team Section */}
+                {/* Features Section */}
                 <section className="py-20 md:py-24">
                     <div className="container mx-auto px-4">
                         <div className="text-center space-y-3 mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold">Meet the Team</h2>
-                            <p className="max-w-2xl mx-auto text-muted-foreground">
-                                We are a passionate team of financial experts and technologists dedicated to your success.
+                            <h2 className="text-3xl md:text-4xl font-bold">What is MoneyPree?</h2>
+                            <p className="max-w-3xl mx-auto text-muted-foreground">
+                                MoneyPree is an all-in-one financial co-pilot, designed to simplify both personal and business finance through the power of artificial intelligence. We believe that financial clarity and confidence should be accessible to everyone.
                             </p>
                         </div>
-                        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-                            {team.map((member) => (
-                                <div key={member.name} className="flex flex-col items-center text-center">
-                                    <Avatar className="w-32 h-32 mb-4">
-                                        <AvatarImage src={member.imageUrl} alt={member.name} data-ai-hint={member.imageHint} />
-                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <h3 className="text-xl font-bold">{member.name}</h3>
-                                    <p className="text-primary font-semibold">{member.role}</p>
-                                    <p className="mt-2 text-muted-foreground">{member.bio}</p>
-                                </div>
+                        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {features.map((feature) => (
+                                <Card key={feature.title} className="text-center">
+                                    <CardHeader>
+                                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
+                                            <feature.icon className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <CardTitle className="pt-2">{feature.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-muted-foreground">{feature.description}</p>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
                     </div>

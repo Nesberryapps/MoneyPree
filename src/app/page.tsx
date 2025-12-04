@@ -167,6 +167,9 @@ export default function LandingPage() {
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyPree. All rights reserved.</p>
             <div className="flex gap-4">
+                <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">
+                    About
+                </Link>
                 <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
                     Blog
                 </Link>

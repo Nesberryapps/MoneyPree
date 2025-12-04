@@ -173,6 +173,9 @@ export default function LandingPage() {
                 <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
                     Blog
                 </Link>
+                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
+                    Contact
+                </Link>
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
                     Terms & Conditions
                 </Link>

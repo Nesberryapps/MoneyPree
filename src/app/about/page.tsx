@@ -99,6 +99,9 @@ export default function AboutPage() {
                         <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">
                             About Us
                         </Link>
+                        <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
+                            Contact
+                        </Link>
                         <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
                             Terms
                         </Link>

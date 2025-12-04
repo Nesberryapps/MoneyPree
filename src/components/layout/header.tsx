@@ -20,12 +20,14 @@ import { AuthProvider } from '../auth/auth-provider';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, Sparkles } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
   const auth = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
   const { isPro } = useProStatus();
 
   const handleLogout = async () => {
@@ -33,9 +35,13 @@ export function Header() {
     router.push('/');
   };
 
+  // Determine if we are on a dashboard page
+  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/settings') || pathname.startsWith('/help');
+
+
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
-       <Link href="/dashboard" className="flex items-center gap-2">
+       <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2">
           <MoneyPreeIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
@@ -84,7 +90,8 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <AuthProvider />
+        // Only show the AuthProvider on the landing page
+        pathname === '/' && <AuthProvider />
       )}
     </header>
   );

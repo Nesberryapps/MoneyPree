@@ -8,7 +8,7 @@ const nextConfig = {
   output: process.env.GITHUB_ACTIONS ? 'export' : undefined,
 
   typescript: {
-    ignoreBuilderErrors: true,
+    ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

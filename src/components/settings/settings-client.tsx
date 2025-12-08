@@ -23,7 +23,8 @@ import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import { useProStatus } from '@/hooks/use-pro-status';
 import { Badge } from '../ui/badge';
-
+import { getAuth, deleteUser } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();
@@ -137,6 +138,36 @@ export function SettingsClient() {
         </div>
       )
   }
+
+  const router = useRouter();
+  const auth = getAuth();
+
+  const handleDeleteAccount = async () => {
+    // 1. Confirm intention
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action is permanent and cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        // 2. Delete from Firebase
+        await deleteUser(user);
+        // 3. Redirect to login
+        router.push('/login');
+        alert("Your account has been deleted.");
+      }
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      // Firebase requires a recent login to delete sensitive data
+      if (error.code === 'auth/requires-recent-login') {
+        alert("For security, please log out and log back in before deleting your account.");
+      } else {
+        alert("Error deleting account. Please contact support.");
+      }
+    }
+  };
 
   return (
     <div className="grid gap-8">
@@ -255,6 +286,18 @@ export function SettingsClient() {
        <div className="flex justify-end">
           <Button onClick={handleSave}>Save Preferences</Button>
         </div>
+        <div className="mt-8 pt-8 border-t border-red-100">
+        <h3 className="text-lg font-medium text-red-600">Danger Zone</h3>
+        <p className="text-sm text-gray-500 mt-1 mb-4">
+          Permanently remove your account and all data.
+        </p>
+        <button 
+          onClick={handleDeleteAccount}
+          className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-100 text-sm font-medium"
+        >
+          Delete Account
+        </button>
+      </div>
     </div>
   );
 }

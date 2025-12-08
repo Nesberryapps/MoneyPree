@@ -17,6 +17,7 @@ import { Header } from '@/components/layout/header';
 import { Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export default function PricingPage() {
   const { user } = useUser();
@@ -148,10 +149,18 @@ export default function PricingPage() {
                 ))}
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSubscribe} className="w-full" disabled={isLoading || !user}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {user ? 'Upgrade to Pro' : 'Sign in to Subscribe'}
-              </Button>
+              {/* --- START iOS CHECK --- */}
+              {Capacitor.getPlatform() !== 'ios' ? (
+                <Button onClick={handleSubscribe} className="w-full" disabled={isLoading || !user}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {user ? 'Upgrade to Pro' : 'Sign in to Subscribe'}
+                </Button>
+              ) : (
+                <p className="text-gray-500 text-sm text-center mt-4">
+                  To manage your subscription or upgrade, please visit moneypree.com on your desktop browser.
+                </p>
+              )}
+              {/* --- END iOS CHECK --- */}
             </CardFooter>
           </Card>
         </div>

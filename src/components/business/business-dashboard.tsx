@@ -66,12 +66,9 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDebounce } from 'use-debounce';
 import { TaxCenter } from './tax-center';
-import { PlaidLink } from '../plaid/plaid-link';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { parseReceipt } from '@/ai/flows/parse-receipt';
-import { getTransactions } from '@/ai/flows/plaid-flows';
-import type { Transaction as PlaidTransaction } from 'plaid';
 import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
@@ -544,12 +541,6 @@ export function BusinessDashboard() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Plaid state
-  const [plaidAccessToken, setPlaidAccessToken] = useState<string | null>(null);
-  const [syncedTransactions, setSyncedTransactions] = useState<PlaidTransaction[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const plaidEnabled = process.env.NEXT_PUBLIC_PLAID_ENABLED === 'true';
-
   const businessesRef = useMemo(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'businesses');
@@ -577,26 +568,13 @@ export function BusinessDashboard() {
     });
   };
 
-  const handleOpenDialog = (txn?: BusinessTransaction | PlaidTransaction) => {
+  const handleOpenDialog = (txn?: BusinessTransaction) => {
     if (txn) {
-        if ('transaction_id' in txn) { // It's a Plaid transaction
-            setEditingTransaction(null);
-            const initial: Partial<BusinessTransaction> = {
-                description: txn.name,
-                amount: txn.amount > 0 ? txn.amount : -txn.amount, // Plaid expenses are negative
-                type: txn.amount > 0 ? 'revenue' : 'expense',
-                date: new Date(txn.date),
-                category: EXPENSE_CATEGORIES.find(c => txn.personal_finance_category?.primary.toLowerCase().includes(c.toLowerCase())) || 'Other'
-            };
-            setScannedData(initial);
-        } else { // It's our own AppTransaction
-            setEditingTransaction(txn);
-            setScannedData(null);
-        }
+        setEditingTransaction(txn);
     } else {
         setEditingTransaction(null);
-        setScannedData(null);
     }
+    setScannedData(null);
     setIsDialogVisible(true);
   };
   
@@ -710,39 +688,9 @@ export function BusinessDashboard() {
     }
   };
 
-  const handleSyncTransactions = async () => {
-    if (!plaidAccessToken) return;
-    setIsSyncing(true);
-    try {
-        const { transactions } = await getTransactions({ accessToken: plaidAccessToken });
-        const existingDescriptions = new Set(transactions.map(t => t.description));
-        const newSynced = transactions.filter(t => !existingDescriptions.has(t.name));
-        setSyncedTransactions(newSynced);
-
-        toast({
-            title: 'Sync Complete',
-            description: `Found ${newSynced.length} new transactions.`,
-        });
-
-    } catch (error) {
-        console.error('Error syncing transactions:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Sync Failed',
-            description: 'Could not fetch transactions from your bank.',
-        });
-    } finally {
-        setIsSyncing(false);
-    }
+  const handleSavePlaidTransaction = () => {
+    // This function is just a stub now to satisfy the prop requirement.
   };
-
-  const handleSavePlaidTransaction = (savedData: Partial<BusinessTransaction>) => {
-    const plaidTxn = syncedTransactions.find(t => t.name === savedData.description);
-    if (plaidTxn) {
-        setSyncedTransactions(prev => prev.filter(t => t.transaction_id !== plaidTxn.transaction_id));
-    }
-  };
-
 
   if (isBusinessesLoading) {
       return (
@@ -779,37 +727,6 @@ export function BusinessDashboard() {
 
       <TaxCenter transactions={transactions || []} />
 
-        {syncedTransactions.length > 0 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>New Synced Business Transactions</CardTitle>
-                    <CardDescription>Click a transaction to categorize and add it to your books.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {syncedTransactions.map(txn => (
-                                <TableRow key={txn.transaction_id} onClick={() => handleOpenDialog(txn)} className="cursor-pointer">
-                                    <TableCell className="font-medium">{txn.name}</TableCell>
-                                    <TableCell>{txn.date}</TableCell>
-                                    <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                        ${(txn.amount > 0 ? txn.amount : -txn.amount).toLocaleString()}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                     </Table>
-                </CardContent>
-            </Card>
-        )}
-
       <Card>
         <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
@@ -819,19 +736,6 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                {plaidEnabled && (
-                    <>
-                      <PlaidLink onSuccessCallback={setPlaidAccessToken} />
-                      {plaidAccessToken && (
-                        <Button onClick={handleSyncTransactions} disabled={isSyncing} size="sm" variant="outline" className="h-8 gap-1">
-                            {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                Sync
-                            </span>
-                        </Button>
-                      )}
-                    </>
-                )}
                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
                          <Button size="sm" variant="outline" className="h-8 gap-1">
@@ -977,5 +881,7 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    
 
     

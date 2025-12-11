@@ -125,7 +125,7 @@ export default function LandingPage() {
                 </p>
                 <div className="mt-8">
                     <Button onClick={handleGetStarted} size="lg" disabled={isUserLoading}>
-                        Get Started For Free
+                        Get Started
                     </Button>
                 </div>
             </div>

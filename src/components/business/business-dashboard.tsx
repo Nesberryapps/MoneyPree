@@ -598,34 +598,36 @@ export function BusinessDashboard() {
   };
   
   useEffect(() => {
-    let stream: MediaStream;
-    const startCamera = async () => {
-      if (isScannerOpen) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          setHasCameraPermission(true);
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        } catch (error) {
-          console.error('Error accessing camera:', error);
-          setHasCameraPermission(false);
-          toast({
-            variant: 'destructive',
-            title: 'Camera Access Denied',
-            description: 'Please enable camera permissions in your browser settings to use this feature.',
-          });
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        setHasCameraPermission(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
         }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this feature.',
+        });
       }
     };
-    startCamera();
-
+    
+    if (isScannerOpen) {
+        getCameraPermission();
+    }
+    
     return () => {
-      if (stream) {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [isScannerOpen, toast]);
+
 
   const handleCaptureAndScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -750,7 +752,7 @@ export function BusinessDashboard() {
                             <DialogTitle>Scan Business Receipt</DialogTitle>
                         </DialogHeader>
                         <div className="relative">
-                            <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay playsInline muted />
+                            <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay playsInline muted />
                             {isScanning && (
                             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
                                 <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -770,7 +772,7 @@ export function BusinessDashboard() {
                         )}
 
                         <DialogFooter>
-                            <Button onClick={handleCaptureAndScan} disabled={isScanning || hasCameraPermission === false}>
+                            <Button onClick={handleCaptureAndScan} disabled={isScanning || !hasCameraPermission}>
                             {isScanning ? 'Processing...' : 'Capture & Scan'}
                             </Button>
                         </DialogFooter>
@@ -881,7 +883,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    
-
-    

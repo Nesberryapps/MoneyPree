@@ -1,5 +1,4 @@
 
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import Link from 'next/link';
@@ -22,17 +21,16 @@ export default function PrivacyPage() {
             
             <h2>1. Information We Collect</h2>
             <p>
-                We collect information you provide directly to us, such as when you create an account, enter financial data, or communicate with us. This may include your name, email, and financial information you choose to share. When you connect a bank account, we receive transaction data from our third-party partner, Plaid. We do not receive or store your bank login credentials.
+                Our service uses anonymous accounts provided by Firebase Authentication. We do not require or store personal information like your name or email address. All financial data you enter, such as transactions and goals, is associated with this anonymous account, which is stored locally on your device.
             </p>
             
             <h2>2. How We Use Your Information</h2>
             <p>
-                We use the information we collect to operate, maintain, and provide the features and functionality of the Service, including:
+                We use the information we collect solely to operate, maintain, and provide the features and functionality of the Service, including:
             </p>
             <ul>
-                <li>To sync and display your financial transactions.</li>
-                <li>To provide personalized financial insights, business analysis, and other suggestions through our AI models.</li>
-                <li>To process subscription payments through our third-party provider, Stripe.</li>
+                <li>To save and display your financial data on your device.</li>
+                <li>To provide personalized financial insights and other suggestions through our AI models.</li>
                 <li>To communicate with you, including sending service-related notices.</li>
             </ul>
             
@@ -43,17 +41,17 @@ export default function PrivacyPage() {
             
             <h2>4. Third-Party Services</h2>
             <p>
-                We use third-party services like Firebase for authentication and database management, Stripe for payments, and Plaid for bank account connections. These services are essential for the app's functionality and have their own privacy policies, which we encourage you to review. We are not responsible for the privacy practices of these third parties.
+                We use Firebase for anonymous authentication and to store your data. Firebase is essential for the app's functionality and has its own privacy policy, which we encourage you to review. We are not responsible for the privacy practices of third parties.
             </p>
             
-            <h2>5. Data Security</h2>
+            <h2>5. Data Security and Retention</h2>
             <p>
-                We implement reasonable security measures, including Firestore Security Rules, to protect your information from unauthorized access. However, no security system is impenetrable, and we cannot guarantee the security of our systems 100%.
+                We implement reasonable security measures, including Firestore Security Rules, to protect your information from unauthorized access. Your data is tied to your anonymous account, which is stored on your device. **If you delete the app, your account and all associated data will be permanently lost and cannot be recovered.**
             </p>
             
             <h2>6. Your Choices</h2>
             <p>
-                You can access and update your account information through your account settings. You can disconnect your bank account at any time. You can also cancel your subscription and request deletion of your account data by contacting us.
+                As your account is anonymous, there is no personal account information to update. You are in full control of your data; you can delete individual data points within the app or delete all data by uninstalling the app.
             </p>
             
             <h2>7. Changes to This Policy</h2>

@@ -24,8 +24,6 @@ import { ExpertQA } from '@/components/qa/expert-qa';
 import { NAV_LINKS } from '@/lib/constants';
 import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { useProStatus } from '@/hooks/use-pro-status';
-import { useToast } from '@/hooks/use-toast';
 import { BusinessDashboard } from '@/components/business/business-dashboard';
 import { collection, query, where } from 'firebase/firestore';
 
@@ -35,7 +33,6 @@ export default function DashboardTabPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const firestore = useFirestore();
 
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
@@ -43,15 +40,13 @@ export default function DashboardTabPage() {
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
 
-  const { isPro, setIsPro } = useProStatus();
-
   const activeTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
 
   // Firestore collections
   const transactionsQuery = useMemo(() => {
     if (!user) return null;
     // This is a simplification. In a real app, you might query a specific budget.
-    // Assuming one budget 'main' per user for now under a 'budgets' collection.
+    // Assuming one budget 'main' per user under a 'budgets' collection.
     return query(collection(firestore, 'users', user.uid, 'budgets', 'main', 'expenses'));
   }, [firestore, user]);
   const { data: transactions, isLoading: isTransactionsLoading } = useCollection<Transaction>(transactionsQuery);
@@ -62,20 +57,6 @@ export default function DashboardTabPage() {
   }, [firestore, user]);
   const { data: goals, isLoading: isGoalsLoading } = useCollection<Goal>(goalsQuery);
 
-
-  // Handle Stripe redirect
-  useEffect(() => {
-    const stripeSessionId = searchParams.get('session_id');
-    if (stripeSessionId) {
-      setIsPro(true);
-      toast({
-        title: 'Welcome to MoneyPree Pro!',
-        description: "You've successfully unlocked all premium features.",
-      });
-      // Clean up the URL
-      router.replace(`/dashboard/${activeTab}`);
-    }
-  }, [searchParams, setIsPro, toast, router, activeTab]);
 
   const handleTabChange = (value: string) => {
     router.push(`/dashboard/${value}`);
@@ -137,7 +118,6 @@ export default function DashboardTabPage() {
                 <BudgetClient
                     transactions={transactions || []}
                     isVoiceInteractionEnabled={isVoiceInteractionEnabled}
-                    isPro={isPro}
                 />
             </TabsContent>
             <TabsContent value="goals">
@@ -156,3 +136,5 @@ export default function DashboardTabPage() {
     </div>
   );
 }
+
+    

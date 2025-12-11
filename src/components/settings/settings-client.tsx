@@ -9,7 +9,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -18,13 +17,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { createCustomerPortalSession } from '@/ai/flows/stripe-checkout';
 import { useUser } from '@/firebase';
-import { Loader2 } from 'lucide-react';
-import { useProStatus } from '@/hooks/use-pro-status';
 import { Badge } from '../ui/badge';
-import { getAuth, deleteUser } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();
@@ -32,25 +26,11 @@ export function SettingsClient() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const { isVoiceInteractionEnabled, setIsVoiceInteractionEnabled } = useVoiceInteraction();
   const [mounted, setMounted] = useState(false);
-  const { isPro } = useProStatus();
   const { user } = useUser();
-  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleProFeatureClick = () => {
-    toast({
-        title: 'Pro Feature',
-        description: 'Please upgrade to a Pro plan to use this feature.',
-        action: (
-            <a href="/pricing">
-                <Button>Upgrade</Button>
-            </a>
-        )
-    });
-  };
 
   const handleSave = () => {
     // In a real app, these settings would be saved to a user profile in Firestore
@@ -63,30 +43,6 @@ export function SettingsClient() {
       title: 'Preferences Saved',
       description: 'Your settings have been updated successfully.',
     });
-  };
-
-  const handleManageSubscription = async () => {
-      if (!user) {
-          toast({ variant: 'destructive', title: 'You must be logged in.' });
-          return;
-      }
-      setIsPortalLoading(true);
-      try {
-          const { url } = await createCustomerPortalSession({ 
-            userId: user.uid,
-            userEmail: user.email || undefined,
-          });
-          window.open(url, '_blank');
-      } catch (error: any) {
-          console.error('Error creating customer portal session:', error);
-          toast({
-              variant: 'destructive',
-              title: 'Error',
-              description: error.message || 'Could not open subscription management.',
-          });
-      } finally {
-          setIsPortalLoading(false);
-      }
   };
 
   if (!mounted) {
@@ -139,54 +95,8 @@ export function SettingsClient() {
       )
   }
 
-  const router = useRouter();
-  const auth = getAuth();
-
-  const handleDeleteAccount = async () => {
-    // 1. Confirm intention
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action is permanent and cannot be undone."
-    );
-    if (!confirmed) return;
-
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        // 2. Delete from Firebase
-        await deleteUser(user);
-        // 3. Redirect to login
-        router.push('/login');
-        alert("Your account has been deleted.");
-      }
-    } catch (error: any) {
-      console.error("Error deleting user:", error);
-      // Firebase requires a recent login to delete sensitive data
-      if (error.code === 'auth/requires-recent-login') {
-        alert("For security, please log out and log back in before deleting your account.");
-      } else {
-        alert("Error deleting account. Please contact support.");
-      }
-    }
-  };
-
   return (
     <div className="grid gap-8">
-      {isPro && (
-          <Card>
-              <CardHeader>
-                  <CardTitle>Subscription</CardTitle>
-                  <CardDescription>
-                      Manage your MoneyPree Pro subscription, update payment methods, and view billing history.
-                  </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                  <Button onClick={handleManageSubscription} disabled={isPortalLoading}>
-                      {isPortalLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Manage Subscription
-                  </Button>
-              </CardFooter>
-          </Card>
-      )}
       <Card>
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
@@ -268,7 +178,6 @@ export function SettingsClient() {
                 <Label htmlFor="voice-interaction" className="flex flex-col space-y-1 grow mr-4">
                   <div className="flex items-center gap-2">
                     <span>Voice Interaction</span>
-                    {!isPro && <Badge variant="premium">Pro</Badge>}
                   </div>
                   <span className="font-normal leading-snug text-muted-foreground">
                       Enable voice commands and text-to-speech feedback.
@@ -277,8 +186,7 @@ export function SettingsClient() {
                 <Switch
                 id="voice-interaction"
                 checked={isVoiceInteractionEnabled}
-                onCheckedChange={isPro ? setIsVoiceInteractionEnabled : handleProFeatureClick}
-                disabled={!isPro}
+                onCheckedChange={setIsVoiceInteractionEnabled}
                 />
             </div>
         </CardContent>
@@ -286,18 +194,8 @@ export function SettingsClient() {
        <div className="flex justify-end">
           <Button onClick={handleSave}>Save Preferences</Button>
         </div>
-        <div className="mt-8 pt-8 border-t border-red-100">
-        <h3 className="text-lg font-medium text-red-600">Danger Zone</h3>
-        <p className="text-sm text-gray-500 mt-1 mb-4">
-          Permanently remove your account and all data.
-        </p>
-        <button 
-          onClick={handleDeleteAccount}
-          className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-100 text-sm font-medium"
-        >
-          Delete Account
-        </button>
-      </div>
     </div>
   );
 }
+
+    

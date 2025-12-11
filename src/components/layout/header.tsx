@@ -16,10 +16,7 @@ import Link from 'next/link';
 import { MoneyPreeIcon } from '../icons';
 import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { AuthProvider } from '../auth/auth-provider';
 import { useProStatus } from '@/hooks/use-pro-status';
-import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, Sparkles } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function Header() {
@@ -48,21 +45,6 @@ export function Header() {
       <div className="w-full flex-1">
       </div>
       {user && (
-        isPro ? (
-          <Badge variant="premium" className="mr-2">
-            <ShieldCheck className="h-4 w-4 mr-1" />
-            Pro
-          </Badge>
-        ) : (
-          <Button asChild variant="premium" size="sm">
-            <Link href="/pricing">
-              <Sparkles className="h-4 w-4 mr-1" />
-              Upgrade to Pro
-            </Link>
-          </Button>
-        )
-      )}
-      {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
@@ -77,9 +59,6 @@ export function Header() {
             <DropdownMenuLabel>{user.isAnonymous ? 'Guest Account' : 'My Account'}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/pricing">Pricing</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
@@ -89,10 +68,9 @@ export function Header() {
             <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : (
-        // Only show the AuthProvider on the landing page
-        pathname === '/' && <AuthProvider />
       )}
     </header>
   );
 }
+
+    

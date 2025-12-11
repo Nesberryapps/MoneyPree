@@ -1,10 +1,10 @@
+
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { ProStatusProvider } from '@/hooks/use-pro-status';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
@@ -38,14 +38,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <ProStatusProvider>
             <VoiceInteractionProvider>
               <FirebaseClientProvider>
                 <FirebaseErrorListener />
                 {children}
               </FirebaseClientProvider>
             </VoiceInteractionProvider>
-          </ProStatusProvider>
           <Toaster />
         </ThemeProvider>
         <Script
@@ -58,3 +56,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

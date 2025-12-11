@@ -67,7 +67,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useDebounce } from 'use-debounce';
 import { TaxCenter } from './tax-center';
 import { PlaidLink } from '../plaid/plaid-link';
-import { useProStatus } from '@/hooks/use-pro-status';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { parseReceipt } from '@/ai/flows/parse-receipt';
@@ -86,13 +85,12 @@ const ENTITY_TYPES: Business['entityType'][] = [
   'Partnership',
 ];
 
-function PLReportCard({ transactions, isPro }: { transactions: BusinessTransaction[], isPro: boolean }) {
+function PLReportCard({ transactions }: { transactions: BusinessTransaction[] }) {
     const [report, setReport] = useState<PLReport | null>(null);
     const [analysis, setAnalysis] = useState<PLReportAnalysis | null>(null);
     const [isReportLoading, setIsReportLoading] = useState(false);
     const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
     
     const serializableTransactions = useMemo(() => {
         return transactions.map(t => {
@@ -111,23 +109,7 @@ function PLReportCard({ transactions, isPro }: { transactions: BusinessTransacti
     }, [transactions]);
 
 
-    const handleProFeatureClick = () => {
-        toast({
-            title: 'Pro Feature',
-            description: 'Please upgrade to a Pro plan to use this feature.',
-            action: (
-                <a href="/pricing">
-                    <Button>Upgrade</Button>
-                </a>
-            )
-        });
-    };
-
     const handleGenerateReport = async () => {
-        if (!isPro) {
-            handleProFeatureClick();
-            return;
-        }
         setIsReportLoading(true);
         setError(null);
         setReport(null);
@@ -148,10 +130,6 @@ function PLReportCard({ transactions, isPro }: { transactions: BusinessTransacti
     };
     
     const handleAnalyzeReport = async () => {
-        if (!isPro) {
-            handleProFeatureClick();
-            return;
-        }
         if (!report) return;
         setIsAnalysisLoading(true);
         setError(null);
@@ -191,13 +169,10 @@ function PLReportCard({ transactions, isPro }: { transactions: BusinessTransacti
             <CardContent>
                 {!report && (
                      <div className="relative group w-fit">
-                        <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0 || !isPro} size="sm" variant="outline">
+                        <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
                             {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Generate P&L Report
                         </Button>
-                        {!isPro && (
-                             <Badge variant="premium" className="absolute -top-2 -right-2 text-xs">Pro</Badge>
-                        )}
                     </div>
                 )}
                
@@ -251,11 +226,11 @@ function PLReportCard({ transactions, isPro }: { transactions: BusinessTransacti
             </CardContent>
              {report && (
                 <CardFooter className="gap-2">
-                     <Button onClick={handleGenerateReport} disabled={isReportLoading || !isPro} size="sm" variant="secondary">
+                     <Button onClick={handleGenerateReport} disabled={isReportLoading} size="sm" variant="secondary">
                         {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Regenerate
                     </Button>
-                    <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading || !isPro} size="sm" variant="default">
+                    <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading} size="sm" variant="default">
                         {isAnalysisLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Analyze Report
                     </Button>
@@ -266,7 +241,7 @@ function PLReportCard({ transactions, isPro }: { transactions: BusinessTransacti
 }
 
 
-function BusinessStats({ transactions, isPro }: { transactions: BusinessTransaction[], isPro: boolean }) {
+function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }) {
     const totalRevenue = transactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
     const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const netProfit = totalRevenue - totalExpenses;
@@ -291,7 +266,7 @@ function BusinessStats({ transactions, isPro }: { transactions: BusinessTransact
                 <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
-            <PLReportCard transactions={transactions} isPro={isPro} />
+            <PLReportCard transactions={transactions} />
         </div>
     )
 }
@@ -310,7 +285,6 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
 
     const firestore = useFirestore();
     const { user } = useUser();
-    const { isPro } = useProStatus();
     
     const { isVoiceInteractionEnabled } = useVoiceInteraction();
     const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
@@ -340,7 +314,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
     
     useEffect(() => {
         const getAiSuggestion = async () => {
-            if (isPro && type === 'expense' && debouncedDescription.length > 3 && category) {
+            if (type === 'expense' && debouncedDescription.length > 3 && category) {
                 setIsAiLoading(true);
                 setAiSuggestion(null);
                 try {
@@ -357,7 +331,7 @@ function TransactionDialog({ open, onOpenChange, business, transaction, initialD
             }
         };
         getAiSuggestion();
-    }, [debouncedDescription, category, type, isPro]);
+    }, [debouncedDescription, category, type]);
 
 
     const handleSave = async () => {
@@ -553,31 +527,9 @@ function CreateBusinessForm({ onCreate }: { onCreate: (business: Omit<Business, 
     );
 }
 
-function ProUpsellCard() {
-    return (
-        <Card className="bg-primary/5 border-primary/20">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ShieldCheck className="h-6 w-6 text-primary" />
-                    Unlock Your Business Potential
-                </CardTitle>
-                <CardDescription>
-                    Upgrade to MoneyPree Pro to access the full suite of business tools, including P&L generation, AI-powered analysis, tax suggestions, and bank syncing.
-                </CardDescription>
-            </CardHeader>
-            <CardFooter>
-                <Button asChild>
-                    <a href="/pricing">Upgrade to Pro</a>
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
-
 export function BusinessDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const { isPro } = useProStatus();
   const { toast } = useToast();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -697,18 +649,6 @@ export function BusinessDashboard() {
     };
   }, [isScannerOpen, toast]);
 
-  const handleProFeatureClick = () => {
-    toast({
-        title: 'Pro Feature',
-        description: 'Please upgrade to a Pro plan to use this feature.',
-        action: (
-            <a href="/pricing">
-                <Button>Upgrade</Button>
-            </a>
-        )
-    });
-  };
-
   const handleCaptureAndScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setIsScanning(true);
@@ -816,25 +756,6 @@ export function BusinessDashboard() {
     return <CreateBusinessForm onCreate={handleCreateBusiness} />;
   }
 
-  if (!isPro) {
-      return (
-          <div className="grid gap-8">
-              <Card>
-                <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-6 w-6" />
-                    {business.name}
-                </CardTitle>
-                <CardDescription>
-                    {business.industry} | {business.entityType}
-                </CardDescription>
-                </CardHeader>
-              </Card>
-              <ProUpsellCard />
-          </div>
-      )
-  }
-
   return (
     <div className="grid gap-8">
       <Card>
@@ -854,7 +775,7 @@ export function BusinessDashboard() {
         </CardContent>
       </Card>
       
-      <BusinessStats transactions={transactions || []} isPro={isPro} />
+      <BusinessStats transactions={transactions || []} />
 
       <TaxCenter transactions={transactions || []} />
 
@@ -898,8 +819,7 @@ export function BusinessDashboard() {
                  </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                {plaidEnabled ? (
-                  isPro ? (
+                {plaidEnabled && (
                     <>
                       <PlaidLink onSuccessCallback={setPlaidAccessToken} />
                       {plaidAccessToken && (
@@ -911,27 +831,10 @@ export function BusinessDashboard() {
                         </Button>
                       )}
                     </>
-                  ) : (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button size="sm" variant="outline" className="h-8 gap-1" disabled>
-                                    <Banknote className="h-3.5 w-3.5" />
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Connect Bank
-                                    </span>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>This feature is coming soon!</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                  )
-                ) : null}
+                )}
                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
                     <DialogTrigger asChild>
-                         <Button size="sm" variant="outline" className="h-8 gap-1" disabled={!isPro} onClick={!isPro ? handleProFeatureClick : undefined}>
+                         <Button size="sm" variant="outline" className="h-8 gap-1">
                             <Camera className="h-3.5 w-3.5" />
                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                                 Scan Receipt
@@ -1074,3 +977,5 @@ export function BusinessDashboard() {
     </div>
   );
 }
+
+    

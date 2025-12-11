@@ -3,11 +3,8 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoneyPreeIcon } from '@/components/icons';
-import { AuthProvider } from '@/components/auth/auth-provider';
 import { useAuth, useUser } from '@/firebase';
-import { signInAnonymously } from 'firebase/auth';
+import { signInAnonymously }from 'firebase/auth';
 import { useEffect } from 'react';
 import { ScanLine, Target, BookOpen, LineChart, Bot, Mic, Briefcase, FileText } from 'lucide-react';
 import Link from 'next/link';
@@ -29,15 +26,17 @@ export default function LandingPage() {
   const voiceInteractionImage = PlaceHolderImages.find(img => img.id === 'voice-interaction');
 
 
-  useEffect(() => {
-    if (!isUserLoading && user) {
-      router.push('/dashboard');
+  const handleGetStarted = async () => {
+    if (!user) {
+        await signInAnonymously(auth);
     }
-  }, [user, isUserLoading, router]);
+    router.push('/dashboard');
+  };
 
-  if (isUserLoading || user) {
-    return null; // Or a loading spinner
-  }
+  useEffect(() => {
+    // This effect is no longer needed to auto-redirect
+    // Users will now explicitly click "Get Started"
+  }, [user, isUserLoading, router]);
 
   const features = [
     {
@@ -82,7 +81,20 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
        <header className="w-full p-4 flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2">
-          <MoneyPreeIcon className="h-8 w-8 text-primary" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-8 w-8 text-primary"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
           <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
       </header>
@@ -104,19 +116,17 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
             </div>
 
-            <div className="relative z-10 container mx-auto">
-                 <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="text-center md:text-left">
-                        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
-                            Your Personal & Business CFO
-                        </h1>
-                        <p className="max-w-xl mt-4 text-lg text-muted-foreground mx-auto md:mx-0">
-                            MoneyPree is your AI-powered financial partner. From automated budgeting and goal setting to business P&L analysis and investment simulation, we provide the tools you need to achieve financial freedom.
-                        </p>
-                    </div>
-                    <div className="flex justify-center">
-                        <AuthProvider />
-                    </div>
+            <div className="relative z-10 container mx-auto text-center">
+                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
+                    Your Personal & Business CFO
+                </h1>
+                <p className="max-w-3xl mt-4 mx-auto text-lg text-muted-foreground">
+                    MoneyPree is your AI-powered financial partner. From automated budgeting and goal setting to business P&L analysis and investment simulation, we provide the tools you need to achieve financial freedom.
+                </p>
+                <div className="mt-8">
+                    <Button onClick={handleGetStarted} size="lg" disabled={isUserLoading}>
+                        Get Started For Free
+                    </Button>
                 </div>
             </div>
         </section>
@@ -190,3 +200,5 @@ export default function LandingPage() {
 
     
 }
+
+    

@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { ProStatusProvider } from '@/hooks/use-pro-status';
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -38,12 +39,14 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
+          <ProStatusProvider>
             <VoiceInteractionProvider>
               <FirebaseClientProvider>
                 <FirebaseErrorListener />
                 {children}
               </FirebaseClientProvider>
             </VoiceInteractionProvider>
+          </ProStatusProvider>
           <Toaster />
         </ThemeProvider>
         <Script
@@ -56,5 +59,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

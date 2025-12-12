@@ -29,14 +29,14 @@ export default function TermsPage() {
               Our Service utilizes artificial intelligence to provide financial insights, suggestions, and educational content. This information is for informational purposes only and does not constitute financial, investment, legal, or tax advice. You should consult with a qualified professional before making any financial decisions. We are not liable for any actions taken based on the AI-generated content.
             </p>
 
-            <h2>3. User Accounts & Data</h2>
+            <h2>3. Anonymous Accounts & Data</h2>
             <p>
-              Our Service uses an anonymous account system. When you first use the app, a unique, anonymous account is created and stored on your device. All data you enter is tied to this account. You are responsible for the device on which this data is stored. **Please be aware that if you uninstall the application from your device, your anonymous account and all of its associated data will be permanently deleted and cannot be recovered.**
+              Our Service uses an anonymous account system provided by Firebase. When you first use the app, a unique, anonymous account is created and stored on your device. All data you enter is tied to this account. You are responsible for the device on which this data is stored. **Please be aware that if you uninstall the application from your device, your anonymous account and all of its associated data will be permanently deleted and cannot be recovered.** Data cannot be transferred between devices.
             </p>
 
-            <h2>4. Service Usage</h2>
+            <h2>4. Service Usage and Monetization</h2>
             <p>
-              The Service is provided to you free of charge. We grant you a non-transferable, non-exclusive, revocable, limited license to use and access the Service solely for your own personal, non-commercial use.
+              The Service is provided to you free of charge. We grant you a non-transferable, non-exclusive, revocable, limited license to use and access the Service for your own personal use. Certain features within the Service, particularly those that utilize artificial intelligence, may require you to watch one or more video advertisements provided by Google AdMob to gain access.
             </p>
             
             <h2>5. Limitation of Liability</h2>

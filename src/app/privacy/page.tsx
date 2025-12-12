@@ -21,37 +21,42 @@ export default function PrivacyPage() {
             
             <h2>1. Information We Collect</h2>
             <p>
-                Our service uses anonymous accounts provided by Firebase Authentication. We do not require or store personal information like your name or email address. All financial data you enter, such as transactions and goals, is associated with this anonymous account, which is stored locally on your device.
+              Our service uses anonymous accounts provided by Firebase Authentication. We do not require or store personally identifiable information like your name or email address, as there is no user sign-up process. All financial data you enter, such as transactions and goals, is associated with a unique anonymous account that is stored locally on your device or within your app installation.
             </p>
             
             <h2>2. How We Use Your Information</h2>
             <p>
-                We use the information we collect solely to operate, maintain, and provide the features and functionality of the Service, including:
+              The financial data you provide is used solely to operate, maintain, and provide the features and functionality of the Service. This includes:
             </p>
             <ul>
-                <li>To save and display your financial data on your device.</li>
-                <li>To provide personalized financial insights and other suggestions through our AI models.</li>
-                <li>To communicate with you, including sending service-related notices.</li>
+                <li>Saving and displaying your financial data within the app.</li>
+                <li>Providing personalized financial insights and other suggestions through our integrated AI models.</li>
+                <li>Using aggregated, anonymized data to improve our services.</li>
             </ul>
             
             <h2>3. AI and Data Processing</h2>
             <p>
-                Your financial data (such as transaction lists and amounts) may be sent to third-party AI models (e.g., Google's Gemini) to generate insights and analysis. We take steps to ensure that this data is handled securely and in accordance with our partners' privacy policies. We do not use your personal financial data to train general-purpose AI models.
+              Your financial data (such as transaction lists and amounts) may be sent to third-party AI models (e.g., Google's Gemini) to generate insights and analysis. We take steps to ensure that this data is handled securely. We do not use your personal financial data to train general-purpose AI models.
             </p>
             
             <h2>4. Third-Party Services</h2>
             <p>
-                We use Firebase for anonymous authentication and to store your data. Firebase is essential for the app's functionality and has its own privacy policy, which we encourage you to review. We are not responsible for the privacy practices of third parties.
+                We use the following third-party services which are essential for the app's functionality:
             </p>
+            <ul>
+                <li>**Firebase:** For anonymous authentication and secure data storage.</li>
+                <li>**Google AdMob:** To serve advertisements that grant access to certain features. AdMob may collect device information to serve relevant ads.</li>
+            </ul>
+            <p>We encourage you to review the privacy policies of these third parties. We are not responsible for their privacy practices.</p>
             
             <h2>5. Data Security and Retention</h2>
             <p>
-                We implement reasonable security measures, including Firestore Security Rules, to protect your information from unauthorized access. Your data is tied to your anonymous account, which is stored on your device. **If you delete the app, your account and all associated data will be permanently lost and cannot be recovered.**
+                We implement reasonable security measures, including Firestore Security Rules, to protect your information from unauthorized access. Your data is tied to your anonymous account. **If you uninstall the app or clear its data, your account and all associated financial data will be permanently lost and cannot be recovered.**
             </p>
             
             <h2>6. Your Choices</h2>
             <p>
-                As your account is anonymous, there is no personal account information to update. You are in full control of your data; you can delete individual data points within the app or delete all data by uninstalling the app.
+                As your account is anonymous, there is no personal account information to manage. You are in full control of your data within the app and can delete it at any time. Deleting the application will permanently remove all associated data.
             </p>
             
             <h2>7. Changes to This Policy</h2>

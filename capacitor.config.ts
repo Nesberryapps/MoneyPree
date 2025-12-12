@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.nesberry.moneypree',
   appName: 'MoneyPree',
-  webDir: 'out',
+  webDir: 'public',
   server: {
     // This should be commented out or removed for production builds
     // that are bundled with the app. It's only for live reload.

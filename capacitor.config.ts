@@ -8,7 +8,13 @@ const config: CapacitorConfig = {
     // This should be commented out or removed for production builds
     // that are bundled with the app. It's only for live reload.
     // url: 'https://www.moneypree.com',
-    cleartext: true
+    cleartext: true,
+    allowNavigation: [
+      'moneypree.com',
+      'www.moneypree.com',
+      '*.moneypree.com',
+      '*.firebaseapp.com'
+    ]
   }
 };
 

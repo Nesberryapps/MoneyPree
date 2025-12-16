@@ -10,6 +10,13 @@ import { formatDate } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { ALL_POSTS } from '@/lib/blog-content';
 
+// This function tells Next.js which paths to pre-render at build time.
+export async function generateStaticParams() {
+  return ALL_POSTS.map((post) => ({
+    slug: post.slug,
+  }));
+}
+
 // A simple Markdown renderer
 const MarkdownRenderer = ({ content }: { content: string }) => {
     // This is a very basic renderer. For a real app, a library like 'react-markdown' would be better.

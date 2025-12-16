@@ -4,7 +4,7 @@ const nextConfig = {
      Using a static export for all builds to ensure consistency 
      across mobile (GitHub Actions) and web (Firebase App Hosting).
   */
-  output: 'export',
+  output: 'standalone',
 
   typescript: {
     ignoreBuildErrors: true,

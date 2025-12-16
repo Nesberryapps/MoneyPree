@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* 
-     SMART CONFIGURATION:
-     - Mobile (GitHub Actions) -> uses 'export' (Static)
-     - Web (Firebase) -> uses undefined (Dynamic Server)
+     Using a static export for all builds to ensure consistency 
+     across mobile (GitHub Actions) and web (Firebase App Hosting).
   */
-  output: process.env.GITHUB_ACTIONS ? 'export' : undefined,
+  output: 'export',
 
   typescript: {
     ignoreBuildErrors: true,
@@ -14,7 +13,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true, // Required for mobile apps
+    unoptimized: true, // Required for mobile apps and static exports
     remotePatterns: [
       {
         protocol: 'https',

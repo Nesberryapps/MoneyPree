@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   /* 
      This is now a standard server build for Firebase App Hosting.
      Mobile builds will use a command-line flag to create a static export.

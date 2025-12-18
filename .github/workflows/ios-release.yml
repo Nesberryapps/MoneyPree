@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Build Next.js for Static Export
-        run: npm run build -- --output=export
+        run: npm run build
         
       - name: Sync iOS Project
         run: npx cap sync ios

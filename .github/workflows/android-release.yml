@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
       
-      - name: Build Next.js for Static Export
-        run: npm run build
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:

@@ -10,14 +10,6 @@ import { formatDate } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { ALL_POSTS } from '@/lib/blog-content';
 
-// This function is required for static site generation with dynamic routes.
-// It tells Next.js which pages to build at build time.
-export async function generateStaticParams() {
-  return ALL_POSTS.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
 
 // A simple Markdown renderer
 const MarkdownRenderer = ({ content }: { content: string }) => {

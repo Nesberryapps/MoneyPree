@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* 
-     Using a static export for all builds to ensure consistency 
-     across mobile (GitHub Actions) and web (Firebase App Hosting).
+     This is now a standard server build for Firebase App Hosting.
+     Mobile builds will use a command-line flag to create a static export.
   */
-  output: 'export',
-
   typescript: {
     ignoreBuildErrors: true,
   },

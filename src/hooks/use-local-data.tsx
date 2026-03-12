@@ -39,12 +39,12 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
             return value;
         });
         
-        // One-time data migration for the typo "Funf" -> "Fund"
+        // One-time data migration for the typo "funf" -> "Fund"
         if (key === LOCAL_STORAGE_KEYS.GOALS) {
             const goals = parsed as Goal[];
             let hasBeenMigrated = false;
             const migratedGoals = goals.map(g => {
-                if (g.name === 'Vacation Funf') {
+                if (g.name.toLowerCase() === 'vacation funf') {
                     hasBeenMigrated = true;
                     return { ...g, name: 'Vacation Fund' };
                 }

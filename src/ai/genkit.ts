@@ -24,7 +24,7 @@ if (typeof window === 'undefined') {
   // Using require here prevents the import from being statically analyzed
   // and bundled into the client code.
   const { genkit: genkitCore } = require('genkit');
-  const { googleAI: realGoogleAI } = require('@genkit-ai/googleai');
+  const { googleAI: realGoogleAI } = require('@genkit-ai/google-genai');
   
   ai = genkitCore({
     plugins: [realGoogleAI()],

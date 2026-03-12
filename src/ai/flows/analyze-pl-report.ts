@@ -71,11 +71,28 @@ const analyzePLReportFlow = ai.defineFlow(
     outputSchema: PLReportAnalysisSchema,
   },
   async (input) => {
-    // The date is already an ISO string from the client, so no need to convert.
-    const transactionsForPrompt = input.transactions.map(t => ({
-      ...t,
-      date: new Date(t.date).toISOString().split('T')[0]
-    }));
+    // Safely process transactions and filter out any with invalid dates
+    const transactionsForPrompt = input.transactions
+      .map(t => {
+        const rawDate = t.date as any;
+        let transactionDate: Date;
+
+        if (rawDate instanceof Date) {
+          transactionDate = rawDate;
+        } else {
+          transactionDate = new Date(rawDate);
+        }
+
+        if (isNaN(transactionDate.getTime())) {
+          return null; // Mark for removal
+        }
+
+        return {
+            ...t,
+            date: transactionDate.toISOString().split('T')[0]
+        };
+      })
+      .filter(t => t !== null);
 
     const { output } = await prompt({
         plReportJson: JSON.stringify(input.plReport),

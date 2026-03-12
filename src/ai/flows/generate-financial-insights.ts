@@ -64,11 +64,28 @@ const generateFinancialInsightsFlow = ai.defineFlow(
     outputSchema: FinancialInsightSchema,
   },
   async (input) => {
-    // Convert transactions to a simpler format for the prompt if needed, or just stringify
-    const transactionsForPrompt = input.transactions.map(t => ({
-        ...t,
-        date: t.date.toISOString().split('T')[0] // Format date for better readability in the prompt
-    }));
+    // Safely process transactions and filter out any with invalid dates
+    const transactionsForPrompt = input.transactions
+      .map(t => {
+        const rawDate = t.date as any;
+        let transactionDate: Date;
+
+        if (rawDate instanceof Date) {
+          transactionDate = rawDate;
+        } else {
+          transactionDate = new Date(rawDate);
+        }
+
+        if (isNaN(transactionDate.getTime())) {
+          return null; // Mark for removal
+        }
+
+        return {
+            ...t,
+            date: transactionDate.toISOString().split('T')[0]
+        };
+      })
+      .filter(t => t !== null);
 
     const { output } = await prompt({
         transactionsJson: JSON.stringify(transactionsForPrompt)

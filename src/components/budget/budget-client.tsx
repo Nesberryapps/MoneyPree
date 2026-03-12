@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -164,7 +163,7 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
         setAmount(String(transaction.amount));
         setType(transaction.type);
         setCategory(transaction.category);
-        const transactionDate = transaction.date instanceof Date ? transaction.date : (transaction.date as any).toDate();
+        const transactionDate = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
         setDate(transactionDate);
     } else {
       resetForm();

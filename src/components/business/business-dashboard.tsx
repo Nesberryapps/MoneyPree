@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -89,23 +90,6 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
     const [error, setError] = useState<string | null>(null);
     const [isReportAdDialogOpen, setIsReportAdDialogOpen] = useState(false);
     const [isAnalysisAdDialogOpen, setIsAnalysisAdDialogOpen] = useState(false);
-    
-    const serializableTransactions = useMemo(() => {
-        return transactions.map(t => {
-            const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
-            return {
-                id: t.id,
-                businessId: t.businessId,
-                date: date.toISOString().split('T')[0],
-                description: t.description,
-                amount: t.amount,
-                type: t.type,
-                category: t.category,
-                isTaxDeductible: t.isTaxDeductible,
-            }
-        });
-    }, [transactions]);
-
 
     const handleGenerateReport = async () => {
         setIsReportLoading(true);
@@ -113,7 +97,7 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setReport(null);
         setAnalysis(null);
         try {
-            const result = await generatePLReportAction({ transactions: serializableTransactions as any });
+            const result = await generatePLReportAction({ transactions });
             setReport(result);
         } catch (e: any) {
             console.error(e);
@@ -133,17 +117,7 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setError(null);
         setAnalysis(null);
         try {
-            // Convert Timestamps to ISO strings before passing to the server action
-            const plainTransactions = transactions.map(t => {
-                const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
-                return {
-                    ...t,
-                    date: date.toISOString(),
-                    createdAt: undefined, // Ensure non-serializable fields are removed
-                }
-            });
-
-            const result = await analyzePLReportAction({ plReport: report, transactions: plainTransactions as any });
+            const result = await analyzePLReportAction({ plReport: report, transactions });
             setAnalysis(result);
         } catch (e: any) {
             console.error(e);
@@ -368,7 +342,7 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
             setAmount(data.amount ? String(data.amount) : '');
             setType(data.type || 'expense');
             setCategory(data.category || '');
-            const transactionDate = data.date ? (data.date instanceof Date ? data.date : (data.date as any).toDate()) : new Date();
+            const transactionDate = data.date ? (data.date instanceof Date ? data.date : new Date(data.date)) : new Date();
             setDate(transactionDate.toISOString().split('T')[0]);
             setIsTaxDeductible(data.isTaxDeductible || false);
         } else {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -213,14 +214,13 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
     setInsightsError(null);
     setInsights(null);
     try {
-    const serializableTransactions = transactions.map(t => ({...t, date: (t.date as any).toDate()}))
-    const result = await generateFinancialInsightsAction({ transactions: serializableTransactions });
-    setInsights(result);
+      const result = await generateFinancialInsightsAction({ transactions });
+      setInsights(result);
     } catch (e) {
-    setInsightsError('Failed to generate insights. Please try again.');
-    console.error(e);
+      setInsightsError('Failed to generate insights. Please try again.');
+      console.error(e);
     } finally {
-    setIsInsightsLoading(false);
+      setIsInsightsLoading(false);
     }
   };
 

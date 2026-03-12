@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 import { DataProvider } from '@/hooks/use-local-data';
+import { VerificationProvider, VerificationGate } from '@/hooks/use-verification';
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -39,7 +40,11 @@ export default function RootLayout({
         >
           <DataProvider>
             <VoiceInteractionProvider>
-                {children}
+              <VerificationProvider>
+                <VerificationGate>
+                  {children}
+                </VerificationGate>
+              </VerificationProvider>
             </VoiceInteractionProvider>
           </DataProvider>
           <Toaster />

@@ -1,10 +1,10 @@
 
 export const firebaseConfig = {
-  "projectId": process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  "appId": process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  "authDomain": process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  "storageBucket": process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  "messagingSenderId": process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  "apiKey": "AIzaSyBkeS6_OChVMgOoQPqw-Cvcmu13V8r3YPM",
+  "authDomain": "moneypree-38a55.firebaseapp.com",
+  "projectId": "moneypree-38a55",
+  "storageBucket": "moneypree-38a55.appspot.com",
+  "messagingSenderId": "969188188147",
+  "appId": "1:969188188147:web:8c5b9f715c55355a2c4886",
   "measurementId": ""
 };

@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  output: 'export',
+
   // 1. Keep these to prevent build fails on small errors
   typescript: {
     ignoreBuildErrors: true,
@@ -11,6 +13,7 @@ const nextConfig = {
 
   // 2. Image settings
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

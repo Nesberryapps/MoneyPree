@@ -24,7 +24,6 @@ export async function init() {
   await import('@/ai/flows/generate-quiz.ts');
   await import('@/ai/flows/parse-receipt.ts');
   await import('@/ai/flows/text-to-speech.ts');
-  await import('@/ai/flows/stripe-checkout.ts');
   await import('@/ai/flows/generate-pl-report.ts');
   await import('@/ai/flows/suggest-tax-deduction.ts');
   await import('@/ai/flows/analyze-pl-report.ts');

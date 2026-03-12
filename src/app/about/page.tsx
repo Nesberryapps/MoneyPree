@@ -46,9 +46,6 @@ export default function AboutPage() {
                 <span className="text-xl font-semibold">MoneyPree</span>
                 </Link>
                 <div className="flex gap-4">
-                    <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                        Pricing
-                    </Link>
                 </div>
             </header>
             <main className="flex-1">

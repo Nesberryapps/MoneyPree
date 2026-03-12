@@ -1,6 +1,7 @@
+// Note: The apiKey is now loaded from environment variables in `src/firebase/index.ts`
+// to prevent it from being committed to version control.
 
-export const firebaseConfig = {
-  "apiKey": "AIzaSyBkeS6_OChVMgOoQPqw-Cvcmu13V8r3YPM",
+export const firebaseConfigBase = {
   "authDomain": "moneypree-38a55.firebaseapp.com",
   "projectId": "moneypree-38a55",
   "storageBucket": "moneypree-38a55.appspot.com",

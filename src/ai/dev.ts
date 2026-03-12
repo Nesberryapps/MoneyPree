@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 config();
 
 import { genkit } from 'genkit';
-import { googleAI } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 // This function will only be called when running the genkit server.
 // The Next.js build process will not execute this.
@@ -12,7 +12,7 @@ export async function init() {
   }
   
   genkit({
-    plugins: [googleAI()],
+    plugins: [googleAI({ apiKey: process.env.GEMINI_API_KEY })],
     model: 'googleai/gemini-2.5-flash',
   });
 

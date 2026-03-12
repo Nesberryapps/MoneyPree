@@ -91,6 +91,11 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     }
   };
 
+  const handleRewardedLessonGeneration = () => {
+    setIsAdDialogOpen(false);
+    handleGenerateLesson();
+  };
+
   const handleAnswerChange = (questionText: string, value: string) => {
     setUserAnswers(prev => ({ ...prev, [questionText]: value }));
   };
@@ -184,7 +189,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
       <RewardedAdDialog
         open={isAdDialogOpen}
         onOpenChange={setIsAdDialogOpen}
-        onReward={handleGenerateLesson}
+        onReward={handleRewardedLessonGeneration}
       />
 
       {error && (

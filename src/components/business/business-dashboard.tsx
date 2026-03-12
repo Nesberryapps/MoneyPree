@@ -152,6 +152,16 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
             setIsAnalysisLoading(false);
         }
     };
+    
+    const handleRewardedReportGeneration = () => {
+        setIsReportAdDialogOpen(false);
+        handleGenerateReport();
+    };
+
+    const handleRewardedAnalysis = () => {
+        setIsAnalysisAdDialogOpen(false);
+        handleAnalyzeReport();
+    };
 
     const handleDownload = () => {
         if (!report) return;
@@ -292,12 +302,12 @@ ${analysis.riskAlert}
         <RewardedAdDialog
             open={isReportAdDialogOpen}
             onOpenChange={setIsReportAdDialogOpen}
-            onReward={handleGenerateReport}
+            onReward={handleRewardedReportGeneration}
         />
         <RewardedAdDialog
             open={isAnalysisAdDialogOpen}
             onOpenChange={setIsAnalysisAdDialogOpen}
-            onReward={handleAnalyzeReport}
+            onReward={handleRewardedAnalysis}
         />
         </>
     );

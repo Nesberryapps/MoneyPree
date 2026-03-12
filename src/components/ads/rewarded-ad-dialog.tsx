@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -45,7 +44,6 @@ export function RewardedAdDialog({ open, onOpenChange, onReward }: RewardedAdDia
 
   const handleContinue = () => {
     onReward();
-    onOpenChange(false);
   };
 
   return (

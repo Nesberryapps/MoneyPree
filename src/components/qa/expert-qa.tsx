@@ -53,6 +53,11 @@ export function ExpertQA() {
       setIsLoading(false);
     }
   };
+  
+  const handleRewardedQuestion = () => {
+    setIsAdDialogOpen(false);
+    handleAskQuestion();
+  };
 
   const handleSpeak = (text: string) => {
     if (isSpeaking) {
@@ -103,7 +108,7 @@ export function ExpertQA() {
       <RewardedAdDialog
         open={isAdDialogOpen}
         onOpenChange={setIsAdDialogOpen}
-        onReward={handleAskQuestion}
+        onReward={handleRewardedQuestion}
       />
 
       {error && (

@@ -53,6 +53,11 @@ export function InvestmentSimulation() {
     }
   };
 
+  const handleRewardedSimulation = () => {
+    setIsAdDialogOpen(false);
+    handleSimulate();
+  };
+
   const handleSpeak = (text: string) => {
     if (isSpeaking) {
       stopSpeaking();
@@ -170,7 +175,7 @@ export function InvestmentSimulation() {
       <RewardedAdDialog
         open={isAdDialogOpen}
         onOpenChange={setIsAdDialogOpen}
-        onReward={handleSimulate}
+        onReward={handleRewardedSimulation}
       />
     </div>
   );

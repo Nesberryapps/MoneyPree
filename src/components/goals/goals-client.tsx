@@ -95,6 +95,11 @@ export function GoalsClient({ goals }: GoalsClientProps) {
     }
   };
 
+  const handleRewardedGoalGeneration = () => {
+    setIsAdDialogOpen(false);
+    handleGenerateGoals();
+  };
+
   const resetForm = () => {
     setName('');
     setTargetAmount('');
@@ -326,7 +331,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
       <RewardedAdDialog
         open={isAdDialogOpen}
         onOpenChange={setIsAdDialogOpen}
-        onReward={handleGenerateGoals}
+        onReward={handleRewardedGoalGeneration}
       />
       
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>

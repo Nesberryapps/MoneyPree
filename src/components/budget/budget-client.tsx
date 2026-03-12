@@ -224,6 +224,11 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
     }
   };
 
+  const handleRewardedInsightGeneration = () => {
+    setIsAdDialogOpen(false);
+    handleGenerateInsights();
+  };
+
   const handleDownload = () => {
     if (!insights) return;
 
@@ -669,7 +674,7 @@ ${insights.monthlyChallenge}
       <RewardedAdDialog
         open={isAdDialogOpen}
         onOpenChange={setIsAdDialogOpen}
-        onReward={handleGenerateInsights}
+        onReward={handleRewardedInsightGeneration}
       />
       
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>

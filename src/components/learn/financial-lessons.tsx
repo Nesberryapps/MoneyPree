@@ -28,7 +28,6 @@ import { Badge } from '@/components/ui/badge';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { showFinancialAdvisorAds } from '@/services/admob';
 
 type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
@@ -55,42 +54,40 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
 
 
   const handleGenerateLesson = async () => {
-    showFinancialAdvisorAds(async () => {
-        setIsLessonLoading(true);
-        setIsQuizLoading(true); // Start loading quiz at the same time
-        setError(null);
-        setLesson(null);
-        setQuiz(null);
-        setUserAnswers({});
-        setSubmitted(false);
-        setScore(0);
+    setIsLessonLoading(true);
+    setIsQuizLoading(true); // Start loading quiz at the same time
+    setError(null);
+    setLesson(null);
+    setQuiz(null);
+    setUserAnswers({});
+    setSubmitted(false);
+    setScore(0);
 
-        try {
-        const lessonResult = await generateFinancialLessonsAction({
-            currentFinancialKnowledge,
-            specificTopicsOfInterest,
-        });
-        setLesson(lessonResult);
-        
-        // Now generate the quiz
-        try {
-            const quizResult = await generateQuizAction({ lessonContent: lessonResult.lessonContent });
-            setQuiz(quizResult);
-        } catch (e) {
-            setError('Failed to generate quiz. Please try generating the lesson again.');
-            console.error(e);
-        } finally {
-            setIsQuizLoading(false);
-        }
-
-        } catch (e) {
-        setError('Failed to generate lesson. Please try again.');
-        console.error(e);
-        setIsQuizLoading(false); // Stop quiz loading if lesson fails
-        } finally {
-        setIsLessonLoading(false);
-        }
+    try {
+    const lessonResult = await generateFinancialLessonsAction({
+        currentFinancialKnowledge,
+        specificTopicsOfInterest,
     });
+    setLesson(lessonResult);
+    
+    // Now generate the quiz
+    try {
+        const quizResult = await generateQuizAction({ lessonContent: lessonResult.lessonContent });
+        setQuiz(quizResult);
+    } catch (e) {
+        setError('Failed to generate quiz. Please try generating the lesson again.');
+        console.error(e);
+    } finally {
+        setIsQuizLoading(false);
+    }
+
+    } catch (e) {
+    setError('Failed to generate lesson. Please try again.');
+    console.error(e);
+    setIsQuizLoading(false); // Stop quiz loading if lesson fails
+    } finally {
+    setIsLessonLoading(false);
+    }
   };
 
   const handleAnswerChange = (questionText: string, value: string) => {
@@ -178,7 +175,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
           </div>
           <Button onClick={handleGenerateLesson} disabled={isLessonLoading}>
             {isLessonLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLessonLoading ? 'Generating...' : 'Watch Ad & Generate Lesson'}
+            {isLessonLoading ? 'Generating...' : 'Generate Lesson'}
           </Button>
         </CardContent>
       </Card>

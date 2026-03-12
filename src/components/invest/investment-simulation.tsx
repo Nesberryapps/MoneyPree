@@ -18,7 +18,6 @@ import { Loader2, TrendingUp, Shield, BarChart, Mic, Volume2 } from 'lucide-reac
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { showFinancialAdvisorAds } from '@/services/admob';
 
 
 export function InvestmentSimulation() {
@@ -36,23 +35,21 @@ export function InvestmentSimulation() {
   const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
 
   const handleSimulate = async () => {
-    showFinancialAdvisorAds(async () => {
-        setIsLoading(true);
-        setError(null);
-        setSimulationResult(null);
-        try {
-        const result = await simulateInvestmentScenariosAction({
-            currentHoldings,
-            investmentGoals,
-        });
-        setSimulationResult(result);
-        } catch (e) {
-        setError('Failed to run simulation. Please try again.');
-        console.error(e);
-        } finally {
-        setIsLoading(false);
-        }
+    setIsLoading(true);
+    setError(null);
+    setSimulationResult(null);
+    try {
+    const result = await simulateInvestmentScenariosAction({
+        currentHoldings,
+        investmentGoals,
     });
+    setSimulationResult(result);
+    } catch (e) {
+    setError('Failed to run simulation. Please try again.');
+    console.error(e);
+    } finally {
+    setIsLoading(false);
+    }
   };
 
   const handleSpeak = (text: string) => {
@@ -117,7 +114,7 @@ export function InvestmentSimulation() {
           </div>
           <Button onClick={handleSimulate} disabled={isLoading}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLoading ? "Simulating..." : "Watch Ad & Run Simulation"}
+            {isLoading ? "Simulating..." : "Run Simulation"}
           </Button>
         </CardContent>
       </Card>

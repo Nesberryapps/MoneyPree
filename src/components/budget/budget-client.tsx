@@ -87,8 +87,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
-import { showFinancialAdvisorAds } from '@/services/admob';
-
 
 type BudgetClientProps = {
     transactions: AppTransaction[];
@@ -210,21 +208,19 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   }
 
   const handleGenerateInsights = async () => {
-    showFinancialAdvisorAds(async () => {
-        setIsInsightsLoading(true);
-        setInsightsError(null);
-        setInsights(null);
-        try {
-        const serializableTransactions = transactions.map(t => ({...t, date: (t.date as any).toDate()}))
-        const result = await generateFinancialInsightsAction({ transactions: serializableTransactions });
-        setInsights(result);
-        } catch (e) {
-        setInsightsError('Failed to generate insights. Please try again.');
-        console.error(e);
-        } finally {
-        setIsInsightsLoading(false);
-        }
-    });
+    setIsInsightsLoading(true);
+    setInsightsError(null);
+    setInsights(null);
+    try {
+    const serializableTransactions = transactions.map(t => ({...t, date: (t.date as any).toDate()}))
+    const result = await generateFinancialInsightsAction({ transactions: serializableTransactions });
+    setInsights(result);
+    } catch (e) {
+    setInsightsError('Failed to generate insights. Please try again.');
+    console.error(e);
+    } finally {
+    setIsInsightsLoading(false);
+    }
   };
 
   const handleDownload = () => {
@@ -294,70 +290,68 @@ ${insights.monthlyChallenge}
   const handleCaptureAndScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     
-    showFinancialAdvisorAds(async () => {
-        setIsScanning(true);
+    setIsScanning(true);
 
-        const video = videoRef.current!;
-        const canvas = canvasRef.current!;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext('2d');
-        if (!context) {
-            setIsScanning(false);
-            return;
-        };
-
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const imageDataUri = canvas.toDataURL('image/jpeg');
-
-        try {
-        const result = await parseReceiptAction({ receiptImage: imageDataUri });
-        
-        // Pre-fill the form with the scanned data
-        setDescription(result.description || '');
-        setAmount(String(result.amount || ''));
-        setType('expense'); // Receipts are always expenses
-        if (result.date) {
-            // Attempt to parse various date formats
-            const parsedDate = new Date(result.date);
-            if (!isNaN(parsedDate.getTime())) {
-            setDate(parsedDate);
-            } else {
-                // Fallback for dates that are not standard
-                setDate(new Date()); 
-                console.warn("Could not parse date:", result.date);
-            }
-        } else {
-            setDate(new Date());
-        }
-        
-        // Try to match the category
-        const expenseCategories = BUDGET_CATEGORIES.expense.map(c => c.value);
-        if (result.category && expenseCategories.includes(result.category)) {
-            setCategory(result.category);
-        } else {
-            setCategory('other'); // Default category
-        }
-
-        setIsScannerOpen(false);
-        setIsDialogOpen(true); // Open the transaction dialog for verification
-        
-        toast({
-            title: 'Receipt Scanned!',
-            description: 'Please verify the details and save the transaction.',
-        });
-
-        } catch (e) {
-        console.error("Failed to scan receipt:", e);
-        toast({
-            variant: 'destructive',
-            title: 'Scan Failed',
-            description: 'Could not extract details from the receipt. Please try again or enter manually.',
-        });
-        } finally {
+    const video = videoRef.current!;
+    const canvas = canvasRef.current!;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
         setIsScanning(false);
+        return;
+    };
+
+    context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    const imageDataUri = canvas.toDataURL('image/jpeg');
+
+    try {
+    const result = await parseReceiptAction({ receiptImage: imageDataUri });
+    
+    // Pre-fill the form with the scanned data
+    setDescription(result.description || '');
+    setAmount(String(result.amount || ''));
+    setType('expense'); // Receipts are always expenses
+    if (result.date) {
+        // Attempt to parse various date formats
+        const parsedDate = new Date(result.date);
+        if (!isNaN(parsedDate.getTime())) {
+        setDate(parsedDate);
+        } else {
+            // Fallback for dates that are not standard
+            setDate(new Date()); 
+            console.warn("Could not parse date:", result.date);
         }
+    } else {
+        setDate(new Date());
+    }
+    
+    // Try to match the category
+    const expenseCategories = BUDGET_CATEGORIES.expense.map(c => c.value);
+    if (result.category && expenseCategories.includes(result.category)) {
+        setCategory(result.category);
+    } else {
+        setCategory('other'); // Default category
+    }
+
+    setIsScannerOpen(false);
+    setIsDialogOpen(true); // Open the transaction dialog for verification
+    
+    toast({
+        title: 'Receipt Scanned!',
+        description: 'Please verify the details and save the transaction.',
     });
+
+    } catch (e) {
+    console.error("Failed to scan receipt:", e);
+    toast({
+        variant: 'destructive',
+        title: 'Scan Failed',
+        description: 'Could not extract details from the receipt. Please try again or enter manually.',
+    });
+    } finally {
+    setIsScanning(false);
+    }
   };
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
@@ -434,7 +428,7 @@ ${insights.monthlyChallenge}
 
                         <DialogFooter>
                             <Button onClick={handleCaptureAndScan} disabled={isScanning || !hasCameraPermission}>
-                            {isScanning ? 'Processing...' : 'Watch Ad & Scan'}
+                            {isScanning ? 'Processing...' : 'Scan'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -618,7 +612,7 @@ ${insights.monthlyChallenge}
             <CardContent>
             <Button onClick={handleGenerateInsights} disabled={isInsightsLoading}>
                 {isInsightsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isInsightsLoading ? "Analyzing..." : "Watch Ad & Analyze"}
+                {isInsightsLoading ? "Analyzing..." : "Analyze"}
             </Button>
             </CardContent>
         </Card>

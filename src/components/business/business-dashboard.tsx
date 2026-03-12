@@ -70,7 +70,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
-import { showFinancialAdvisorAds } from '@/services/admob';
 import { useLocalData } from '@/hooks/use-local-data';
 
 
@@ -107,53 +106,49 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
 
 
     const handleGenerateReport = async () => {
-        showFinancialAdvisorAds(async () => {
-            setIsReportLoading(true);
-            setError(null);
-            setReport(null);
-            setAnalysis(null);
-            try {
-                const result = await generatePLReportAction({ transactions: serializableTransactions as any });
-                setReport(result);
-            } catch (e: any) {
-                console.error(e);
-                if (e.message && (e.message.includes('503') || e.message.toLowerCase().includes('overloaded'))) {
-                    setError('The AI service is currently busy. Please try again in a few moments.');
-                } else {
-                    setError('Failed to generate report. Please try again.');
-                }
-            } finally {
-                setIsReportLoading(false);
+        setIsReportLoading(true);
+        setError(null);
+        setReport(null);
+        setAnalysis(null);
+        try {
+            const result = await generatePLReportAction({ transactions: serializableTransactions as any });
+            setReport(result);
+        } catch (e: any) {
+            console.error(e);
+            if (e.message && (e.message.includes('503') || e.message.toLowerCase().includes('overloaded'))) {
+                setError('The AI service is currently busy. Please try again in a few moments.');
+            } else {
+                setError('Failed to generate report. Please try again.');
             }
-        });
+        } finally {
+            setIsReportLoading(false);
+        }
     };
     
     const handleAnalyzeReport = async () => {
         if (!report) return;
-        showFinancialAdvisorAds(async () => {
-            setIsAnalysisLoading(true);
-            setError(null);
-            setAnalysis(null);
-            try {
-                // Convert Timestamps to ISO strings before passing to the server action
-                const plainTransactions = transactions.map(t => {
-                    const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
-                    return {
-                        ...t,
-                        date: date.toISOString(),
-                        createdAt: undefined, // Ensure non-serializable fields are removed
-                    }
-                });
+        setIsAnalysisLoading(true);
+        setError(null);
+        setAnalysis(null);
+        try {
+            // Convert Timestamps to ISO strings before passing to the server action
+            const plainTransactions = transactions.map(t => {
+                const date = t.date instanceof Date ? t.date : (t.date as any).toDate();
+                return {
+                    ...t,
+                    date: date.toISOString(),
+                    createdAt: undefined, // Ensure non-serializable fields are removed
+                }
+            });
 
-                const result = await analyzePLReportAction({ plReport: report, transactions: plainTransactions as any });
-                setAnalysis(result);
-            } catch (e: any) {
-                console.error(e);
-                setError('Failed to analyze the report. Please try again.');
-            } finally {
-                setIsAnalysisLoading(false);
-            }
-        });
+            const result = await analyzePLReportAction({ plReport: report, transactions: plainTransactions as any });
+            setAnalysis(result);
+        } catch (e: any) {
+            console.error(e);
+            setError('Failed to analyze the report. Please try again.');
+        } finally {
+            setIsAnalysisLoading(false);
+        }
     };
 
     const handleDownload = () => {
@@ -225,7 +220,7 @@ ${analysis.riskAlert}
                      <div className="relative group w-fit">
                         <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
                             {isReportLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                            {isReportLoading ? 'Generating...' : 'Watch Ad & Generate'}
+                            {isReportLoading ? 'Generating...' : 'Generate Report'}
                         </Button>
                     </div>
                 )}
@@ -286,7 +281,7 @@ ${analysis.riskAlert}
                     </Button>
                     <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading} size="sm" variant="default">
                         {isAnalysisLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                        {isAnalysisLoading ? 'Analyzing...' : 'Watch Ad & Analyze'}
+                        {isAnalysisLoading ? 'Analyzing...' : 'Analyze Report'}
                     </Button>
                 </CardFooter>
             )}
@@ -366,21 +361,19 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
     useEffect(() => {
         const getAiSuggestion = async () => {
             if (type === 'expense' && debouncedDescription.length > 3 && category) {
-                showFinancialAdvisorAds(async () => {
-                    setIsAiLoading(true);
-                    setAiSuggestion(null);
-                    try {
-                        const result = await suggestTaxDeductionAction({ description: debouncedDescription, category });
-                        setAiSuggestion(result);
-                        if (result.isDeductible) {
-                            setIsTaxDeductible(true);
-                        }
-                    } catch (e) {
-                        console.error("AI suggestion failed:", e);
-                    } finally {
-                        setIsAiLoading(false);
+                setIsAiLoading(true);
+                setAiSuggestion(null);
+                try {
+                    const result = await suggestTaxDeductionAction({ description: debouncedDescription, category });
+                    setAiSuggestion(result);
+                    if (result.isDeductible) {
+                        setIsTaxDeductible(true);
                     }
-                });
+                } catch (e) {
+                    console.error("AI suggestion failed:", e);
+                } finally {
+                    setIsAiLoading(false);
+                }
             }
         };
         getAiSuggestion();
@@ -596,68 +589,66 @@ export function BusinessDashboard() {
 
   const handleCaptureAndScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
-    showFinancialAdvisorAds(async () => {
-        setIsScanning(true);
+    setIsScanning(true);
 
-        const video = videoRef.current!;
-        const canvas = canvasRef.current!;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext('2d');
-        if (!context) {
-            setIsScanning(false);
-            return;
-        }
-
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const imageDataUri = canvas.toDataURL('image/jpeg');
-
-        try {
-        const result = await parseBusinessReceiptAction({ receiptImage: imageDataUri, isBusiness: true });
-        
-        const parsedData: Partial<BusinessTransaction> = {
-            description: result.description || '',
-            amount: result.amount || undefined,
-            type: 'expense',
-        };
-        
-        if (result.date) {
-            const parsedDate = new Date(result.date);
-            if (!isNaN(parsedDate.getTime())) {
-            parsedData.date = parsedDate;
-            } else {
-                parsedData.date = new Date(); 
-            }
-        } else {
-            parsedData.date = new Date();
-        }
-        
-        if (result.category && EXPENSE_CATEGORIES.includes(result.category)) {
-            parsedData.category = result.category;
-        } else {
-            parsedData.category = 'Other';
-        }
-
-        setScannedData(parsedData);
-        setIsScannerOpen(false);
-        setIsDialogVisible(true);
-        
-        toast({
-            title: 'Receipt Scanned!',
-            description: 'Please verify the details and save the transaction.',
-        });
-
-        } catch (e) {
-        console.error("Failed to scan receipt:", e);
-        toast({
-            variant: 'destructive',
-            title: 'Scan Failed',
-            description: 'Could not extract details from the receipt. Please try again or enter manually.',
-        });
-        } finally {
+    const video = videoRef.current!;
+    const canvas = canvasRef.current!;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
         setIsScanning(false);
+        return;
+    }
+
+    context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    const imageDataUri = canvas.toDataURL('image/jpeg');
+
+    try {
+    const result = await parseBusinessReceiptAction({ receiptImage: imageDataUri, isBusiness: true });
+    
+    const parsedData: Partial<BusinessTransaction> = {
+        description: result.description || '',
+        amount: result.amount || undefined,
+        type: 'expense',
+    };
+    
+    if (result.date) {
+        const parsedDate = new Date(result.date);
+        if (!isNaN(parsedDate.getTime())) {
+        parsedData.date = parsedDate;
+        } else {
+            parsedData.date = new Date(); 
         }
+    } else {
+        parsedData.date = new Date();
+    }
+    
+    if (result.category && EXPENSE_CATEGORIES.includes(result.category)) {
+        parsedData.category = result.category;
+    } else {
+        parsedData.category = 'Other';
+    }
+
+    setScannedData(parsedData);
+    setIsScannerOpen(false);
+    setIsDialogVisible(true);
+    
+    toast({
+        title: 'Receipt Scanned!',
+        description: 'Please verify the details and save the transaction.',
     });
+
+    } catch (e) {
+    console.error("Failed to scan receipt:", e);
+    toast({
+        variant: 'destructive',
+        title: 'Scan Failed',
+        description: 'Could not extract details from the receipt. Please try again or enter manually.',
+    });
+    } finally {
+    setIsScanning(false);
+    }
   };
 
   const handleSaveTransaction = (data: Partial<BusinessTransaction>) => {
@@ -742,7 +733,7 @@ export function BusinessDashboard() {
 
                         <DialogFooter>
                             <Button onClick={handleCaptureAndScan} disabled={isScanning || !hasCameraPermission}>
-                            {isScanning ? 'Processing...' : 'Watch Ad & Scan'}
+                            {isScanning ? 'Processing...' : 'Scan'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

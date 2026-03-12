@@ -20,7 +20,6 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { showFinancialAdvisorAds } from '@/services/admob';
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -35,28 +34,23 @@ export function ExpertQA() {
 
 
   const handleAskQuestion = async () => {
-    // 1. Check if question is empty
     if (!question.trim()) return;
 
-    // 2. Show Ads first
-    showFinancialAdvisorAds(async () => {
-      // 3. Only run this code AFTER ads are watched
-      setIsLoading(true);
-      setError(null);
-      setAnswer(null);
+    setIsLoading(true);
+    setError(null);
+    setAnswer(null);
 
-      try {
-        const result = await answerFinanceQuestionAction({
-          question,
-        });
-        setAnswer(result);
-      } catch (e) {
-        setError('Failed to get an answer. Please try again.');
-        console.error(e);
-      } finally {
-        setIsLoading(false);
-      }
-    });
+    try {
+      const result = await answerFinanceQuestionAction({
+        question,
+      });
+      setAnswer(result);
+    } catch (e) {
+      setError('Failed to get an answer. Please try again.');
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSpeak = (text: string) => {
@@ -100,7 +94,7 @@ export function ExpertQA() {
           </div>
           <Button onClick={handleAskQuestion} disabled={isLoading}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLoading ? "Analyzing..." : "Watch Ads to Get Answer 💡"}
+            {isLoading ? "Analyzing..." : "Get Answer"}
           </Button>
         </CardContent>
       </Card>

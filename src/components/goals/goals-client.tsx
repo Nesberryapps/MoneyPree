@@ -46,7 +46,6 @@ import { formatDate } from '@/lib/utils';
 import { useLocalData } from '@/hooks/use-local-data';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
-import { showFinancialAdvisorAds } from '@/services/admob';
 
 type GoalsClientProps = {
     goals: Goal[];
@@ -83,18 +82,16 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   }, []);
 
   const handleGenerateGoals = async () => {
-    showFinancialAdvisorAds(async () => {
-        setIsLoading(true);
-        setGeneratedGoals([]);
-        try {
-        const result = await generateFinancialGoalsAction({ prompt });
-        setGeneratedGoals(result.goals);
-        } catch (error) {
-        console.error('Error generating financial goals:', error);
-        } finally {
-        setIsLoading(false);
-        }
-    });
+    setIsLoading(true);
+    setGeneratedGoals([]);
+    try {
+    const result = await generateFinancialGoalsAction({ prompt });
+    setGeneratedGoals(result.goals);
+    } catch (error) {
+    console.error('Error generating financial goals:', error);
+    } finally {
+    setIsLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -309,7 +306,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
             </div>
             <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLoading ? 'Generating...' : 'Watch Ad & Generate Goals'}
+              {isLoading ? 'Generating...' : 'Generate Goals'}
             </Button>
           </div>
           {generatedGoals.length > 0 && (

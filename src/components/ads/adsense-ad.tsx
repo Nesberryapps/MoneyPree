@@ -20,11 +20,10 @@ export function AdsenseAd() {
     <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', width: '100%' }}
         data-ad-client="ca-pub-6191158195654090"
         data-ad-slot="YOUR_AD_SLOT_ID" // <-- REPLACE THIS WITH YOUR ADSLOT ID
         data-ad-format="auto"
-        data-full-width-responsive="true"
       ></ins>
     </div>
   );

@@ -44,6 +44,26 @@ const prompt = ai.definePrompt({
     categoryList: z.string(),
   }) },
   output: { schema: ParseReceiptOutputSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are an expert receipt-scanning AI. Analyze the provided receipt image and extract the following information:
 1.  **description**: The name of the merchant/vendor.
 2.  **amount**: The final total amount of the transaction.

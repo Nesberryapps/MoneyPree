@@ -44,6 +44,26 @@ const prompt = ai.definePrompt({
   name: 'suggestTaxDeductionPrompt',
   input: { schema: SuggestTaxDeductionInputSchema },
   output: { schema: SuggestTaxDeductionOutputSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are an AI tax assistant for small businesses in the United States. Based on the expense description and category, determine if it is a common and legitimate tax-deductible business expense under IRS rules.
 
 The expense must be both "ordinary" (common and accepted in the trade or business) and "necessary" (helpful and appropriate for the trade or business).

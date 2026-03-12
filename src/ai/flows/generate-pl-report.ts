@@ -43,6 +43,26 @@ const prompt = ai.definePrompt({
   name: 'generatePLReportPrompt',
   input: { schema: z.object({ transactionsJson: z.string() }) },
   output: { schema: PLReportSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are an expert AI accountant. Your task is to generate a simple Profit & Loss (P&L) statement from the provided list of business transactions.
 
 Analyze the following JSON array of transactions:

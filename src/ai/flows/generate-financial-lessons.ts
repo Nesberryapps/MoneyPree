@@ -67,6 +67,26 @@ const prompt = ai.definePrompt({
   name: 'generateFinancialLessonsPrompt',
   input: {schema: GenerateFinancialLessonsInputSchema},
   output: {schema: GenerateFinancialLessonsOutputSchema},
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are an AI-powered financial literacy tutor. Based on the user's current financial knowledge, create a personalized financial lesson.
 
 Current Financial Knowledge: {{{currentFinancialKnowledge}}}

@@ -47,6 +47,26 @@ const prompt = ai.definePrompt({
     transactionsJson: z.string(),
   }) },
   output: { schema: PLReportAnalysisSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are a virtual CFO for a small business. Your task is to analyze the provided Profit & Loss (P&L) report and the underlying transaction data to give the business owner clear, actionable insights.
 
 P&L Report:

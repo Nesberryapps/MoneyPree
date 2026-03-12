@@ -43,6 +43,26 @@ const prompt = ai.definePrompt({
   name: 'generateFinancialInsightsPrompt',
   input: { schema: z.object({ transactionsJson: z.string() }) },
   output: { schema: FinancialInsightSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are a friendly and insightful AI financial analyst. Your goal is to help users understand their finances better by analyzing their transaction history. The user will provide a list of their recent transactions.
 
 Analyze the following transactions:

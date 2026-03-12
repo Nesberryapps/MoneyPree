@@ -40,6 +40,26 @@ const prompt = ai.definePrompt({
   name: 'answerFinanceQuestionPrompt',
   input: {schema: AnswerFinanceQuestionInputSchema},
   output: {schema: AnswerFinanceQuestionOutputSchema},
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
   prompt: `You are a personal finance expert. Please answer the following question, providing relevant investment, accounting, and tax considerations and advice.\n\nQuestion: {{{question}}}`,
 });
 

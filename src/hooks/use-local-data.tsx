@@ -32,12 +32,30 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
       const item = window.localStorage.getItem(key);
       if (item) {
         // When reading from localStorage, dates are strings. We need to parse them back to Date objects.
-        const parsed = JSON.parse(item, (key, value) => {
+        let parsed = JSON.parse(item, (key, value) => {
             if (key === 'date' || key === 'deadline' || key === 'createdAt') {
                 if(value) return new Date(value);
             }
             return value;
         });
+        
+        // One-time data migration for the typo "Funf" -> "Fund"
+        if (key === LOCAL_STORAGE_KEYS.GOALS) {
+            const goals = parsed as Goal[];
+            let hasBeenMigrated = false;
+            const migratedGoals = goals.map(g => {
+                if (g.name === 'Vacation Funf') {
+                    hasBeenMigrated = true;
+                    return { ...g, name: 'Vacation Fund' };
+                }
+                return g;
+            });
+            if (hasBeenMigrated) {
+                parsed = migratedGoals;
+                window.localStorage.setItem(key, JSON.stringify(parsed));
+            }
+        }
+
         setStoredValue(parsed);
       } else {
         // If no item, set the initial value in local storage

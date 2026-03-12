@@ -1,3 +1,4 @@
+
 // A mock AI object for the client-side build.
 const mockAi = {
   defineFlow: (config: any, handler: any) => handler,
@@ -22,8 +23,14 @@ if (typeof window === 'undefined') {
   // We are on the server, so we can safely import and use the real genkit.
   // Using require here prevents the import from being statically analyzed
   // and bundled into the client code.
-  ai = require('genkit').genkit;
-  googleAI = require('@genkit-ai/googleai').googleAI;
+  const { genkit: genkitCore } = require('genkit');
+  const { googleAI: realGoogleAI } = require('@genkit-ai/googleai');
+  
+  ai = genkitCore({
+    plugins: [realGoogleAI()],
+  });
+  googleAI = realGoogleAI;
+
 } else {
   // We are on the client, so we use the mock object.
   ai = mockAi;

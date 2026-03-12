@@ -24,7 +24,7 @@ export default function HelpPage() {
                   How do I add a new transaction?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Navigate to the "Budget" page and click the "Add Transaction" button to manually enter details. Pro users can also use the "Scan Receipt" button to automatically fill in details using their device's camera.
+                  Navigate to the "Budget" page and click the "Add Transaction" button to manually enter details. You can also use the "Scan Receipt" button to automatically fill in details using your device's camera.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
@@ -32,7 +32,7 @@ export default function HelpPage() {
                   How does the AI Business Analysis work?
                 </AccordionTrigger>
                 <AccordionContent>
-                  This is a Pro feature available on the "Business" tab. Once you have logged some business transactions, click the "Generate P&L Report" button. After the report is generated, an "Analyze Report" button will appear. Clicking it will provide you with a detailed analysis from our AI, including a performance summary, key trends, and actionable advice.
+                  This feature is available on the "Business" tab. Once you have logged some business transactions, click the "Generate P&L Report" button. After the report is generated, an "Analyze Report" button will appear. Clicking it will provide you with a detailed analysis from our AI, including a performance summary, key trends, and actionable advice.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
@@ -50,15 +50,15 @@ export default function HelpPage() {
                   How do I use voice commands?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Voice interaction is a Pro feature. First, enable "Voice Interaction" on the "Settings" page. Once enabled, microphone icons (🎤) will appear next to input fields. Click the icon to start dictating. Speaker icons (🔊) will appear next to AI-generated text; click them to have the text read aloud.
+                  First, enable "Voice Interaction" on the "Settings" page. Once enabled, microphone icons (🎤) will appear next to input fields. Click the icon to start dictating. Speaker icons (🔊) will appear next to AI-generated text; click them to have the text read aloud.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-6">
                 <AccordionTrigger>
-                  How do I manage my Pro subscription?
+                  How are the AI features monetized?
                 </AccordionTrigger>
                 <AccordionContent>
-                  You can manage your subscription by going to the "Settings" page and clicking the "Manage Subscription" button. This will open the Stripe customer portal where you can update your payment method, view invoices, or cancel your subscription.
+                  To support the operational costs of the AI, some features require you to watch a brief ad before generating a result. This allows us to offer these advanced capabilities for free. Thank you for your support!
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

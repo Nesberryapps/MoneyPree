@@ -9,7 +9,7 @@ export default function AboutPage() {
         {
             icon: ScanLine,
             title: 'Automated Budgeting',
-            description: 'Effortlessly track your personal finances. Our AI can categorize transactions, and Pro users can scan receipts to automate expense entry, providing a crystal-clear overview of spending.',
+            description: 'Effortlessly track your personal finances. Our AI can categorize transactions, and you can scan receipts to automate expense entry, providing a crystal-clear overview of spending.',
         },
         {
             icon: Briefcase,

@@ -28,6 +28,7 @@ if (typeof window === 'undefined') {
   
   ai = genkitCore({
     plugins: [realGoogleAI({apiKey: process.env.GEMINI_API_KEY})],
+    model: 'googleai/gemini-2.5-flash',
   });
   googleAI = realGoogleAI;
 

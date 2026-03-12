@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -18,6 +17,7 @@ import { Loader2, TrendingUp, Shield, BarChart, Mic, Volume2 } from 'lucide-reac
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 
 export function InvestmentSimulation() {
@@ -26,6 +26,7 @@ export function InvestmentSimulation() {
   const [simulationResult, setSimulationResult] = useState<SimulateInvestmentScenariosOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
   
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
   
@@ -112,7 +113,7 @@ export function InvestmentSimulation() {
               )}
             </div>
           </div>
-          <Button onClick={handleSimulate} disabled={isLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLoading ? "Simulating..." : "Run Simulation"}
           </Button>
@@ -165,8 +166,12 @@ export function InvestmentSimulation() {
           </CardContent>
         </Card>
       )}
+
+      <RewardedAdDialog
+        open={isAdDialogOpen}
+        onOpenChange={setIsAdDialogOpen}
+        onReward={handleSimulate}
+      />
     </div>
   );
 }
-
-    

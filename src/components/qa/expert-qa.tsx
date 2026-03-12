@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,6 +19,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -27,6 +27,7 @@ export function ExpertQA() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const quickLinkImage = PlaceHolderImages.find(img => img.id === 'quick-link');
+  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
 
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
   const { isListening, startListening, stopListening } = useSpeechToText({ onTranscript: (text) => setQuestion(prev => prev + text) });
@@ -92,12 +93,18 @@ export function ExpertQA() {
               )}
             </div>
           </div>
-          <Button onClick={handleAskQuestion} disabled={isLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLoading ? "Analyzing..." : "Get Answer"}
           </Button>
         </CardContent>
       </Card>
+      
+      <RewardedAdDialog
+        open={isAdDialogOpen}
+        onOpenChange={setIsAdDialogOpen}
+        onReward={handleAskQuestion}
+      />
 
       {error && (
         <Card className="border-destructive">

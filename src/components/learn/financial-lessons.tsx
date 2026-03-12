@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -28,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
@@ -42,6 +42,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
   const [isLessonLoading, setIsLessonLoading] = useState(false);
   const [isQuizLoading, setIsQuizLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
 
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -127,7 +128,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
         <CardHeader>
           <CardTitle>AI-Powered Financial Lessons</CardTitle>
           <CardDescription>
-            Tell us what you know and what you want to learn, and we&apos;ll create a personalized lesson for you.
+            Tell us what you know and what you want to learn, and we'll create a personalized lesson for you.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -173,12 +174,18 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
               )}
             </div>
           </div>
-          <Button onClick={handleGenerateLesson} disabled={isLessonLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLessonLoading}>
             {isLessonLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLessonLoading ? 'Generating...' : 'Generate Lesson'}
           </Button>
         </CardContent>
       </Card>
+
+      <RewardedAdDialog
+        open={isAdDialogOpen}
+        onOpenChange={setIsAdDialogOpen}
+        onReward={handleGenerateLesson}
+      />
 
       {error && (
         <Card className="border-destructive">
@@ -280,5 +287,3 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     </div>
   );
 }
-
-    

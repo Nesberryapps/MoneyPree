@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -87,6 +86,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 type BudgetClientProps = {
     transactions: AppTransaction[];
@@ -129,6 +129,7 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -610,7 +611,7 @@ ${insights.monthlyChallenge}
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <Button onClick={handleGenerateInsights} disabled={isInsightsLoading}>
+            <Button onClick={() => setIsAdDialogOpen(true)} disabled={isInsightsLoading}>
                 {isInsightsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isInsightsLoading ? "Analyzing..." : "Analyze"}
             </Button>
@@ -665,6 +666,11 @@ ${insights.monthlyChallenge}
         )}
       </div>
 
+      <RewardedAdDialog
+        open={isAdDialogOpen}
+        onOpenChange={setIsAdDialogOpen}
+        onReward={handleGenerateInsights}
+      />
       
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>

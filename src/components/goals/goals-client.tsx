@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -46,6 +45,7 @@ import { formatDate } from '@/lib/utils';
 import { useLocalData } from '@/hooks/use-local-data';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 type GoalsClientProps = {
     goals: Goal[];
@@ -62,6 +62,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   const [isClient, setIsClient] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
+  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
 
   // Form state for new/editing goal
   const [name, setName] = useState('');
@@ -304,7 +305,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
                     </Button>
                 )}
             </div>
-            <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
+            <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading || !prompt}>
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               {isLoading ? 'Generating...' : 'Generate Goals'}
             </Button>
@@ -321,6 +322,12 @@ export function GoalsClient({ goals }: GoalsClientProps) {
           )}
         </CardContent>
       </Card>
+
+      <RewardedAdDialog
+        open={isAdDialogOpen}
+        onOpenChange={setIsAdDialogOpen}
+        onReward={handleGenerateGoals}
+      />
       
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>

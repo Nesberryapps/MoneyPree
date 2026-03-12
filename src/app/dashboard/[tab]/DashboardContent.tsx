@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -24,6 +23,7 @@ import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { BusinessDashboard } from '@/components/business/business-dashboard';
 import { useLocalData } from '@/hooks/use-local-data';
+import { AdsenseAd } from '@/components/ads/adsense-ad';
 
 export default function DashboardContent({ tab }: { tab: string }) {
   const router = useRouter();
@@ -106,6 +106,9 @@ export default function DashboardContent({ tab }: { tab: string }) {
             <TabsContent value="business"><BusinessDashboard /></TabsContent>
 
             </Tabs>
+        </div>
+        <div className="mt-8">
+          <AdsenseAd />
         </div>
       </main>
     </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -71,6 +70,7 @@ import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
+import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -87,6 +87,8 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
     const [isReportLoading, setIsReportLoading] = useState(false);
     const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isReportAdDialogOpen, setIsReportAdDialogOpen] = useState(false);
+    const [isAnalysisAdDialogOpen, setIsAnalysisAdDialogOpen] = useState(false);
     
     const serializableTransactions = useMemo(() => {
         return transactions.map(t => {
@@ -198,6 +200,7 @@ ${analysis.riskAlert}
     };
 
     return (
+        <>
         <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div>
@@ -218,7 +221,7 @@ ${analysis.riskAlert}
             <CardContent>
                 {!report && (
                      <div className="relative group w-fit">
-                        <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
+                        <Button onClick={() => setIsReportAdDialogOpen(true)} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
                             {isReportLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                             {isReportLoading ? 'Generating...' : 'Generate Report'}
                         </Button>
@@ -275,17 +278,28 @@ ${analysis.riskAlert}
             </CardContent>
              {report && (
                 <CardFooter className="gap-2">
-                     <Button onClick={handleGenerateReport} disabled={isReportLoading} size="sm" variant="secondary">
+                     <Button onClick={() => setIsReportAdDialogOpen(true)} disabled={isReportLoading} size="sm" variant="secondary">
                         {isReportLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         Regenerate
                     </Button>
-                    <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading} size="sm" variant="default">
+                    <Button onClick={() => setIsAnalysisAdDialogOpen(true)} disabled={isAnalysisLoading} size="sm" variant="default">
                         {isAnalysisLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         {isAnalysisLoading ? 'Analyzing...' : 'Analyze Report'}
                     </Button>
                 </CardFooter>
             )}
         </Card>
+        <RewardedAdDialog
+            open={isReportAdDialogOpen}
+            onOpenChange={setIsReportAdDialogOpen}
+            onReward={handleGenerateReport}
+        />
+        <RewardedAdDialog
+            open={isAnalysisAdDialogOpen}
+            onOpenChange={setIsAnalysisAdDialogOpen}
+            onReward={handleAnalyzeReport}
+        />
+        </>
     );
 }
 

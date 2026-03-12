@@ -25,10 +25,9 @@ if (typeof window === 'undefined') {
   // and bundled into the client code.
   const { genkit: genkitCore } = require('genkit');
   const { googleAI: realGoogleAI } = require('@genkit-ai/google-genai');
-  const { firebaseConfig } = require('@/firebase/config');
   
   ai = genkitCore({
-    plugins: [realGoogleAI({apiKey: firebaseConfig.apiKey})],
+    plugins: [realGoogleAI({apiKey: process.env.GEMINI_API_KEY})],
   });
   googleAI = realGoogleAI;
 

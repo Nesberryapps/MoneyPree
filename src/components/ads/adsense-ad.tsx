@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -16,7 +17,7 @@ export function AdsenseAd() {
   // IMPORTANT: You need to replace 'YOUR_AD_SLOT_ID' with an actual ad slot ID from your AdSense account.
   // This is a placeholder and will not display a real ad until you provide a valid ad slot ID.
   return (
-    <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
+    <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}

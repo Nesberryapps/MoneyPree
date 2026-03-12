@@ -177,7 +177,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
             </div>
           </div>
           <Button onClick={handleGenerateLesson} disabled={isLessonLoading}>
-            {isLessonLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLessonLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLessonLoading ? 'Generating...' : 'Watch Ad & Generate Lesson'}
           </Button>
         </CardContent>

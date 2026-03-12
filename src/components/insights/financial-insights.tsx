@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -79,7 +80,7 @@ ${insights.monthlyChallenge}
         </CardHeader>
         <CardContent>
           <Button onClick={handleGenerateInsights} disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             Analyze My Finances
           </Button>
         </CardContent>
@@ -103,7 +104,7 @@ ${insights.monthlyChallenge}
                 <CardTitle>Your Financial Insights Report</CardTitle>
             </div>
             <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="h-4 w-4" />
               Download Report
             </Button>
           </CardHeader>

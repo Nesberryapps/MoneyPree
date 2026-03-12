@@ -45,7 +45,7 @@ export default function ContactPage() {
                 <Textarea id="message" placeholder="How can we help?" rows={5} />
               </div>
               <Button type="submit" className="w-full">
-                <Send className="mr-2 h-4 w-4" />
+                <Send className="h-4 w-4" />
                 Send Message
               </Button>
             </form>

@@ -224,7 +224,7 @@ ${analysis.riskAlert}
                 {!report && (
                      <div className="relative group w-fit">
                         <Button onClick={handleGenerateReport} disabled={isReportLoading || transactions.length === 0} size="sm" variant="outline">
-                            {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isReportLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                             {isReportLoading ? 'Generating...' : 'Watch Ad & Generate'}
                         </Button>
                     </div>
@@ -281,11 +281,11 @@ ${analysis.riskAlert}
              {report && (
                 <CardFooter className="gap-2">
                      <Button onClick={handleGenerateReport} disabled={isReportLoading} size="sm" variant="secondary">
-                        {isReportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isReportLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         Regenerate
                     </Button>
                     <Button onClick={handleAnalyzeReport} disabled={isAnalysisLoading} size="sm" variant="default">
-                        {isAnalysisLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isAnalysisLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                         {isAnalysisLoading ? 'Analyzing...' : 'Watch Ad & Analyze'}
                     </Button>
                 </CardFooter>

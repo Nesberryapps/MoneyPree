@@ -308,7 +308,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
                 )}
             </div>
             <Button onClick={handleGenerateGoals} disabled={isLoading || !prompt}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               {isLoading ? 'Generating...' : 'Watch Ad & Generate Goals'}
             </Button>
           </div>

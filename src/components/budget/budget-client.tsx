@@ -617,7 +617,7 @@ ${insights.monthlyChallenge}
             </CardHeader>
             <CardContent>
             <Button onClick={handleGenerateInsights} disabled={isInsightsLoading}>
-                {isInsightsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isInsightsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isInsightsLoading ? "Analyzing..." : "Watch Ad & Analyze"}
             </Button>
             </CardContent>

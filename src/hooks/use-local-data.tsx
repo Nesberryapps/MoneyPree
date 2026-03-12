@@ -3,6 +3,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import type { Transaction, Goal, BusinessTransaction } from '@/lib/types';
+import { initialTransactions, initialGoals } from '@/lib/initial-data';
 
 const LOCAL_STORAGE_KEYS = {
   TRANSACTIONS: 'moneypree_transactions',
@@ -38,6 +39,10 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
             return value;
         });
         setStoredValue(parsed);
+      } else {
+        // If no item, set the initial value in local storage
+        window.localStorage.setItem(key, JSON.stringify(initialValue));
+        setStoredValue(initialValue);
       }
     } catch (error) {
       console.log(error);
@@ -45,7 +50,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
     } finally {
         setIsLoading(false);
     }
-  }, [key, initialValue]);
+  }, [key, JSON.stringify(initialValue)]);
 
   const setValue = (value: T) => {
     try {
@@ -62,8 +67,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
 
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions, isTransactionsLoading] = useLocalStorage<Transaction[]>(LOCAL_STORAGE_KEYS.TRANSACTIONS, []);
-  const [goals, setGoals, isGoalsLoading] = useLocalStorage<Goal[]>(LOCAL_STORAGE_KEYS.GOALS, []);
+  const [transactions, setTransactions, isTransactionsLoading] = useLocalStorage<Transaction[]>(LOCAL_STORAGE_KEYS.TRANSACTIONS, initialTransactions);
+  const [goals, setGoals, isGoalsLoading] = useLocalStorage<Goal[]>(LOCAL_STORAGE_KEYS.GOALS, initialGoals);
   const [businessTransactions, setBusinessTransactions, isBizTransactionsLoading] = useLocalStorage<BusinessTransaction[]>(LOCAL_STORAGE_KEYS.BUSINESS_TRANSACTIONS, []);
   
   const isLoading = isTransactionsLoading || isGoalsLoading || isBizTransactionsLoading;

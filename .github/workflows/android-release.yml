@@ -31,6 +31,9 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
+      - name: Create placeholder for Capacitor
+        run: mkdir -p www
+
       - name: Sync Capacitor
         run: npx cap sync android
 

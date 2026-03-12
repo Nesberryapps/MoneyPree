@@ -24,6 +24,9 @@ jobs:
       
       - name: Build Web App
         run: npm run build
+
+      - name: Create placeholder for Capacitor
+        run: mkdir -p www
            
       - name: Sync iOS Project
         run: npx cap sync ios

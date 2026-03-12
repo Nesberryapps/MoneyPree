@@ -68,7 +68,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
     } finally {
         setIsLoading(false);
     }
-  }, [key, JSON.stringify(initialValue)]);
+  }, [key]);
 
   const setValue = (value: T) => {
     try {

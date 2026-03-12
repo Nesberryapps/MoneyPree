@@ -1,26 +1,26 @@
-
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // This component is responsible for loading an AdSense ad unit.
 export function AdsenseAd() {
-  // Use a unique key for each ad instance to help React and AdSense
-  // distinguish between different ad slots.
-  const adKey = React.useId();
+  const adPushed = useRef(false);
 
   useEffect(() => {
+    // This check ensures that adsbygoogle.push() is only called once per
+    // component mount, which is crucial for preventing errors in React's
+    // Strict Mode (used in Next.js development).
+    if (adPushed.current) {
+      return;
+    }
+
     try {
       ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      adPushed.current = true;
     } catch (e: any) {
-      // AdSense will throw an error if it's called multiple times on a page
-      // with no new ad slots to fill. This is common in React with Strict Mode
-      // or when components re-render. We can safely ignore this specific error.
-      if (e.message && e.message.includes("All 'ins' elements")) {
-        // This is an expected error in a dynamic environment, do not log it.
-        return;
-      }
-      console.error('AdSense error:', e);
+      // The "All 'ins' elements..." error is expected in some development scenarios,
+      // so we can safely log it as a warning instead of a critical error.
+      console.warn('AdSense push error:', e);
     }
   }, []);
 
@@ -29,7 +29,6 @@ export function AdsenseAd() {
   return (
     <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
       <ins
-        key={adKey} // Add a unique key
         className="adsbygoogle"
         style={{ display: 'block', width: '100%' }}
         data-ad-client="ca-pub-6191158195654090"

@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore, useCollection, useAuth } from '@/firebase';
+import { signInAnonymously } from 'firebase/auth';
 import type { Transaction, Goal } from '@/lib/types';
 import {
   Card,
@@ -12,6 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Header } from '@/components/layout/header';
 import { BudgetSummaryChart } from '@/components/dashboard/budget-summary-chart';
 import { DashboardClient } from '@/components/dashboard/dashboard-client';
@@ -26,9 +28,11 @@ import Loading from '@/components/layout/loading';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { BusinessDashboard } from '@/components/business/business-dashboard';
 import { collection, query } from 'firebase/firestore';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function DashboardContent({ tab }: { tab: string }) {
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const router = useRouter();
   const firestore = useFirestore();
 
@@ -36,6 +40,10 @@ export default function DashboardContent({ tab }: { tab: string }) {
 
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
+
+  // New state for explicit sign-in flow
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Firestore collections
   const transactionsQuery = useMemo(() => {
@@ -62,19 +70,64 @@ export default function DashboardContent({ tab }: { tab: string }) {
     setLessonsCompleted(prev => prev + 1);
     setQuestionsAnswered(prev => prev + score);
   };
+  
+  // New sign-in handler
+  const handleGuestSignIn = async () => {
+    setIsSigningIn(true);
+    setAuthError(null);
+    try {
+      await signInAnonymously(auth);
+      // onAuthStateChanged in the provider will now detect the new user state and re-render the app.
+    } catch (error: any) {
+      console.error("Explicit sign-in error:", error);
+      setAuthError(error.message || 'An unknown authentication error occurred.');
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
 
-  if (isUserLoading || (user && (isTransactionsLoading || isGoalsLoading))) {
+
+  if (isUserLoading) {
     return <Loading />;
   }
-
+  
   if (!user) {
+    // If loading is finished but there's no user, show the explicit sign-in screen.
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-        <h2 className="text-2xl font-semibold mb-2">Connection Error</h2>
-        <p className="text-muted-foreground mb-4">We couldn't connect to your account. Please check your connection or try again.</p>
-        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-primary text-primary-foreground rounded-md">Retry</button>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-background">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Welcome to MoneyPree</CardTitle>
+            <CardDescription>
+              Sign in as a guest to start managing your finances. No account or personal information is required.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={handleGuestSignIn} disabled={isSigningIn} className="w-full">
+              {isSigningIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {isSigningIn ? 'Connecting...' : 'Continue as Guest'}
+            </Button>
+            {authError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Authentication Failed</AlertTitle>
+                <AlertDescription className="text-left">
+                  We couldn't connect to the financial service. This can happen if Anonymous sign-in is not enabled in the backend Firebase project.
+                  <br /><br />
+                  <span className="font-mono text-xs bg-muted p-1 rounded-md block break-words">
+                    {authError}
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
+  }
+
+  if (user && (isTransactionsLoading || isGoalsLoading)) {
+    return <Loading />;
   }
 
   return (

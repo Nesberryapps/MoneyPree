@@ -12,7 +12,6 @@ import React, {
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth, User } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
 
 // Define the shape of the context value
 interface FirebaseContextValue {
@@ -50,20 +49,11 @@ export function FirebaseProvider({
   const [isUserLoading, setIsUserLoading] = useState(true);
 
   useEffect(() => {
+    // This listener now ONLY reports the auth state. It does not perform any actions.
+    // The UI is now responsible for initiating sign-in.
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        // If we have a user (anonymous or real), set the state and finish loading.
-        setUser(user);
-        setIsUserLoading(false);
-      } else {
-        // If there's no user, it means we need to initiate anonymous sign-in.
-        // We don't set loading to false yet. The listener will run again once sign-in completes.
-        signInAnonymously(auth).catch((error) => {
-          console.error('Error signing in anonymously:', error);
-          // At least stop loading on error
-          setIsUserLoading(false); 
-        });
-      }
+      setUser(user);
+      setIsUserLoading(false);
     });
 
     // Unsubscribe on unmount

@@ -43,12 +43,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/lib/utils';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { useLocalData } from '@/hooks/use-local-data';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
-import { useToast } from '@/hooks/use-toast';
-import { Badge } from '../ui/badge';
 import { showFinancialAdvisorAds } from '@/services/admob';
 
 type GoalsClientProps = {
@@ -56,8 +53,7 @@ type GoalsClientProps = {
 };
 
 export function GoalsClient({ goals }: GoalsClientProps) {
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const { setGoals } = useLocalData();
 
   const [prompt, setPrompt] = useState('');
   const [generatedGoals, setGeneratedGoals] = useState<string[]>([]);
@@ -75,7 +71,6 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   const [deadline, setDeadline] = useState('');
   
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
-  const { toast } = useToast();
 
   const { isListening: isListeningPrompt, startListening: startListeningPrompt, stopListening: stopListeningPrompt } = useSpeechToText({ onTranscript: (text) => setPrompt(prev => prev + text) });
   const { isListening: isListeningName, startListening: startListeningName, stopListening: stopListeningName } = useSpeechToText({ onTranscript: (text) => setName(prev => prev + text) });
@@ -125,7 +120,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   }
 
   const handleSaveGoal = async () => {
-    if (!name || !targetAmount || !currentAmount || !deadline || !user) {
+    if (!name || !targetAmount || !currentAmount || !deadline) {
       return;
     }
 
@@ -137,11 +132,15 @@ export function GoalsClient({ goals }: GoalsClientProps) {
     };
 
     if (editingGoal) {
-      const docRef = doc(firestore, 'users', user.uid, 'financialGoals', editingGoal.id);
-      await updateDoc(docRef, goalData);
+      const updatedGoal = { ...editingGoal, ...goalData };
+      setGoals(goals.map(g => g.id === editingGoal.id ? updatedGoal : g));
     } else {
-      const collectionRef = collection(firestore, 'users', user.uid, 'financialGoals');
-      await addDoc(collectionRef, { ...goalData, userId: user.uid, createdAt: serverTimestamp() });
+      const newGoal = { 
+        ...goalData, 
+        id: Date.now().toString(),
+        createdAt: new Date(),
+      };
+      setGoals([...goals, newGoal]);
     }
     
     setIsDialogOpen(false);
@@ -149,9 +148,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   };
   
   const handleDeleteGoal = async (id: string) => {
-    if (!user) return;
-    const docRef = doc(firestore, 'users', user.uid, 'financialGoals', id);
-    await deleteDoc(docRef);
+    setGoals(goals.filter(g => g.id !== id));
     setGoalToDelete(null);
     setIsDeleteAlertOpen(false);
   }
@@ -351,5 +348,3 @@ export function GoalsClient({ goals }: GoalsClientProps) {
     </div>
   );
 }
-
-    

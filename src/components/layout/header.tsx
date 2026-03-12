@@ -1,42 +1,10 @@
 
 'use client';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { MoneyPreeIcon } from '../icons';
-import { useAuth, useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
-import { useProStatus } from '@/hooks/use-pro-status';
-import { usePathname } from 'next/navigation';
 
 export function Header() {
-  const userAvatarImage = PlaceHolderImages.find(img => img.id === 'user-avatar');
-  const auth = useAuth();
-  const { user } = useUser();
-  const router = useRouter();
-  const pathname = usePathname();
-  const { isPro } = useProStatus();
-
-  // handleLogout is no longer needed since the button is removed.
-  // const handleLogout = async () => {
-  //   await auth.signOut();
-  //   router.push('/');
-  // };
-
-  // Determine if we are on a dashboard page
-  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/settings') || pathname.startsWith('/help');
-
-
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
        <Link href="/dashboard/dashboard" className="flex items-center gap-2">
@@ -45,29 +13,6 @@ export function Header() {
         </Link>
       <div className="w-full flex-1">
       </div>
-      {user && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
-              <Avatar>
-                <AvatarImage src={user.isAnonymous ? undefined : user.photoURL || userAvatarImage?.imageUrl} data-ai-hint={userAvatarImage?.imageHint} />
-                <AvatarFallback>{user.isAnonymous ? 'G' : user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-              </Avatar>
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{user.isAnonymous ? 'Guest Account' : 'My Account'}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/settings">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/help">Support</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
     </header>
   );
 }

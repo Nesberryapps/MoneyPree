@@ -74,8 +74,6 @@ import {
   Camera,
   ScanLine,
   Mic,
-  RefreshCw,
-  Banknote,
 } from 'lucide-react';
 import { BUDGET_CATEGORIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
@@ -88,10 +86,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { Separator } from '../ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useLocalData } from '@/hooks/use-local-data';
 import { showFinancialAdvisorAds } from '@/services/admob';
 
 
@@ -119,8 +114,7 @@ const CategoryIcon = ({ category }: { category: string }) => {
 
 
 export function BudgetClient({ transactions, isVoiceInteractionEnabled }: BudgetClientProps) {
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const { setTransactions } = useLocalData();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<AppTransaction | null>(null);
@@ -179,8 +173,6 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   }
 
   const handleSaveTransaction = async () => {
-    if (!user) return;
-    
     const transactionDate = date || new Date();
     const transactionData = {
       description,
@@ -190,14 +182,16 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
       date: transactionDate,
     };
     
-    const budgetId = 'main'; // Simplified: assume one budget per user
-
     if (editingTransaction) {
-      const docRef = doc(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses', editingTransaction.id);
-      await updateDoc(docRef, transactionData);
+      const updatedTransaction = { ...editingTransaction, ...transactionData };
+      setTransactions(transactions.map(t => t.id === editingTransaction.id ? updatedTransaction : t));
     } else {
-      const collectionRef = collection(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses');
-      await addDoc(collectionRef, { ...transactionData, userId: user.uid, createdAt: serverTimestamp() });
+      const newTransaction = { 
+        ...transactionData, 
+        id: Date.now().toString(),
+        createdAt: new Date(),
+      };
+      setTransactions([...transactions, newTransaction]);
     }
 
     setIsDialogOpen(false);
@@ -205,11 +199,7 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   };
   
   const handleDeleteTransaction = async (id: string) => {
-    if (!user) return;
-    const budgetId = 'main'; // Simplified
-    const docRef = doc(firestore, 'users', user.uid, 'budgets', budgetId, 'expenses', id);
-    await deleteDoc(docRef);
-
+    setTransactions(transactions.filter(t => t.id !== id));
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   }
@@ -705,5 +695,3 @@ ${insights.monthlyChallenge}
     </div>
   );
 }
-
-    

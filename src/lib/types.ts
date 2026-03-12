@@ -7,6 +7,7 @@ export type Transaction = {
   amount: number;
   type: 'income' | 'expense';
   category: string;
+  createdAt?: Date;
 };
 
 export type Goal = {
@@ -15,6 +16,7 @@ export type Goal = {
   targetAmount: number;
   currentAmount: number;
   deadline: Date;
+  createdAt?: Date;
 };
 
 export type NavItem = {
@@ -41,4 +43,5 @@ export type BusinessTransaction = {
     type: 'revenue' | 'expense';
     category: string;
     isTaxDeductible?: boolean;
+    createdAt?: Date;
 };

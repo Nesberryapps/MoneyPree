@@ -1,3 +1,4 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -12,11 +13,3 @@ export const getFirebase = (): { app: FirebaseApp, auth: Auth, firestore: Firest
   const firestore = getFirestore(app);
   return { app, auth, firestore };
 };
-
-export * from './provider';
-export * from './firestore/use-collection';
-export * from './firestore/use-doc';
-export * from './auth/use-user';
-export * from './non-blocking-updates';
-export * from './errors';
-export * from './error-emitter';

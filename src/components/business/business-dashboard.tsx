@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, ReactElement } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -54,11 +54,9 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, RefreshCw, Mic, Sparkles, AlertTriangle, ShieldCheck, Banknote, Download } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, Mic, Sparkles, AlertTriangle, Download } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
-import { useUser, useFirestore, useCollection } from '@/firebase';
 import { formatDate } from '@/lib/utils';
-import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { generatePLReportAction, suggestTaxDeductionAction, analyzePLReportAction, parseBusinessReceiptAction } from '@/app/actions/business-actions';
 import type { PLReport } from '@/ai/flows/generate-pl-report';
 import type { SuggestTaxDeductionOutput } from '@/ai/flows/suggest-tax-deduction';
@@ -73,6 +71,7 @@ import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { showFinancialAdvisorAds } from '@/services/admob';
+import { useLocalData } from '@/hooks/use-local-data';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -337,9 +336,6 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
     const [debouncedDescription] = useDebounce(description, 500);
     const [aiSuggestion, setAiSuggestion] = useState<SuggestTaxDeductionOutput | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
-
-    const firestore = useFirestore();
-    const { user } = useUser();
     
     const { isVoiceInteractionEnabled } = useVoiceInteraction();
     const { isListening: isListeningDescription, startListening: startListeningDescription, stopListening: stopListeningDescription } = useSpeechToText({ onTranscript: (text) => setDescription(prev => prev + text) });
@@ -392,7 +388,7 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
 
 
     const handleSave = async () => {
-        if (!description || !amount || !category || !date || !user) return;
+        if (!description || !amount || !category || !date) return;
         
         const dataToSave = {
             description,
@@ -403,18 +399,6 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
             isTaxDeductible: type === 'expense' ? isTaxDeductible : false,
         };
 
-        if (transaction) {
-            const transactionRef = doc(firestore, 'users', user.uid, 'businesses', businessId, 'transactions', transaction.id);
-            await updateDoc(transactionRef, dataToSave);
-        } else {
-             const newTransactionData = {
-                ...dataToSave,
-                businessId: businessId,
-                createdAt: serverTimestamp(),
-            };
-            const docRef = collection(firestore, 'users', user.uid, 'businesses', businessId, 'transactions');
-            await addDoc(docRef, newTransactionData);
-        }
         onSave(dataToSave);
         onOpenChange(false);
     };
@@ -532,8 +516,7 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
 }
 
 export function BusinessDashboard() {
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const { businessTransactions: transactions, setBusinessTransactions: setTransactions } = useLocalData();
   const { toast } = useToast();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -550,14 +533,6 @@ export function BusinessDashboard() {
 
   // Use a static ID for the single, implicit business context
   const businessId = 'main_business';
-
-  const transactionsQuery = useMemo(() => {
-    if (!user) return null;
-    const transactionsRef = collection(firestore, 'users', user.uid, 'businesses', businessId, 'transactions');
-    return query(transactionsRef, orderBy('date', 'desc'));
-  }, [firestore, user, businessId]);
-
-  const { data: transactions, isLoading: isTransactionsLoading } = useCollection<BusinessTransaction>(transactionsQuery);
 
   const handleOpenDialog = (txn?: BusinessTransaction) => {
     if (txn) {
@@ -581,9 +556,8 @@ export function BusinessDashboard() {
   };
 
   const handleDeleteTransaction = async () => {
-    if (!transactionToDelete || !user) return;
-    const transactionRef = doc(firestore, 'users', user.uid, 'businesses', businessId, 'transactions', transactionToDelete);
-    await deleteDoc(transactionRef);
+    if (!transactionToDelete) return;
+    setTransactions(transactions.filter(t => t.id !== transactionToDelete));
     setTransactionToDelete(null);
     setIsDeleteAlertOpen(false);
   };
@@ -686,17 +660,25 @@ export function BusinessDashboard() {
     });
   };
 
-  const handleSavePlaidTransaction = () => {
-    // This function is just a stub now to satisfy the prop requirement.
+  const handleSaveTransaction = (data: Partial<BusinessTransaction>) => {
+    if (editingTransaction) {
+        const updatedTxn = { ...editingTransaction, ...data };
+        setTransactions(transactions.map(t => t.id === editingTransaction.id ? updatedTxn : t));
+    } else {
+        const newTransaction: BusinessTransaction = {
+            id: Date.now().toString(),
+            businessId: businessId,
+            date: data.date || new Date(),
+            description: data.description || '',
+            amount: data.amount || 0,
+            type: data.type || 'expense',
+            category: data.category || 'Other',
+            isTaxDeductible: data.isTaxDeductible || false,
+            createdAt: new Date(),
+        };
+        setTransactions([...transactions, newTransaction]);
+    }
   };
-
-  if (isTransactionsLoading && !transactions) {
-      return (
-          <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-      )
-  }
 
   return (
     <div className="grid gap-8">
@@ -786,13 +768,7 @@ export function BusinessDashboard() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {isTransactionsLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={6} className="h-24 text-center">
-                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                            </TableCell>
-                        </TableRow>
-                    ) : transactions && transactions.length > 0 ? transactions.map(txn => (
+                    {transactions && transactions.length > 0 ? [...transactions].sort((a, b) => b.date.getTime() - a.date.getTime()).map(txn => (
                         <TableRow key={txn.id}>
                             <TableCell>{formatDate(txn.date)}</TableCell>
                              <TableCell className="font-medium">{txn.description}</TableCell>
@@ -847,7 +823,7 @@ export function BusinessDashboard() {
         businessId={businessId}
         transaction={editingTransaction}
         initialData={scannedData || undefined}
-        onSave={handleSavePlaidTransaction}
+        onSave={handleSaveTransaction}
       />
 
         <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -869,5 +845,3 @@ export function BusinessDashboard() {
     </div>
   );
 }
-
-    

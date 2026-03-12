@@ -17,8 +17,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
-import { useUser } from '@/firebase';
-import { Badge } from '../ui/badge';
 
 export function SettingsClient() {
   const { theme, setTheme } = useTheme();
@@ -26,14 +24,13 @@ export function SettingsClient() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const { isVoiceInteractionEnabled, setIsVoiceInteractionEnabled } = useVoiceInteraction();
   const [mounted, setMounted] = useState(false);
-  const { user } = useUser();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const handleSave = () => {
-    // In a real app, these settings would be saved to a user profile in Firestore
+    // In a real app, these settings would be saved to a user profile in localStorage
     console.log('Settings saved:', {
       theme,
       emailNotifications,
@@ -197,5 +194,3 @@ export function SettingsClient() {
     </div>
   );
 }
-
-    

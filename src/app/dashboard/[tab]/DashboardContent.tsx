@@ -24,6 +24,8 @@ import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { BusinessDashboard } from '@/components/business/business-dashboard';
 import { useLocalData } from '@/hooks/use-local-data';
 import { AdsenseAd } from '@/components/ads/adsense-ad';
+import { formatDate } from '@/lib/utils';
+import { Wallet } from 'lucide-react';
 
 export default function DashboardContent({ tab }: { tab: string }) {
   const router = useRouter();
@@ -52,6 +54,10 @@ export default function DashboardContent({ tab }: { tab: string }) {
     return <Loading />;
   }
   
+  const recentTransactions = [...(transactions || [])]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -74,17 +80,38 @@ export default function DashboardContent({ tab }: { tab: string }) {
                         lessonsCompleted={lessonsCompleted}
                         questionsAnswered={questionsAnswered}
                     />
-                    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-                        <Card className="xl:col-span-3">
-                        <CardHeader>
-                            <CardTitle>Budget Overview</CardTitle>
-                            <CardDescription>
-                            Your income and expenses for the last 6 months.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pl-2">
-                            <BudgetSummaryChart transactions={transactions || []} />
-                        </CardContent>
+                    <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
+                        <Card>
+                          <CardHeader>
+                              <CardTitle>Budget Overview</CardTitle>
+                              <CardDescription>
+                              A summary of your recent transactions and a breakdown of your expenses.
+                              </CardDescription>
+                          </CardHeader>
+                          <CardContent className="grid gap-8 lg:grid-cols-2">
+                              <div>
+                                <h3 className="font-semibold text-lg mb-4">Recent Transactions</h3>
+                                <div className="space-y-4">
+                                  {recentTransactions.length > 0 ? recentTransactions.map((transaction) => (
+                                    <div key={transaction.id} className="flex items-center gap-4">
+                                       <div className="bg-muted p-2 rounded-lg">
+                                        <Wallet className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="font-medium">{transaction.description}</p>
+                                        <p className="text-sm text-muted-foreground">{formatDate(transaction.date)}</p>
+                                      </div>
+                                      <div className={`font-medium ${transaction.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
+                                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                      </div>
+                                    </div>
+                                  )) : (
+                                    <p className="text-sm text-muted-foreground">No transactions yet.</p>
+                                  )}
+                                </div>
+                              </div>
+                              <BudgetSummaryChart transactions={transactions || []} />
+                          </CardContent>
                         </Card>
                     </div>
                 </div>

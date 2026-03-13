@@ -1,6 +1,6 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Pie, PieChart, Cell } from 'recharts';
 import {
   ChartConfig,
   ChartContainer,
@@ -11,18 +11,20 @@ import {
 } from '@/components/ui/chart';
 import type { Transaction } from '@/lib/types';
 import { useMemo } from 'react';
-import { subMonths, format } from 'date-fns';
+import { BUDGET_CATEGORIES } from '@/lib/constants';
 
+// Define a richer chart config with colors for each category.
 const chartConfig = {
-  income: {
-    label: 'Income',
-    color: 'hsl(var(--chart-1))',
-  },
-  expenses: {
-    label: 'Expenses',
-    color: 'hsl(var(--chart-2))',
-  },
+  housing: { label: 'Housing', color: 'hsl(var(--chart-1))' },
+  transportation: { label: 'Transportation', color: 'hsl(var(--chart-2))' },
+  food: { label: 'Food', color: 'hsl(var(--chart-3))' },
+  utilities: { label: 'Utilities', color: 'hsl(var(--chart-4))' },
+  entertainment: { label: 'Entertainment', color: 'hsl(var(--chart-5))' },
+  health: { label: 'Health', color: 'hsl(var(--chart-1))' }, // Re-using colors for simplicity
+  shopping: { label: 'Shopping', color: 'hsl(var(--chart-2))' },
+  other: { label: 'Other', color: 'hsl(var(--muted))' },
 } satisfies ChartConfig;
+
 
 type BudgetSummaryChartProps = {
   transactions: Transaction[];
@@ -30,90 +32,87 @@ type BudgetSummaryChartProps = {
 
 export function BudgetSummaryChart({ transactions }: BudgetSummaryChartProps) {
   const chartData = useMemo(() => {
-    const data: { [key: string]: { month: string; income: number; expenses: number } } = {};
-    const today = new Date();
-
-    // Initialize data for the last 6 months
-    for (let i = 5; i >= 0; i--) {
-      const date = subMonths(today, i);
-      const monthKey = format(date, 'yyyy-MM');
-      data[monthKey] = {
-        month: format(date, 'MMMM'),
-        income: 0,
-        expenses: 0,
-      };
-    }
-
-    // Process transactions
-    transactions.forEach(transaction => {
-      // Ensure transaction and date are valid
-      if (!transaction || !transaction.date) {
-        return;
-      }
-      
-      let transactionDate: Date;
-      const rawDate = transaction.date as any;
-
-      // Defensively handle different date formats
-      if (rawDate && typeof rawDate.toDate === 'function') {
-        // Handle Firestore Timestamp
-        transactionDate = rawDate.toDate();
-      } else if (rawDate instanceof Date) {
-        // Handle JavaScript Date object
-        transactionDate = rawDate;
-      } else {
-        // Handle date string or other formats
-        transactionDate = new Date(rawDate);
-      }
-      
-      // Skip if the date is invalid after conversion
-      if (isNaN(transactionDate.getTime())) {
-        return;
-      }
-
-      const monthKey = format(transactionDate, 'yyyy-MM');
-      
-      if (data[monthKey]) {
-        if (transaction.type === 'income') {
-          data[monthKey].income += transaction.amount;
-        } else {
-          data[monthKey].expenses += transaction.amount;
-        }
-      }
+    const expenseData: { [category: string]: number } = {};
+    
+    // Initialize with all possible expense categories to ensure they appear in the legend
+    BUDGET_CATEGORIES.expense.forEach(cat => {
+        expenseData[cat.value] = 0;
     });
 
-    return Object.values(data);
+    transactions
+      .filter(t => t.type === 'expense')
+      .forEach(transaction => {
+        if (expenseData.hasOwnProperty(transaction.category)) {
+          expenseData[transaction.category] += transaction.amount;
+        } else {
+          // If category is not in our predefined list, group it under 'other'
+          expenseData['other'] = (expenseData['other'] || 0) + transaction.amount;
+        }
+      });
+      
+    return Object.entries(expenseData)
+        .map(([category, total]) => ({
+            name: category,
+            value: total,
+            fill: chartConfig[category as keyof typeof chartConfig]?.color || chartConfig.other.color,
+        }))
+        .filter(item => item.value > 0); // Only show categories with expenses
+
   }, [transactions]);
+
+  const totalExpenses = useMemo(() => chartData.reduce((acc, curr) => acc + curr.value, 0), [chartData]);
+
+
+  if (totalExpenses === 0) {
+    return (
+      <div className="flex h-full min-h-[300px] w-full items-center justify-center rounded-lg border-2 border-dashed p-4">
+        <p className="text-muted-foreground">No expense data to display.</p>
+      </div>
+    );
+  }
 
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-      <BarChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-      >
-        <CartesianGrid vertical={false} />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <XAxis
-          dataKey="month"
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
-        />
+      <PieChart accessibilityLayer>
         <ChartTooltip
           cursor={false}
-          content={<ChartTooltipContent indicator="dot" />}
+          content={<ChartTooltipContent hideLabel />}
         />
-        <ChartLegend content={<ChartLegendContent />} />
-        <Bar dataKey="income" fill="var(--color-income)" radius={4} />
-        <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
-      </BarChart>
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={60}
+          strokeWidth={5}
+        >
+            {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+        </Pie>
+        <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-foreground text-3xl font-bold"
+        >
+            ${totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        </text>
+        <text
+            x="50%"
+            y="50%"
+            dy="1.5em"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-muted-foreground text-sm"
+        >
+            Total Expenses
+        </text>
+        <ChartLegend
+          content={<ChartLegendContent nameKey="name" />}
+          className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+        />
+      </PieChart>
     </ChartContainer>
   );
 }

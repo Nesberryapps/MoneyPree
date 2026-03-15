@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { MoneyPreeIcon } from '@/components/icons';
 import { ScanLine, Briefcase, FileText, Target, LineChart, BookOpen } from 'lucide-react';
+import { Footer } from '@/components/layout/footer';
 
 export default function AboutPage() {
     const features = [
@@ -86,28 +87,7 @@ export default function AboutPage() {
                     </div>
                 </section>
             </main>
-            <footer className="w-full py-8 px-4 border-t">
-                <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
-                    <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MoneyPree. All rights reserved.</p>
-                     <div className="flex gap-4">
-                        <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">
-                            About Us
-                        </Link>
-                        <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
-                            Blog
-                        </Link>
-                        <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-                            Contact
-                        </Link>
-                        <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
-                            Terms
-                        </Link>
-                        <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
-                            Privacy
-                        </Link>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }

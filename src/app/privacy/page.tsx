@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/layout/header';
 import Link from 'next/link';
+import { Footer } from '@/components/layout/footer';
 
 export default function PrivacyPage() {
   return (
@@ -71,6 +71,7 @@ export default function PrivacyPage() {
           </CardContent>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Mail, Send } from 'lucide-react';
 import Link from 'next/link';
+import { Footer } from '@/components/layout/footer';
 
 export default function ContactPage() {
   return (
@@ -53,6 +54,7 @@ export default function ContactPage() {
           </CardContent>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 }

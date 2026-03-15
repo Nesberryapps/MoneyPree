@@ -7,6 +7,7 @@ import { blogPosts } from '@/lib/blog-posts';
 import { formatDate } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MoneyPreeIcon } from '@/components/icons';
+import { Footer } from '@/components/layout/footer';
 
 export default function BlogPage() {
   const getImageForPost = (postId: string) => {
@@ -64,6 +65,7 @@ export default function BlogPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -26,6 +26,7 @@ import { useLocalData } from '@/hooks/use-local-data';
 import { AdsenseAd } from '@/components/ads/adsense-ad';
 import { formatDate } from '@/lib/utils';
 import { Wallet } from 'lucide-react';
+import { Footer } from '@/components/layout/footer';
 
 export default function DashboardContent({ tab }: { tab: string }) {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex flex-1 flex-col p-4 md:p-8">
         <div className="flex justify-between items-start mb-4">
@@ -138,6 +139,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
           <AdsenseAd />
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

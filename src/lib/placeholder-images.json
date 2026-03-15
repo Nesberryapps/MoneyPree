@@ -65,6 +65,30 @@
       "description": "Image for AI-powered business analysis feature.",
       "imageUrl": "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxidXNpbmVzcyUyMGFuYWx5c2lzfGVufDB8fHx8MTc1OTQ4NDg0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "business analysis"
+    },
+    {
+      "id": "blog-budgeting",
+      "description": "An image representing budgeting, perhaps with a calculator and notes.",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-1696413565d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNDE5ODJ8MHwxfHNlYXJjaHwxfHxidWRnZXRpbmclMjBjYWxjdWxhdG9yfGVufDB8fHx8MTc2MDE2NzE0OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "budgeting calculator"
+    },
+    {
+      "id": "blog-compound-interest",
+      "description": "An abstract image representing growth or compound interest.",
+      "imageUrl": "https://images.unsplash.com/photo-1533434685387-57de546affd1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNDE5ODJ8MHwxfHNlYXJjaHw0fHxncm93dGglMjBjaGFydHxlbnwwfHx8fDE3NjAxNjcxNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "growth chart"
+    },
+    {
+      "id": "blog-emergency-fund",
+      "description": "An image representing safety or an emergency fund, like a life preserver.",
+      "imageUrl": "https://images.unsplash.com/photo-1586034255598-c9b456202468?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNDE5ODJ8MHwxfHNlYXJjaHwxfHxsaWZlJTIwcHJlc2VydmVyfGVufDB8fHx8MTc2MDE2NzE0OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "life preserver"
+    },
+    {
+      "id": "blog-credit-score",
+      "description": "An image representing a credit score or financial report.",
+      "imageUrl": "https://images.unsplash.com/photo-1579621970588-a35d0e7ab9b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmVkaXQlMjBzY29yZXxlbnwwfHx8fDE3NjAxNjcxNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "credit score"
     }
   ]
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -47,24 +46,22 @@ const BENCHMARKS: Record<string, Record<string, number>> = {
 };
 
 export function PeerBenchmarkCard({ transactions, business }: PeerBenchmarkCardProps) {
-  const benchmarkData = useMemo(() => {
-    if (!business.industry || !BENCHMARKS[business.industry]) {
-      return null;
+  const { totalExpenses, benchmarkData } = useMemo(() => {
+    const expenses = transactions.filter(t => t.type === 'expense');
+    const total = expenses.reduce((sum, t) => sum + t.amount, 0);
+
+    if (!business.industry || !BENCHMARKS[business.industry] || total === 0) {
+      return { totalExpenses: total, benchmarkData: null };
     }
 
     const industryBenchmarks = BENCHMARKS[business.industry];
-    const totalExpenses = transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-      
-    if (totalExpenses === 0) return null;
 
     const userSpending: Record<string, number> = {};
     Object.keys(industryBenchmarks).forEach(category => {
-      const categoryExpenses = transactions
-        .filter(t => t.type === 'expense' && t.category === category)
+      const categoryExpenses = expenses
+        .filter(t => t.category === category)
         .reduce((sum, t) => sum + t.amount, 0);
-      userSpending[category] = categoryExpenses / totalExpenses;
+      userSpending[category] = categoryExpenses / total;
     });
 
     const insights = Object.keys(industryBenchmarks).map(category => {
@@ -83,7 +80,7 @@ export function PeerBenchmarkCard({ transactions, business }: PeerBenchmarkCardP
       };
     });
 
-    return insights;
+    return { totalExpenses: total, benchmarkData: insights };
   }, [transactions, business.industry]);
 
   if (!business.industry || business.industry === 'Other') {
@@ -95,7 +92,7 @@ export function PeerBenchmarkCard({ transactions, business }: PeerBenchmarkCardP
             Peer Benchmarking
           </CardTitle>
           <CardDescription>
-            See how your spending compares to others in your field.
+            See how your spending compares to others in your field. This is the "Social Proof" feature.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,8 +107,28 @@ export function PeerBenchmarkCard({ transactions, business }: PeerBenchmarkCardP
     );
   }
   
-  if (!benchmarkData) {
-      return null; // Don't render if no relevant data
+  if (!benchmarkData || totalExpenses === 0) {
+      return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Users className="h-6 w-6" />
+                    Peer Benchmarking: {business.industry}
+                </CardTitle>
+                <CardDescription>
+                    See how your spending compares to others in your field. This is the "Social Proof" feature.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-center text-center p-4 rounded-lg bg-muted/50">
+                    <Info className="h-5 w-5 mr-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                        Add some expense transactions to see how you compare to your peers.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+      );
   }
 
   return (
@@ -122,7 +139,7 @@ export function PeerBenchmarkCard({ transactions, business }: PeerBenchmarkCardP
           Peer Benchmarking: {business.industry}
         </CardTitle>
         <CardDescription>
-          See how your spending compares to others in your field.
+          See how your spending compares to others in your field. This is the "Social Proof" feature.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

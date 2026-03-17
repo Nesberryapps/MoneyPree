@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { NAV_LINKS } from '@/lib/constants';
 import { MoneyPreeIcon } from '@/components/icons';
+import { Footer } from '@/components/layout/footer';
 
 export default function DashboardLayout({
   children,
@@ -27,12 +28,12 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
+          <Link href="/dashboard/dashboard" className="flex items-center gap-2 p-2">
             <MoneyPreeIcon className="h-8 w-8 text-primary" />
             <span className="text-xl font-semibold group-data-[collapsible=icon]:hidden">
               MoneyPree
             </span>
-          </div>
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -59,7 +60,10 @@ export default function DashboardLayout({
             {NAV_LINKS.find(link => link.href === pathname)?.label}
           </div>
         </header>
-        {children}
+        <div className="flex-1 flex flex-col">
+          {children}
+        </div>
+        <Footer />
       </SidebarInset>
     </SidebarProvider>
   );

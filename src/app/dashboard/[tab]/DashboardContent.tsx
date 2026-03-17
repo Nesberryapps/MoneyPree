@@ -154,7 +154,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
   }
 
   return (
-    <main className="flex flex-1 flex-col p-4 md:p-8">
+    <main className="flex-1 p-4 md:p-8">
         {renderContent()}
     </main>
   );

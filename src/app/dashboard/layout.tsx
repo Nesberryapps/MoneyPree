@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -54,7 +53,7 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card/95 px-4 backdrop-blur-sm md:px-6">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1 text-center text-lg font-semibold">
             {NAV_LINKS.find(link => link.href === pathname)?.label}

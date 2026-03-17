@@ -2,12 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Footer } from '@/components/layout/footer';
+import { MoneyPreeIcon } from '@/components/icons';
 
 export default function TermsPage() {
   return (
     <div className="flex flex-col min-h-screen">
        <header className="w-full p-4 flex justify-between items-center sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
         <Link href="/" className="flex items-center gap-2">
+          <MoneyPreeIcon className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold">MoneyPree</span>
         </Link>
       </header>

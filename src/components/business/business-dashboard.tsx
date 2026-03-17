@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -224,16 +223,16 @@ ${analysis.riskAlert}
                         <Separator />
                         <div className="flex justify-between">
                             <span>Total Revenue</span>
-                            <span className="font-medium">${report.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">$${report.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Total Expenses</span>
-                            <span className="font-medium">${report.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">$${report.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-bold">
                             <span>Net Profit</span>
-                            <span>${report.netProfit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span>$${report.netProfit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                      </div>
                 )}
@@ -302,7 +301,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold text-green-500">${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="text-2xl font-bold text-green-500">$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
             <Card>
@@ -311,7 +310,7 @@ function BusinessStats({ transactions }: { transactions: BusinessTransaction[] }
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>$${netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </CardContent>
             </Card>
             <PLReportCard transactions={transactions} />
@@ -833,7 +832,7 @@ export function BusinessDashboard() {
                                 </Badge>
                              </TableCell>
                              <TableCell className={`text-right font-medium ${txn.type === 'revenue' ? 'text-green-500' : 'text-red-500'}`}>
-                                {txn.type === 'revenue' ? '+' : '-'}${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {txn.type === 'revenue' ? '+' : '-'}$${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
@@ -847,7 +846,8 @@ export function BusinessDashboard() {
                                         <DropdownMenuItem onClick={() => openDeleteDialog(txn.id)}>Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            </TableCell>                        </TableRow>
+                            </TableCell>
+                        </TableRow>
                     )) : (
                         <TableRow>
                             <TableCell colSpan={6} className="h-24 text-center">

@@ -32,6 +32,7 @@ export type Business = {
     name: string;
     industry: string;
     entityType: 'Sole Proprietorship' | 'LLC' | 'S-Corp' | 'C-Corp' | 'Partnership';
+    createdAt?: Date;
 };
 
 export type BusinessTransaction = {

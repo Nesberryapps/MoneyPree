@@ -71,3 +71,5 @@ export const BUDGET_CATEGORIES = {
 
 export const REVENUE_CATEGORIES = ['Sales', 'Services', 'Other'];
 export const EXPENSE_CATEGORIES = ['Marketing', 'Software', 'Travel', 'Office Supplies', 'Rent', 'Salaries', 'Other'];
+
+export const INDUSTRIES = ['Graphic Designer', 'Consultant', 'Retail', 'Photographer', 'Developer', 'Writer', 'Other'];

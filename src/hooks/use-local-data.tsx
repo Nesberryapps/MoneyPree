@@ -2,12 +2,13 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import type { Transaction, Goal, BusinessTransaction } from '@/lib/types';
+import type { Transaction, Goal, Business, BusinessTransaction } from '@/lib/types';
 import { initialTransactions, initialGoals } from '@/lib/initial-data';
 
 const LOCAL_STORAGE_KEYS = {
   TRANSACTIONS: 'moneypree_transactions',
   GOALS: 'moneypree_goals',
+  BUSINESS: 'moneypree_business',
   BUSINESS_TRANSACTIONS: 'moneypree_business_transactions',
 };
 
@@ -16,6 +17,8 @@ interface DataContextType {
   setTransactions: (transactions: Transaction[]) => void;
   goals: Goal[];
   setGoals: (goals: Goal[]) => void;
+  business: Business;
+  setBusiness: (business: Business) => void;
   businessTransactions: BusinessTransaction[];
   setBusinessTransactions: (transactions: BusinessTransaction[]) => void;
   isLoading: boolean;
@@ -87,15 +90,25 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
 export function DataProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions, isTransactionsLoading] = useLocalStorage<Transaction[]>(LOCAL_STORAGE_KEYS.TRANSACTIONS, initialTransactions);
   const [goals, setGoals, isGoalsLoading] = useLocalStorage<Goal[]>(LOCAL_STORAGE_KEYS.GOALS, initialGoals);
+  const [business, setBusiness, isBusinessLoading] = useLocalStorage<Business>(LOCAL_STORAGE_KEYS.BUSINESS, {
+    id: 'main_business',
+    userId: 'anonymous',
+    name: 'My Side Hustle',
+    industry: 'Consultant',
+    entityType: 'Sole Proprietorship',
+    createdAt: new Date(),
+  });
   const [businessTransactions, setBusinessTransactions, isBizTransactionsLoading] = useLocalStorage<BusinessTransaction[]>(LOCAL_STORAGE_KEYS.BUSINESS_TRANSACTIONS, []);
   
-  const isLoading = isTransactionsLoading || isGoalsLoading || isBizTransactionsLoading;
+  const isLoading = isTransactionsLoading || isGoalsLoading || isBizTransactionsLoading || isBusinessLoading;
 
   const value = {
     transactions,
     setTransactions,
     goals,
     setGoals,
+    business,
+    setBusiness,
     businessTransactions,
     setBusinessTransactions,
     isLoading,

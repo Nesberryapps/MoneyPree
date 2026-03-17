@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, Mic, Sparkles, AlertTriangle, Download } from 'lucide-react';
+import { Briefcase, DollarSign, FileText, PlusCircle, Loader2, MoreHorizontal, Lightbulb, Camera, ScanLine, Mic, Sparkles, AlertTriangle, Download, Edit } from 'lucide-react';
 import type { Business, BusinessTransaction } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { generatePLReportAction, suggestTaxDeductionAction, analyzePLReportAction, parseBusinessReceiptAction } from '@/app/actions/business-actions';
@@ -67,11 +67,12 @@ import { useDebounce } from 'use-debounce';
 import { TaxCenter } from './tax-center';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from '@/lib/constants';
+import { REVENUE_CATEGORIES, EXPENSE_CATEGORIES, INDUSTRIES } from '@/lib/constants';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import { PeerBenchmarkCard } from './peer-benchmark-card';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -507,7 +508,7 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
 }
 
 export function BusinessDashboard() {
-  const { businessTransactions: transactions, setBusinessTransactions: setTransactions } = useLocalData();
+  const { business, setBusiness, businessTransactions: transactions, setBusinessTransactions: setTransactions } = useLocalData();
   const { toast } = useToast();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -523,8 +524,19 @@ export function BusinessDashboard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isScannerAdDialogOpen, setIsScannerAdDialogOpen] = useState(false);
 
-  // Use a static ID for the single, implicit business context
-  const businessId = 'main_business';
+  // State for editing business profile
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [businessName, setBusinessName] = useState(business.name);
+  const [businessIndustry, setBusinessIndustry] = useState(business.industry);
+
+  const handleProfileSave = () => {
+    setBusiness({ ...business, name: businessName, industry: businessIndustry });
+    setIsEditingProfile(false);
+    toast({ title: "Business profile updated." });
+  };
+
+
+  const businessId = business.id;
 
   const handleOpenDialog = (txn?: BusinessTransaction) => {
     if (txn) {
@@ -683,17 +695,57 @@ export function BusinessDashboard() {
     <div className="grid gap-8">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-6 w-6" />
-            My Business
-          </CardTitle>
-          <CardDescription>
-            Welcome to your business command center. Manage your finances, track goals, and get AI-powered insights.
-          </CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-6 w-6" />
+                {isEditingProfile ? "Edit Business Profile" : business.name}
+              </CardTitle>
+              <CardDescription>
+                {isEditingProfile
+                  ? "Update your business name and industry."
+                  : business.industry}
+              </CardDescription>
+            </div>
+             <Button variant="ghost" size="icon" onClick={() => setIsEditingProfile(!isEditingProfile)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
+        {isEditingProfile && (
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="businessName">Business Name</Label>
+              <Input
+                id="businessName"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="businessIndustry">Industry</Label>
+              <Select
+                value={businessIndustry}
+                onValueChange={setBusinessIndustry}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRIES.map(industry => (
+                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+             <Button onClick={handleProfileSave}>Save Profile</Button>
+          </CardContent>
+        )}
       </Card>
       
       <BusinessStats transactions={transactions || []} />
+
+      <PeerBenchmarkCard transactions={transactions || []} business={business} />
 
       <TaxCenter transactions={transactions || []} />
 

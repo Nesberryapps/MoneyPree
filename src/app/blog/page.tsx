@@ -1,3 +1,4 @@
+'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,8 +10,11 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MoneyPreeIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/footer';
 import { AdsenseAd } from '@/components/ads/adsense-ad';
+import { useVerification } from '@/hooks/use-verification';
 
 export default function BlogPage() {
+  const { isVerified } = useVerification();
+
   const getImageForPost = (postId: string) => {
     return PlaceHolderImages.find(img => img.id === postId) || PlaceHolderImages.find(img => img.id === 'landing-hero');
   };
@@ -64,7 +68,7 @@ export default function BlogPage() {
               })}
             </div>
             <div className="max-w-4xl mx-auto mt-16">
-              <AdsenseAd />
+              <AdsenseAd isVerified={isVerified} />
             </div>
           </div>
         </section>

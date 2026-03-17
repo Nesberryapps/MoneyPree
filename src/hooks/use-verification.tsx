@@ -35,10 +35,14 @@ export function VerificationProvider({ children }: { children: ReactNode }) {
 
   const verify = useCallback(() => {
     try {
-      setIsVerifiedState(true);
+      // Set the flag in sessionStorage first
       window.sessionStorage.setItem(SESSION_STORAGE_KEY, 'true');
+      // Then force a reload. After reload, the useEffect will read the new value.
+      window.location.reload();
     } catch (error) {
+      // Fallback for private browsing or other issues
       console.error("Could not save verification status to sessionStorage", error);
+      setIsVerifiedState(true); // Manually set state if storage fails
     }
   }, []);
 
@@ -97,7 +101,7 @@ function VerificationScreen({ onVerify }: { onVerify: () => void }) {
                         <ShieldCheck className="h-8 w-8 text-primary" />
                     </div>
                     <CardTitle className="text-2xl">Quick Verification</CardTitle>
-                    <CardDescription>To protect against automated bots and ensure fair ad practices, please solve this simple problem.</CardDescription>
+                    <CardDescription>To protect our advertisers from bot traffic and keep our AI features free, please solve this simple problem.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">

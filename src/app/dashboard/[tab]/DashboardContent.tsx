@@ -24,6 +24,7 @@ import { ButterflyEffectSimulator } from '@/components/dashboard/butterfly-simul
 import { useRouter } from 'next/navigation';
 import { SettingsClient } from '@/components/settings/settings-client';
 import HelpPage from '@/app/help/page';
+import { useVerification } from '@/hooks/use-verification';
 
 function FinancialAvatar({ netWorth }: { netWorth: number }) {
   const getAvatar = () => {
@@ -54,7 +55,7 @@ function FinancialAvatar({ netWorth }: { netWorth: number }) {
 }
 
 
-function PulseDashboard() {
+function PulseDashboard({ isVerified }: { isVerified: boolean }) {
     const { transactions, goals } = useLocalData();
     const router = useRouter();
 
@@ -109,7 +110,7 @@ function PulseDashboard() {
             <ButterflyEffectSimulator />
             
             <div className="mt-8">
-              <AdsenseAd />
+              <AdsenseAd isVerified={isVerified} />
             </div>
         </div>
     );
@@ -119,6 +120,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
   const { isVoiceInteractionEnabled } = useVoiceInteraction();
   const { isLoading, transactions, goals } = useLocalData();
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
+  const { isVerified } = useVerification();
 
   if (isLoading) {
     return <Loading />;
@@ -131,7 +133,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
   const renderContent = () => {
     switch (tab) {
         case 'dashboard':
-            return <PulseDashboard />;
+            return <PulseDashboard isVerified={isVerified} />;
         case 'budget':
             return <BudgetClient transactions={transactions || []} isVoiceInteractionEnabled={isVoiceInteractionEnabled} />;
         case 'goals':
@@ -149,7 +151,7 @@ export default function DashboardContent({ tab }: { tab: string }) {
         case 'help':
             return <HelpPage />;
         default:
-            return <PulseDashboard />;
+            return <PulseDashboard isVerified={isVerified} />;
     }
   }
 

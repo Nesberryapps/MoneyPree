@@ -1,4 +1,6 @@
 
+'use client'
+
 import {
   Accordion,
   AccordionContent,
@@ -6,12 +8,10 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/layout/header';
 
 export default function HelpPage() {
   return (
     <div className="flex flex-col">
-      <Header />
       <main className="flex-1 p-4 md:p-8">
         <Card>
           <CardHeader>
@@ -68,5 +68,3 @@ export default function HelpPage() {
     </div>
   );
 }
-
-    

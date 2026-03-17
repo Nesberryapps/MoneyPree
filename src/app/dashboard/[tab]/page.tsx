@@ -10,7 +10,7 @@ export async function generateStaticParams() {
 }
 
 export default function DashboardTabPage({ params }: { params: { tab: string } }) {
-  // This is now a Server Component.
+  // This is a Server Component.
   // It renders the Client Component and passes the 'tab' param to it.
   return <DashboardContent tab={params.tab} />;
 }

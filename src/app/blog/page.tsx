@@ -8,6 +8,7 @@ import { formatDate } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { MoneyPreeIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/footer';
+import { AdsenseAd } from '@/components/ads/adsense-ad';
 
 export default function BlogPage() {
   const getImageForPost = (postId: string) => {
@@ -61,6 +62,9 @@ export default function BlogPage() {
                   </Card>
                 );
               })}
+            </div>
+            <div className="max-w-4xl mx-auto mt-16">
+              <AdsenseAd />
             </div>
           </div>
         </section>

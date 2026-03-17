@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -98,7 +99,7 @@ export function ExpertQA() {
               )}
             </div>
           </div>
-          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading || !question}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLoading ? "Analyzing..." : "Get Answer"}
           </Button>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -179,7 +180,7 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
               )}
             </div>
           </div>
-          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLessonLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLessonLoading || !currentFinancialKnowledge}>
             {isLessonLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLessonLoading ? 'Generating...' : 'Generate Lesson'}
           </Button>

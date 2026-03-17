@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -118,7 +119,7 @@ export function InvestmentSimulation() {
               )}
             </div>
           </div>
-          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading}>
+          <Button onClick={() => setIsAdDialogOpen(true)} disabled={isLoading || !currentHoldings || !investmentGoals}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLoading ? "Simulating..." : "Run Simulation"}
           </Button>

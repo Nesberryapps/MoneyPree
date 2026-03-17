@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -129,7 +130,8 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isAdDialogOpen, setIsAdDialogOpen] = useState(false);
+  const [isInsightAdDialogOpen, setIsInsightAdDialogOpen] = useState(false);
+  const [isScannerAdDialogOpen, setIsScannerAdDialogOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -224,7 +226,7 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
   };
 
   const handleRewardedInsightGeneration = () => {
-    setIsAdDialogOpen(false);
+    setIsInsightAdDialogOpen(false);
     handleGenerateInsights();
   };
 
@@ -292,7 +294,7 @@ ${insights.monthlyChallenge}
   }, [isScannerOpen, toast]);
 
 
-  const handleCaptureAndScan = async () => {
+  const doScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     
     setIsScanning(true);
@@ -311,52 +313,61 @@ ${insights.monthlyChallenge}
     const imageDataUri = canvas.toDataURL('image/jpeg');
 
     try {
-    const result = await parseReceiptAction({ receiptImage: imageDataUri });
-    
-    // Pre-fill the form with the scanned data
-    setDescription(result.description || '');
-    setAmount(String(result.amount || ''));
-    setType('expense'); // Receipts are always expenses
-    if (result.date) {
-        // Attempt to parse various date formats
-        const parsedDate = new Date(result.date);
-        if (!isNaN(parsedDate.getTime())) {
-        setDate(parsedDate);
-        } else {
-            // Fallback for dates that are not standard
-            setDate(new Date()); 
-            console.warn("Could not parse date:", result.date);
-        }
-    } else {
-        setDate(new Date());
-    }
-    
-    // Try to match the category
-    const expenseCategories = BUDGET_CATEGORIES.expense.map(c => c.value);
-    if (result.category && expenseCategories.includes(result.category)) {
-        setCategory(result.category);
-    } else {
-        setCategory('other'); // Default category
-    }
+      const result = await parseReceiptAction({ receiptImage: imageDataUri });
+      
+      // Pre-fill the form with the scanned data
+      setDescription(result.description || '');
+      setAmount(String(result.amount || ''));
+      setType('expense'); // Receipts are always expenses
+      if (result.date) {
+          // Attempt to parse various date formats
+          const parsedDate = new Date(result.date);
+          if (!isNaN(parsedDate.getTime())) {
+          setDate(parsedDate);
+          } else {
+              // Fallback for dates that are not standard
+              setDate(new Date()); 
+              console.warn("Could not parse date:", result.date);
+          }
+      } else {
+          setDate(new Date());
+      }
+      
+      // Try to match the category
+      const expenseCategories = BUDGET_CATEGORIES.expense.map(c => c.value);
+      if (result.category && expenseCategories.includes(result.category)) {
+          setCategory(result.category);
+      } else {
+          setCategory('other'); // Default category
+      }
 
-    setIsScannerOpen(false);
-    setIsDialogOpen(true); // Open the transaction dialog for verification
-    
-    toast({
-        title: 'Receipt Scanned!',
-        description: 'Please verify the details and save the transaction.',
-    });
+      setIsScannerOpen(false);
+      setIsDialogOpen(true); // Open the transaction dialog for verification
+      
+      toast({
+          title: 'Receipt Scanned!',
+          description: 'Please verify the details and save the transaction.',
+      });
 
     } catch (e) {
-    console.error("Failed to scan receipt:", e);
-    toast({
-        variant: 'destructive',
-        title: 'Scan Failed',
-        description: 'Could not extract details from the receipt. Please try again or enter manually.',
-    });
+      console.error("Failed to scan receipt:", e);
+      toast({
+          variant: 'destructive',
+          title: 'Scan Failed',
+          description: 'Could not extract details from the receipt. Please try again or enter manually.',
+      });
     } finally {
-    setIsScanning(false);
+      setIsScanning(false);
     }
+  };
+
+  const handleCaptureAndScan = () => {
+    setIsScannerAdDialogOpen(true);
+  };
+
+  const handleRewardedScan = () => {
+    setIsScannerAdDialogOpen(false);
+    doScan();
   };
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
@@ -615,7 +626,7 @@ ${insights.monthlyChallenge}
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <Button onClick={() => setIsAdDialogOpen(true)} disabled={isInsightsLoading}>
+            <Button onClick={() => setIsInsightAdDialogOpen(true)} disabled={isInsightsLoading}>
                 {isInsightsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isInsightsLoading ? "Analyzing..." : "Analyze"}
             </Button>
@@ -671,9 +682,15 @@ ${insights.monthlyChallenge}
       </div>
 
       <RewardedAdDialog
-        open={isAdDialogOpen}
-        onOpenChange={setIsAdDialogOpen}
+        open={isInsightAdDialogOpen}
+        onOpenChange={setIsInsightAdDialogOpen}
         onReward={handleRewardedInsightGeneration}
+      />
+
+      <RewardedAdDialog
+        open={isScannerAdDialogOpen}
+        onOpenChange={setIsScannerAdDialogOpen}
+        onReward={handleRewardedScan}
       />
       
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>

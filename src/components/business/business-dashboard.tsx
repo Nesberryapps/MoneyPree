@@ -521,6 +521,7 @@ export function BusinessDashboard() {
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isScannerAdDialogOpen, setIsScannerAdDialogOpen] = useState(false);
 
   // Use a static ID for the single, implicit business context
   const businessId = 'main_business';
@@ -584,8 +585,7 @@ export function BusinessDashboard() {
     };
   }, [isScannerOpen, toast]);
 
-
-  const handleCaptureAndScan = async () => {
+  const doScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setIsScanning(true);
 
@@ -603,50 +603,60 @@ export function BusinessDashboard() {
     const imageDataUri = canvas.toDataURL('image/jpeg');
 
     try {
-    const result = await parseBusinessReceiptAction({ receiptImage: imageDataUri, isBusiness: true });
-    
-    const parsedData: Partial<BusinessTransaction> = {
-        description: result.description || '',
-        amount: result.amount || undefined,
-        type: 'expense',
-    };
-    
-    if (result.date) {
-        const parsedDate = new Date(result.date);
-        if (!isNaN(parsedDate.getTime())) {
-        parsedData.date = parsedDate;
-        } else {
-            parsedData.date = new Date(); 
-        }
-    } else {
-        parsedData.date = new Date();
-    }
-    
-    if (result.category && EXPENSE_CATEGORIES.includes(result.category)) {
-        parsedData.category = result.category;
-    } else {
-        parsedData.category = 'Other';
-    }
+      const result = await parseBusinessReceiptAction({ receiptImage: imageDataUri, isBusiness: true });
+      
+      const parsedData: Partial<BusinessTransaction> = {
+          description: result.description || '',
+          amount: result.amount || undefined,
+          type: 'expense',
+      };
+      
+      if (result.date) {
+          const parsedDate = new Date(result.date);
+          if (!isNaN(parsedDate.getTime())) {
+          parsedData.date = parsedDate;
+          } else {
+              parsedData.date = new Date(); 
+          }
+      } else {
+          parsedData.date = new Date();
+      }
+      
+      if (result.category && EXPENSE_CATEGORIES.includes(result.category)) {
+          parsedData.category = result.category;
+      } else {
+          parsedData.category = 'Other';
+      }
 
-    setScannedData(parsedData);
-    setIsScannerOpen(false);
-    setIsDialogVisible(true);
-    
-    toast({
-        title: 'Receipt Scanned!',
-        description: 'Please verify the details and save the transaction.',
-    });
+      setScannedData(parsedData);
+      setIsScannerOpen(false);
+      setIsDialogVisible(true);
+      
+      toast({
+          title: 'Receipt Scanned!',
+          description: 'Please verify the details and save the transaction.',
+      });
 
     } catch (e) {
-    console.error("Failed to scan receipt:", e);
-    toast({
-        variant: 'destructive',
-        title: 'Scan Failed',
-        description: 'Could not extract details from the receipt. Please try again or enter manually.',
-    });
+      console.error("Failed to scan receipt:", e);
+      toast({
+          variant: 'destructive',
+          title: 'Scan Failed',
+          description: 'Could not extract details from the receipt. Please try again or enter manually.',
+      });
     } finally {
-    setIsScanning(false);
+      setIsScanning(false);
     }
+  };
+
+
+  const handleCaptureAndScan = async () => {
+    setIsScannerAdDialogOpen(true);
+  };
+
+  const handleRewardedScan = () => {
+    setIsScannerAdDialogOpen(false);
+    doScan();
   };
 
   const handleSaveTransaction = (data: Partial<BusinessTransaction>) => {
@@ -831,6 +841,12 @@ export function BusinessDashboard() {
             </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+
+        <RewardedAdDialog
+            open={isScannerAdDialogOpen}
+            onOpenChange={setIsScannerAdDialogOpen}
+            onReward={handleRewardedScan}
+        />
     </div>
   );
 }

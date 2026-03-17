@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -114,7 +115,7 @@ export function GoalsClient({ goals }: GoalsClientProps) {
       setName(goal.name);
       setTargetAmount(String(goal.targetAmount));
       setCurrentAmount(String(goal.currentAmount));
-      const goalDeadline = goal.deadline instanceof Date ? goal.deadline : (goal.deadline as any).toDate();
+      const goalDeadline = goal.deadline instanceof Date ? goal.deadline : new Date(goal.deadline);
       setDeadline(goalDeadline.toISOString().split('T')[0]); // Format for date input
     } else {
       resetForm();

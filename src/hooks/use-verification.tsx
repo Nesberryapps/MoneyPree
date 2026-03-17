@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
@@ -95,8 +96,8 @@ function VerificationScreen({ onVerify }: { onVerify: () => void }) {
                     <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
                         <ShieldCheck className="h-8 w-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Verification Required</CardTitle>
-                    <CardDescription>Please solve the math problem to continue.</CardDescription>
+                    <CardTitle className="text-2xl">Quick Verification</CardTitle>
+                    <CardDescription>To protect against automated bots and ensure fair ad practices, please solve this simple problem.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">

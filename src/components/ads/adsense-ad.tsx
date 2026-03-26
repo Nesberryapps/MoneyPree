@@ -1,26 +1,27 @@
-
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // This component is responsible for loading an AdSense ad unit.
 export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
+  const adPushed = useRef(false);
+
   useEffect(() => {
-    // This effect will run when the component mounts or when isVerified changes.
-    // If the user is verified, we attempt to push the ad to AdSense.
-    // It is safe to call this multiple times; AdSense will process any unfilled ad slots.
-    if (isVerified) {
+    // We only want to push the ad once after verification.
+    if (isVerified && !adPushed.current) {
       try {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        // Mark that the ad has been pushed to prevent this from running again.
+        adPushed.current = true;
       } catch (e: any) {
-        // This error is common and expected if AdSense has no ad to show or is blocked.
-        // We avoid logging it to prevent console noise.
-        if (!e.message.includes("All 'ins' elements in the DOM")) {
+        // This error can happen in some development environments (like with hot-reloading)
+        // or other race conditions. It's benign, so we can safely ignore it.
+        if (!e.message.includes("already have ads in them")) {
           console.error('AdSense push error:', e);
         }
       }
     }
-  }, [isVerified]);
+  }, [isVerified]); // Rerun effect if verification status changes
 
   if (!isVerified) {
     // Render a placeholder to maintain layout without loading the ad script

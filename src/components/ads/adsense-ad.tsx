@@ -1,31 +1,34 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 // This component is responsible for loading an AdSense ad unit.
 export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
-  const adPushed = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    // We only want to push the ad once after verification.
-    if (isVerified && !adPushed.current) {
-      try {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        // Mark that the ad has been pushed to prevent this from running again.
-        adPushed.current = true;
-      } catch (e: any) {
-        // This error can happen in some development environments (like with hot-reloading)
-        // or other race conditions. It's benign, so we can safely ignore it.
-        if (!e.message.includes("already have ads in them")) {
-          console.error('AdSense push error:', e);
-        }
+    // Only proceed if the user is verified
+    if (!isVerified) {
+      return;
+    }
+
+    try {
+      // The push call tells AdSense to process any new ad units on the page.
+      // This is safe to call multiple times on navigation because the `key` prop
+      // on the div below ensures we get a fresh, unprocessed ad slot.
+      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+    } catch (e: any) {
+      // It's common to get an error if you push too many times, especially in dev.
+      // We can safely ignore the benign "already have ads" error.
+      if (!e.message.includes("already have ads in them")) {
+        console.error('AdSense push error:', e);
       }
     }
-  }, [isVerified]); // Rerun effect if verification status changes
+  }, [pathname, isVerified]); // Re-run when the path or verification status changes.
 
   if (!isVerified) {
-    // Render a placeholder to maintain layout without loading the ad script
-    // if the user has not passed the verification gate.
+    // Render a placeholder before verification to maintain layout.
     return (
       <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
         <p className="text-sm text-muted-foreground">Ad will load after verification</p>
@@ -34,9 +37,14 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
   }
 
   // When verified, render the ad slot.
-  // The useEffect will then attempt to fill it.
+  // The `key={pathname}` is the crucial part. It forces React to destroy the old
+  // component and create a new one whenever the user navigates to a new page.
+  // This gives AdSense a fresh <ins> tag to inject an ad into.
   return (
-    <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
+    <div
+      key={pathname}
+      className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4"
+    >
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%' }}

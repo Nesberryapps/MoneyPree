@@ -1,27 +1,32 @@
+
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
 // This component is responsible for loading an AdSense ad unit.
 export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
   const pathname = usePathname();
+  // Create a key that is unique per-instance and changes on navigation.
+  // This is crucial for forcing React to unmount and remount the component,
+  // which is necessary for AdSense in a Single Page Application (SPA).
+  const adKey = useMemo(() => `${pathname}-${Math.random()}`, [pathname]);
 
   useEffect(() => {
-    // Only proceed if the user is verified
-    if (!isVerified) {
-      return;
-    }
-
-    try {
-      // The push call tells AdSense to process any new ad units on the page.
-      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-    } catch (e: any) {
-      if (!e.message.includes("already have ads in them")) {
-        console.error('AdSense push error:', e);
+    if (isVerified) {
+      try {
+        // The push call tells AdSense to process any new ad units on the page.
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch (e: any) {
+        // This error is expected in development and SPA environments.
+        // It happens when AdSense tries to push an ad to a slot that's already been processed.
+        // We can safely ignore it as the unique keying strategy should prevent most cases.
+        if (!e.message.includes("already have ads in them")) {
+          console.error('AdSense push error:', e);
+        }
       }
     }
-  }, [pathname, isVerified]);
+  }, [isVerified, adKey]); // Re-run the effect ONLY when the adKey changes.
 
   if (!isVerified) {
     return (
@@ -31,9 +36,11 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
     );
   }
 
+  // The `key` on this div forces React to destroy the old component
+  // and create a new one on every page navigation, which cleans up the old ad slot.
   return (
     <div
-      key={pathname}
+      key={adKey}
       className="w-full min-h-[90px] flex flex-col items-center justify-center bg-muted/20 rounded-md text-center p-4"
     >
       <ins

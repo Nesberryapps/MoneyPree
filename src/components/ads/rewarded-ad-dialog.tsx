@@ -10,7 +10,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { AdsenseAd } from './adsense-ad';
+import { useVerification } from '@/hooks/use-verification';
 
 interface RewardedAdDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface RewardedAdDialogProps {
 }
 
 export function RewardedAdDialog({ open, onOpenChange, onReward }: RewardedAdDialogProps) {
+  const { isVerified } = useVerification();
   const [canContinue, setCanContinue] = useState(false);
   const [countdown, setCountdown] = useState(5);
 
@@ -52,14 +54,11 @@ export function RewardedAdDialog({ open, onOpenChange, onReward }: RewardedAdDia
         <DialogHeader>
           <DialogTitle>One Moment Please</DialogTitle>
           <DialogDescription>
-            To keep our AI features free, we show a brief ad placeholder. Your result is being generated.
+            To keep our AI features free, please view this brief ad. Your result is being generated.
           </DialogDescription>
         </DialogHeader>
-        <div className="my-4 flex justify-center items-center h-40 bg-muted/20 rounded-md">
-          <div className="flex flex-col items-center gap-4">
-             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-             <p className="text-sm text-muted-foreground">Simulating ad break... ({countdown})</p>
-          </div>
+        <div className="my-4 flex justify-center items-center rounded-md">
+          <AdsenseAd isVerified={isVerified} />
         </div>
         <DialogFooter>
           <Button onClick={handleContinue} disabled={!canContinue} className="w-full">

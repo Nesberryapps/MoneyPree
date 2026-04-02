@@ -15,20 +15,15 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
 
     try {
       // The push call tells AdSense to process any new ad units on the page.
-      // This is safe to call multiple times on navigation because the `key` prop
-      // on the div below ensures we get a fresh, unprocessed ad slot.
       ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
     } catch (e: any) {
-      // It's common to get an error if you push too many times, especially in dev.
-      // We can safely ignore the benign "already have ads" error.
       if (!e.message.includes("already have ads in them")) {
         console.error('AdSense push error:', e);
       }
     }
-  }, [pathname, isVerified]); // Re-run when the path or verification status changes.
+  }, [pathname, isVerified]);
 
   if (!isVerified) {
-    // Render a placeholder before verification to maintain layout.
     return (
       <div className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4">
         <p className="text-sm text-muted-foreground">Ad will load after verification</p>
@@ -36,14 +31,10 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
     );
   }
 
-  // When verified, render the ad slot.
-  // The `key={pathname}` is the crucial part. It forces React to destroy the old
-  // component and create a new one whenever the user navigates to a new page.
-  // This gives AdSense a fresh <ins> tag to inject an ad into.
   return (
     <div
       key={pathname}
-      className="w-full min-h-[90px] flex items-center justify-center bg-muted/20 rounded-md text-center p-4"
+      className="w-full min-h-[90px] flex flex-col items-center justify-center bg-muted/20 rounded-md text-center p-4"
     >
       <ins
         className="adsbygoogle"
@@ -53,6 +44,9 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
+       <p className="text-xs text-muted-foreground mt-2">
+        Ad placeholder: Waiting for an ad from Google. This may be blank on new sites.
+      </p>
     </div>
   );
 }

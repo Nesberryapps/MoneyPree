@@ -21,6 +21,7 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import * as gtag from '@/lib/gtag';
 
 export function ExpertQA() {
   const [question, setQuestion] = useState('');
@@ -41,6 +42,13 @@ export function ExpertQA() {
     setIsLoading(true);
     setError(null);
     setAnswer(null);
+
+    gtag.event({
+        action: 'ask_question',
+        category: 'AI',
+        label: 'CFO Chat',
+        value: question.length,
+    });
 
     try {
       const result = await answerFinanceQuestionAction({

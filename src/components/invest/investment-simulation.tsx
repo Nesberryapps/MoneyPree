@@ -19,6 +19,7 @@ import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import * as gtag from '@/lib/gtag';
 
 
 export function InvestmentSimulation() {
@@ -40,6 +41,14 @@ export function InvestmentSimulation() {
     setIsLoading(true);
     setError(null);
     setSimulationResult(null);
+
+    gtag.event({
+        action: 'run_simulation',
+        category: 'AI',
+        label: 'Investments',
+        value: currentHoldings.length + investmentGoals.length,
+    });
+
     try {
     const result = await simulateInvestmentScenariosAction({
         currentHoldings,

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -72,6 +73,7 @@ import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
 import { PeerBenchmarkCard } from './peer-benchmark-card';
+import * as gtag from '@/lib/gtag';
 
 
 const ENTITY_TYPES: Business['entityType'][] = [
@@ -96,6 +98,14 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setError(null);
         setReport(null);
         setAnalysis(null);
+
+        gtag.event({
+            action: 'generate_pl_report',
+            category: 'AI',
+            label: 'Business',
+            value: transactions.length,
+        });
+
         try {
             const result = await generatePLReportAction({ transactions });
             setReport(result);
@@ -116,6 +126,14 @@ function PLReportCard({ transactions }: { transactions: BusinessTransaction[] })
         setIsAnalysisLoading(true);
         setError(null);
         setAnalysis(null);
+
+        gtag.event({
+            action: 'analyze_pl_report',
+            category: 'AI',
+            label: 'Business',
+            value: transactions.length,
+        });
+
         try {
             const result = await analyzePLReportAction({ plReport: report, transactions });
             setAnalysis(result);
@@ -361,6 +379,14 @@ function TransactionDialog({ open, onOpenChange, businessId, transaction, initia
             if (type === 'expense' && debouncedDescription.length > 3 && category) {
                 setIsAiLoading(true);
                 setAiSuggestion(null);
+
+                gtag.event({
+                    action: 'suggest_tax_deduction',
+                    category: 'AI',
+                    label: 'Business',
+                    value: debouncedDescription.length,
+                });
+
                 try {
                     const result = await suggestTaxDeductionAction({ description: debouncedDescription, category });
                     setAiSuggestion(result);
@@ -599,6 +625,13 @@ export function BusinessDashboard() {
   const doScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setIsScanning(true);
+
+    gtag.event({
+        action: 'scan_receipt',
+        category: 'AI',
+        label: 'Business',
+        value: 1,
+    });
 
     const video = videoRef.current!;
     const canvas = canvasRef.current!;

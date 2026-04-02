@@ -7,6 +7,9 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { VoiceInteractionProvider } from '@/hooks/use-voice-interaction';
 import { DataProvider } from '@/hooks/use-local-data';
 import { VerificationProvider, VerificationGate } from '@/hooks/use-verification';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
+import { GA_TRACKING_ID } from '@/lib/gtag';
+
 
 export const metadata: Metadata = {
   title: 'MoneyPree',
@@ -30,6 +33,20 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* Google Analytics Scripts */}
+        <Script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_TRACKING_ID}');
+          `}
+        </Script>
       </head>
       <body className="font-body antialiased">
         <ThemeProvider
@@ -42,6 +59,7 @@ export default function RootLayout({
             <VoiceInteractionProvider>
               <VerificationProvider>
                 <VerificationGate>
+                  <GoogleAnalytics />
                   {children}
                 </VerificationGate>
               </VerificationProvider>

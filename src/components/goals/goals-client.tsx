@@ -47,6 +47,7 @@ import { useLocalData } from '@/hooks/use-local-data';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import * as gtag from '@/lib/gtag';
 
 type GoalsClientProps = {
     goals: Goal[];
@@ -86,6 +87,14 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   const handleGenerateGoals = async () => {
     setIsLoading(true);
     setGeneratedGoals([]);
+
+    gtag.event({
+        action: 'generate_goals',
+        category: 'AI',
+        label: 'Goals',
+        value: prompt.length,
+    });
+
     try {
     const result = await generateFinancialGoalsAction({ prompt });
     setGeneratedGoals(result.goals);

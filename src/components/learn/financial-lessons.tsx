@@ -29,6 +29,7 @@ import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useVoiceInteraction } from '@/hooks/use-voice-interaction';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import * as gtag from '@/lib/gtag';
 
 type FinancialLessonsProps = {
   onQuizComplete: (score: number) => void;
@@ -64,6 +65,13 @@ export function FinancialLessons({ onQuizComplete }: FinancialLessonsProps) {
     setUserAnswers({});
     setSubmitted(false);
     setScore(0);
+
+    gtag.event({
+        action: 'generate_lesson',
+        category: 'AI',
+        label: 'Learn',
+        value: currentFinancialKnowledge.length + specificTopicsOfInterest.length,
+    });
 
     try {
     const lessonResult = await generateFinancialLessonsAction({

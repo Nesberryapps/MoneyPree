@@ -88,6 +88,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useLocalData } from '@/hooks/use-local-data';
 import { RewardedAdDialog } from '@/components/ads/rewarded-ad-dialog';
+import * as gtag from '@/lib/gtag';
 
 type BudgetClientProps = {
     transactions: AppTransaction[];
@@ -214,6 +215,14 @@ export function BudgetClient({ transactions, isVoiceInteractionEnabled }: Budget
     setIsInsightsLoading(true);
     setInsightsError(null);
     setInsights(null);
+
+    gtag.event({
+        action: 'generate_insights',
+        category: 'AI',
+        label: 'Budget',
+        value: transactions.length,
+    });
+
     try {
       const result = await generateFinancialInsightsAction({ transactions });
       setInsights(result);
@@ -298,6 +307,13 @@ ${insights.monthlyChallenge}
     if (!videoRef.current || !canvasRef.current) return;
     
     setIsScanning(true);
+
+    gtag.event({
+        action: 'scan_receipt',
+        category: 'AI',
+        label: 'Budget',
+        value: 1,
+    });
 
     const video = videoRef.current!;
     const canvas = canvasRef.current!;

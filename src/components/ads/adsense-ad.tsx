@@ -4,29 +4,29 @@
 import React, { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
-// This component is responsible for loading an AdSense ad unit.
 export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
   const pathname = usePathname();
-  // Create a key that is unique per-instance and changes on navigation.
-  // This is crucial for forcing React to unmount and remount the component,
-  // which is necessary for AdSense in a Single Page Application (SPA).
-  const adKey = useMemo(() => `${pathname}-${Math.random()}`, [pathname]);
+  
+  // Create a unique key for the ad unit that changes on every route change.
+  // This is crucial for forcing React to unmount the old ad slot and mount a new one,
+  // which is the correct way to handle ads in a Single Page Application (SPA).
+  const adKey = useMemo(() => pathname + Math.random(), [pathname]);
 
   useEffect(() => {
     if (isVerified) {
       try {
-        // The push call tells AdSense to process any new ad units on the page.
+        // This tells AdSense to look for new ad units on the page and initialize them.
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       } catch (e: any) {
-        // This error is expected in development and SPA environments.
-        // It happens when AdSense tries to push an ad to a slot that's already been processed.
-        // We can safely ignore it as the unique keying strategy should prevent most cases.
+        // AdSense throws an error if it's called on a slot that's already filled.
+        // Our key-based re-mounting strategy should prevent this, but we'll log
+        // other unexpected errors.
         if (!e.message.includes("already have ads in them")) {
-          console.error('AdSense push error:', e);
+            console.error("AdSense error:", e);
         }
       }
     }
-  }, [isVerified, adKey]); // Re-run the effect ONLY when the adKey changes.
+  }, [isVerified, adKey]); // Re-run effect when verification status or the ad key changes.
 
   if (!isVerified) {
     return (
@@ -36,14 +36,12 @@ export function AdsenseAd({ isVerified }: { isVerified: boolean }) {
     );
   }
 
-  // The `key` on this div forces React to destroy the old component
-  // and create a new one on every page navigation, which cleans up the old ad slot.
+  // By using the `adKey` here, we ensure React creates a fresh `ins` element on each navigation,
+  // preventing the "slot already filled" error from AdSense.
   return (
-    <div
-      key={adKey}
-      className="w-full min-h-[90px] flex flex-col items-center justify-center bg-muted/20 rounded-md text-center p-4"
-    >
+    <div className="w-full min-h-[90px] flex flex-col items-center justify-center bg-muted/20 rounded-md text-center p-4">
       <ins
+        key={adKey}
         className="adsbygoogle"
         style={{ display: 'block', width: '100%' }}
         data-ad-client="ca-pub-6191158195654090"
